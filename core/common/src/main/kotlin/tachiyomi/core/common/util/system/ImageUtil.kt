@@ -33,6 +33,7 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import androidx.core.graphics.drawable.toDrawable
 
 object ImageUtil {
 
@@ -59,7 +60,7 @@ object ImageUtil {
                 Format.Webp -> ImageType.WEBP
                 else -> null
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
@@ -81,7 +82,7 @@ object ImageUtil {
                 Format.Heif -> type.isAnimated && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
                 else -> false
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
@@ -203,9 +204,18 @@ object ImageUtil {
      *
      * @return true if the height:width ratio is greater than 3.
      */
-    private fun isTallImage(imageSource: BufferedSource): Boolean {
+    fun isTallImage(imageSource: BufferedSource): Boolean {
         val options = extractImageOptions(imageSource)
-        return (options.outHeight / options.outWidth) > 3
+        if (options.outHeight <= 0 || options.outWidth <= 0) return false
+        return options.outHeight > options.outWidth * 1.5
+    }
+
+    /**
+     * Check whether the image exceeds the hardware texture limit.
+     */
+    fun isLargeImage(imageSource: BufferedSource): Boolean {
+        val options = extractImageOptions(imageSource)
+        return options.outHeight > hardwareBitmapThreshold || options.outWidth > hardwareBitmapThreshold
     }
 
     /**
@@ -263,10 +273,12 @@ object ImageUtil {
         }
     }
 
-    private fun splitImageName(filenamePrefix: String, index: Int) = "${filenamePrefix}__${"%03d".format(
-        Locale.ENGLISH,
-        index + 1,
-    )}.jpg"
+    private fun splitImageName(filenamePrefix: String, index: Int) = "${filenamePrefix}__${
+        "%03d".format(
+            Locale.ENGLISH,
+            index + 1,
+        )
+    }.jpg"
 
     private val BitmapFactory.Options.splitData
         get(): List<SplitData> {
@@ -336,9 +348,9 @@ object ImageUtil {
         decoder?.recycle()
 
         val whiteColor = Color.WHITE
-        if (image == null) return ColorDrawable(whiteColor)
+        if (image == null) return whiteColor.toDrawable()
         if (image.width < 50 || image.height < 50) {
-            return ColorDrawable(whiteColor)
+            return whiteColor.toDrawable()
         }
 
         val top = 5
@@ -379,7 +391,7 @@ object ImageUtil {
             !color.isWhite() && color.isCloseTo(other)
         }
         if (isNotWhiteAndCloseTo.all { it }) {
-            return ColorDrawable(topLeftPixel)
+            return topLeftPixel.toDrawable()
         }
 
         val cornerPixels = listOf(topLeftPixel, topRightPixel, botLeftPixel, botRightPixel)
@@ -464,6 +476,7 @@ object ImageUtil {
                     overallWhitePixels = 0
                     break@outer
                 }
+
                 blackStreak -> {
                     darkBG = true
                     if (x == right || x == rightOffsetX) {
@@ -478,6 +491,7 @@ object ImageUtil {
                         break@outer
                     }
                 }
+
                 whiteStreak || whitePixels > 22 -> darkBG = false
             }
         }
@@ -494,8 +508,8 @@ object ImageUtil {
         val isLandscape = context.resources.configuration?.orientation == Configuration.ORIENTATION_LANDSCAPE
         if (isLandscape) {
             return when {
-                darkBG -> ColorDrawable(blackColor)
-                else -> ColorDrawable(whiteColor)
+                darkBG -> blackColor.toDrawable()
+                else -> whiteColor.toDrawable()
             }
         }
 
@@ -512,12 +526,15 @@ object ImageUtil {
             darkBG && botCornersIsWhite -> {
                 intArrayOf(blackColor, blackColor, whiteColor, whiteColor)
             }
+
             darkBG && topCornersIsWhite -> {
                 intArrayOf(whiteColor, whiteColor, blackColor, blackColor)
             }
+
             darkBG -> {
-                return ColorDrawable(blackColor)
+                return blackColor.toDrawable()
             }
+
             topIsBlackStreak ||
                 (
                     topCornersIsDark &&
@@ -526,6 +543,7 @@ object ImageUtil {
                     ) -> {
                 intArrayOf(blackColor, blackColor, whiteColor, whiteColor)
             }
+
             bottomIsBlackStreak ||
                 (
                     botCornersIsDark &&
@@ -534,8 +552,9 @@ object ImageUtil {
                     ) -> {
                 intArrayOf(whiteColor, whiteColor, blackColor, blackColor)
             }
+
             else -> {
-                return ColorDrawable(whiteColor)
+                return whiteColor.toDrawable()
             }
         }
 
@@ -557,7 +576,7 @@ object ImageUtil {
     /**
      * Used to check an image's dimensions without loading it in the memory.
      */
-    private fun extractImageOptions(imageSource: BufferedSource): BitmapFactory.Options {
+    fun extractImageOptions(imageSource: BufferedSource): BitmapFactory.Options {
         val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeStream(imageSource.peek().inputStream(), null, options)
         return options

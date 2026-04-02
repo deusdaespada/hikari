@@ -18,15 +18,12 @@ import androidx.annotation.StyleRes
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.os.postDelayed
 import androidx.core.view.isVisible
-import coil3.BitmapImage
 import coil3.asDrawable
 import coil3.dispose
 import coil3.imageLoader
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import coil3.size.Precision
-import coil3.size.ViewSizeResolver
 import com.davemorrissey.labs.subscaleview.ImageSource
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView.EASE_IN_OUT_QUAD
@@ -34,8 +31,6 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView.EASE_OUT_QU
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE
 import com.github.chrisbanes.photoview.PhotoView
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.tachiyomi.data.coil.cropBorders
-import eu.kanade.tachiyomi.data.coil.customDecoder
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonSubsamplingImageView
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
 import eu.kanade.tachiyomi.util.view.isVisibleOnScreen
@@ -66,12 +61,41 @@ open class ReaderPageImageView @JvmOverloads constructor(
 
     private var pageView: View? = null
 
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        if (isWebtoon) {
+            val ssiv = pageView as? WebtoonSubsamplingImageView
+            if (ssiv != null && ssiv.isReady && ssiv.sWidth > 0 && ssiv.sHeight > 0) {
+                val width = MeasureSpec.getSize(widthMeasureSpec)
+                // Compute the height that shows the full image at fit-width scale
+                val scaledHeight = (ssiv.sHeight.toLong() * width / ssiv.sWidth).toInt()
+                super.onMeasure(
+                    widthMeasureSpec,
+                    MeasureSpec.makeMeasureSpec(scaledHeight, MeasureSpec.EXACTLY),
+                )
+                return
+            }
+        }
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+    }
+
     private var config: Config? = null
 
     var onImageLoaded: (() -> Unit)? = null
     var onImageLoadError: ((Throwable?) -> Unit)? = null
     var onScaleChanged: ((newScale: Float) -> Unit)? = null
     var onViewClicked: (() -> Unit)? = null
+
+    /**
+     * Returns the height the Webtoon image should occupy at fit-width scale.
+     * Returns 0 if the image is not yet ready or this is not a Webtoon view.
+     */
+    val scaledImageHeight: Int
+        get() {
+            if (!isWebtoon) return 0
+            val ssiv = pageView as? WebtoonSubsamplingImageView ?: return 0
+            if (!ssiv.isReady || ssiv.sWidth <= 0) return 0
+            return (ssiv.sHeight.toLong() * width / ssiv.sWidth).toInt()
+        }
 
     /**
      * For automatic background. Will be set as background color when [onImageLoaded] is called.
@@ -175,6 +199,8 @@ open class ReaderPageImageView @JvmOverloads constructor(
             is AppCompatImageView -> it.dispose()
         }
         it.isVisible = false
+        // Reset hardware acceleration for next reuse
+        setLayerType(LAYER_TYPE_NONE, null)
     }
 
     /**
@@ -287,6 +313,8 @@ open class ReaderPageImageView @JvmOverloads constructor(
                     setupZoom(config)
                     if (isVisibleOnScreen()) landscapeZoom(true)
                     this@ReaderPageImageView.onImageLoaded()
+                    // Defer requestLayout so it fires after any in-progress RecyclerView layout pass
+                    post { this@ReaderPageImageView.requestLayout() }
                 }
 
                 override fun onImageLoadError(e: Exception) {
@@ -300,38 +328,13 @@ open class ReaderPageImageView @JvmOverloads constructor(
                 setImage(ImageSource.bitmap(data.bitmap))
                 isVisible = true
             }
-            is BufferedSource -> {
-                if (!isWebtoon || alwaysDecodeLongStripWithSSIV) {
-                    setHardwareConfig(ImageUtil.canUseHardwareBitmap(data))
-                    setImage(ImageSource.inputStream(data.inputStream()))
-                    isVisible = true
-                    return@apply
-                }
 
-                ImageRequest.Builder(context)
-                    .data(data)
-                    .memoryCachePolicy(CachePolicy.DISABLED)
-                    .diskCachePolicy(CachePolicy.DISABLED)
-                    .target(
-                        onSuccess = { result ->
-                            val image = result as BitmapImage
-                            setImage(ImageSource.bitmap(image.bitmap))
-                            isVisible = true
-                        },
-                    )
-                    .listener(
-                        onError = { _, result ->
-                            onImageLoadError(result.throwable)
-                        },
-                    )
-                    .size(ViewSizeResolver(this@ReaderPageImageView))
-                    .precision(Precision.INEXACT)
-                    .cropBorders(config.cropBorders)
-                    .customDecoder(true)
-                    .crossfade(false)
-                    .build()
-                    .let(context.imageLoader::enqueue)
+            is BufferedSource -> {
+                setImage(ImageSource.inputStream(data.inputStream()))
+                isVisible = true
+                return@apply
             }
+
             else -> {
                 throw IllegalArgumentException("Not implemented for class ${data::class.simpleName}")
             }

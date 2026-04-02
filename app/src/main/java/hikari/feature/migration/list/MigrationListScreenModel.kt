@@ -45,15 +45,16 @@ import uy.kohesive.injekt.api.get
 class MigrationListScreenModel(
     mangaIds: Collection<Long>,
     extraSearchQuery: String?,
-    private val preferences: SourcePreferences = Injekt.get(),
-    private val sourceManager: SourceManager = Injekt.get(),
-    private val getManga: GetManga = Injekt.get(),
-    private val networkToLocalManga: NetworkToLocalManga = Injekt.get(),
-    private val updateManga: UpdateManga = Injekt.get(),
-    private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
-    private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
-    private val migrateManga: MigrateMangaUseCase = Injekt.get(),
 ) : StateScreenModel<MigrationListScreenModel.State>(State()) {
+
+    private val preferences: SourcePreferences = Injekt.get<SourcePreferences>()
+    private val sourceManager: SourceManager = Injekt.get<SourceManager>()
+    private val getManga: GetManga = Injekt.get<GetManga>()
+    private val networkToLocalManga: NetworkToLocalManga = Injekt.get<NetworkToLocalManga>()
+    private val updateManga: UpdateManga = Injekt.get<UpdateManga>()
+    private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get<SyncChaptersWithSource>()
+    private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get<GetChaptersByMangaId>()
+    private val migrateManga: MigrateMangaUseCase = Injekt.get<MigrateMangaUseCase>()
 
     private val smartSearchEngine = SmartSourceSearchEngine(extraSearchQuery)
 

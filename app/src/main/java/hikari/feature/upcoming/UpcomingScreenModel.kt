@@ -23,7 +23,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 class UpcomingScreenModel(
-    private val getUpcomingManga: GetUpcomingManga = Injekt.get(),
+    private val getUpcomingManga: GetUpcomingManga = Injekt.get<GetUpcomingManga>(),
 ) : StateScreenModel<UpcomingScreenModel.State>(State()) {
 
     init {

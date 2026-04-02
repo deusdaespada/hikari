@@ -123,12 +123,11 @@ internal fun Screen.MigrateMangaDialog(
     )
 }
 
-private class MigrateDialogScreenModel(
-    private val sourcePreference: SourcePreferences = Injekt.get(),
-    private val coverCache: CoverCache = Injekt.get(),
-    private val downloadManager: DownloadManager = Injekt.get(),
-    private val migrateManga: MigrateMangaUseCase = Injekt.get(),
-) : StateScreenModel<MigrateDialogScreenModel.State>(State()) {
+internal class MigrateDialogScreenModel : StateScreenModel<MigrateDialogScreenModel.State>(State()) {
+    private val sourcePreference: SourcePreferences = Injekt.get<SourcePreferences>()
+    private val coverCache: CoverCache = Injekt.get<CoverCache>()
+    private val downloadManager: DownloadManager = Injekt.get<DownloadManager>()
+    private val migrateManga: MigrateMangaUseCase = Injekt.get<MigrateMangaUseCase>()
 
     fun init(current: Manga, target: Manga) {
         val applicableFlags = buildList {

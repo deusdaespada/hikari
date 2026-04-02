@@ -310,10 +310,9 @@ class MigrationConfigScreen(private val mangaIds: Collection<Long>) : Screen() {
         )
     }
 
-    private class ScreenModel(
-        val sourcePreferences: SourcePreferences = Injekt.get(),
-        private val sourceManager: SourceManager = Injekt.get(),
-    ) : StateScreenModel<ScreenModel.State>(State()) {
+    internal class ScreenModel : StateScreenModel<ScreenModel.State>(State()) {
+        val sourcePreferences: SourcePreferences = Injekt.get<SourcePreferences>()
+        private val sourceManager: SourceManager = Injekt.get<SourceManager>()
 
         private val sourcesComparator = { includedSources: List<Long> ->
             compareBy<MigrationSource>(
