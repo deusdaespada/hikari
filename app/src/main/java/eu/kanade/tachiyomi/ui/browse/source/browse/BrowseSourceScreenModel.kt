@@ -25,10 +25,13 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.util.removeCovers
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -103,10 +106,12 @@ class BrowseSourceScreenModel(
      * Flow of Pager flow tied to [State.listing]
      */
     private val hideInLibraryItems = sourcePreferences.hideInLibraryItems.get()
-    val mangaPagerFlowFlow = state.map { it.listing }
+    private val locallyHiddenMangaIds = MutableStateFlow(emptySet<Long>())
+
+    val mangaPagerFlowFlow: kotlinx.coroutines.flow.StateFlow<kotlinx.coroutines.flow.Flow<androidx.paging.PagingData<kotlinx.coroutines.flow.StateFlow<Manga>>>> = state.map { it.listing }
         .distinctUntilChanged()
         .map { listing ->
-            Pager(PagingConfig(pageSize = 25)) {
+            val innerPager = Pager(PagingConfig(pageSize = 25)) {
                 getRemoteManga(sourceId, listing.query ?: "", listing.filters)
             }.flow.map { pagingData ->
                 pagingData.map { manga ->
@@ -114,9 +119,15 @@ class BrowseSourceScreenModel(
                         .map { it ?: manga }
                         .stateIn(ioCoroutineScope)
                 }
-                    .filter { !hideInLibraryItems || !it.value.favorite }
             }
                 .cachedIn(ioCoroutineScope)
+
+            combine(innerPager, locallyHiddenMangaIds) { pagingData, localHidden ->
+                pagingData.filter {
+                    val m = it.value
+                    (!hideInLibraryItems || !m.favorite) && !m.hidden && !localHidden.contains(m.id)
+                }
+            }
         }
         .stateIn(ioCoroutineScope, SharingStarted.Lazily, emptyFlow())
 
@@ -270,6 +281,21 @@ class BrowseSourceScreenModel(
                     )
                 }
             }
+        }
+    }
+
+    fun hideManga(manga: Manga) {
+        screenModelScope.launchIO {
+            locallyHiddenMangaIds.update { it + manga.id }
+            updateManga.await(manga.toMangaUpdate().copy(hidden = true))
+        }
+    }
+
+    fun unhideManga(mangaId: Long) {
+        screenModelScope.launchIO {
+            locallyHiddenMangaIds.update { it - mangaId }
+            val manga = getManga.await(mangaId) ?: return@launchIO
+            updateManga.await(manga.toMangaUpdate().copy(hidden = false))
         }
     }
 

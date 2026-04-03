@@ -1,0 +1,2 @@
+-- Migration to add hidden column to mangas table
+ALTER TABLE mangas ADD COLUMN hidden INTEGER AS Boolean NOT NULL DEFAULT 0;

@@ -130,6 +130,7 @@ class MangaRestorer(
                 version = manga.version,
                 isSyncing = 1,
                 notes = manga.notes,
+                hidden = manga.hidden,
             )
         }
         return manga
@@ -261,6 +262,7 @@ class MangaRestorer(
                 updateStrategy = manga.updateStrategy,
                 version = manga.version,
                 notes = manga.notes,
+                hidden = manga.hidden,
             )
             mangasQueries.selectLastInsertedRowId()
         }
