@@ -31,7 +31,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -108,28 +107,29 @@ class BrowseSourceScreenModel(
     private val hideInLibraryItems = sourcePreferences.hideInLibraryItems.get()
     private val locallyHiddenMangaIds = MutableStateFlow(emptySet<Long>())
 
-    val mangaPagerFlowFlow: kotlinx.coroutines.flow.StateFlow<kotlinx.coroutines.flow.Flow<androidx.paging.PagingData<kotlinx.coroutines.flow.StateFlow<Manga>>>> = state.map { it.listing }
-        .distinctUntilChanged()
-        .map { listing ->
-            val innerPager = Pager(PagingConfig(pageSize = 25)) {
-                getRemoteManga(sourceId, listing.query ?: "", listing.filters)
-            }.flow.map { pagingData ->
-                pagingData.map { manga ->
-                    getManga.subscribe(manga.url, manga.source)
-                        .map { it ?: manga }
-                        .stateIn(ioCoroutineScope)
+    val mangaPagerFlowFlow: kotlinx.coroutines.flow.StateFlow<kotlinx.coroutines.flow.Flow<androidx.paging.PagingData<kotlinx.coroutines.flow.StateFlow<Manga>>>> =
+        state.map { it.listing }
+            .distinctUntilChanged()
+            .map { listing ->
+                val innerPager = Pager(PagingConfig(pageSize = 25)) {
+                    getRemoteManga(sourceId, listing.query ?: "", listing.filters)
+                }.flow.map { pagingData ->
+                    pagingData.map { manga ->
+                        getManga.subscribe(manga.url, manga.source)
+                            .map { it ?: manga }
+                            .stateIn(ioCoroutineScope)
+                    }
                 }
-            }
-                .cachedIn(ioCoroutineScope)
+                    .cachedIn(ioCoroutineScope)
 
-            combine(innerPager, locallyHiddenMangaIds) { pagingData, localHidden ->
-                pagingData.filter {
-                    val m = it.value
-                    (!hideInLibraryItems || !m.favorite) && !m.hidden && !localHidden.contains(m.id)
+                combine(innerPager, locallyHiddenMangaIds) { pagingData, localHidden ->
+                    pagingData.filter {
+                        val m = it.value
+                        (!hideInLibraryItems || !m.favorite) && !m.hidden && !localHidden.contains(m.id)
+                    }
                 }
             }
-        }
-        .stateIn(ioCoroutineScope, SharingStarted.Lazily, emptyFlow())
+            .stateIn(ioCoroutineScope, SharingStarted.Lazily, emptyFlow())
 
     fun getColumnsPreference(orientation: Int): GridCells {
         val isLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -367,6 +367,7 @@ class BrowseSourceScreenModel(
             val manga: Manga,
             val initialSelection: ImmutableList<CheckboxState.State<Category>>,
         ) : Dialog
+
         data class Migrate(val target: Manga, val current: Manga) : Dialog
     }
 

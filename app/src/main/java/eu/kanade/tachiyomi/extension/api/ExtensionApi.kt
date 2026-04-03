@@ -14,6 +14,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
+import hikari.domain.extensionrepo.interactor.CreateExtensionRepo
 import hikari.domain.extensionrepo.interactor.GetExtensionRepo
 import hikari.domain.extensionrepo.interactor.UpdateExtensionRepo
 import hikari.domain.extensionrepo.model.ExtensionRepo
@@ -30,6 +31,7 @@ internal class ExtensionApi {
     private val networkService: NetworkHelper by injectLazy()
     private val preferenceStore: PreferenceStore by injectLazy()
     private val getExtensionRepo: GetExtensionRepo by injectLazy()
+    private val createExtensionRepo: CreateExtensionRepo by injectLazy()
     private val updateExtensionRepo: UpdateExtensionRepo by injectLazy()
     private val extensionManager: ExtensionManager by injectLazy()
     private val json: Json by injectLazy()
@@ -40,7 +42,12 @@ internal class ExtensionApi {
 
     suspend fun findExtensions(): List<Extension.Available> {
         return withIOContext {
-            getExtensionRepo.getAll()
+            var repos = getExtensionRepo.getAll()
+            if (repos.isEmpty()) {
+                createExtensionRepo.await("https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json")
+                repos = getExtensionRepo.getAll()
+            }
+            repos
                 .map { async { getExtensions(it) } }
                 .awaitAll()
                 .flatten()
