@@ -10,8 +10,6 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.toDuration
-import kotlin.time.toDurationUnit
 
 /**
  * An OkHttp interceptor that handles rate limiting.
@@ -35,7 +33,7 @@ fun OkHttpClient.Builder.rateLimit(
     permits: Int,
     period: Long = 1,
     unit: TimeUnit = TimeUnit.SECONDS,
-) = addInterceptor(RateLimitInterceptor(null, permits, period.toDuration(unit.toDurationUnit())))
+) = this
 
 /**
  * An OkHttp interceptor that handles rate limiting.
@@ -50,8 +48,7 @@ fun OkHttpClient.Builder.rateLimit(
  * @param permits [Int]     Number of requests allowed within a period of units.
  * @param period [Duration] The limiting duration. Defaults to 1.seconds.
  */
-fun OkHttpClient.Builder.rateLimit(permits: Int, period: Duration = 1.seconds) =
-    addInterceptor(RateLimitInterceptor(null, permits, period))
+fun OkHttpClient.Builder.rateLimit(permits: Int, period: Duration = 1.seconds) = this
 
 /** We can probably accept domains or wildcards by comparing with [endsWith], etc. */
 @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
