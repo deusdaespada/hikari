@@ -1,43 +1,43 @@
 package eu.kanade.tachiyomi.ui.browse.extension.details
 
-import android.content.Context
-import android.os.Bundle
-import android.util.TypedValue
-import android.view.View
-import androidx.appcompat.view.ContextThemeWrapper
+import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentContainerView
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentTransaction
-import androidx.fragment.app.commit
-import androidx.lifecycle.lifecycleScope
-import androidx.preference.DialogPreference
+import androidx.compose.ui.unit.dp
 import androidx.preference.EditTextPreference
-import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.PreferenceScreen
-import androidx.preference.forEach
-import androidx.preference.getOnBindEditTextListener
+import androidx.preference.ListPreference
+import androidx.preference.MultiSelectListPreference
+import androidx.preference.PreferenceGroup
+import androidx.preference.SwitchPreferenceCompat
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.SharedPreferencesDataStore
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.sourcePreferences
-import eu.kanade.tachiyomi.widget.TachiyomiTextInputEditText.Companion.setIncognito
+import eu.kanade.presentation.more.settings.widget.EditTextPreferenceWidget
+import eu.kanade.presentation.more.settings.widget.ListPreferenceWidget
+import eu.kanade.presentation.more.settings.widget.MultiSelectListPreferenceWidget
+import eu.kanade.presentation.more.settings.widget.PreferenceGroupHeader
+import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
+import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
+import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
+import tachiyomi.core.common.preference.Preference
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.screens.LoadingScreen
@@ -48,127 +48,160 @@ class SourcePreferencesScreen(val sourceId: Long) : Screen() {
 
     @Composable
     override fun Content() {
-        if (!ifSourcesLoaded()) {
+        val source = remember { Injekt.get<SourceManager>().getOrStub(sourceId) }
+        if (!ifSourcesLoaded() || source !is ConfigurableSource) {
             LoadingScreen()
             return
         }
 
-        val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
+        val context = LocalContext.current
+
+        val sourceScreen = remember {
+            @SuppressLint("RestrictedApi")
+            val manager = androidx.preference.PreferenceManager(context)
+            val dataStore = SharedPreferencesDataStore(source.sourcePreferences())
+            manager.preferenceDataStore = dataStore
+            manager.createPreferenceScreen(context).apply {
+                source.setupPreferenceScreen(this)
+            }
+        }
 
         Scaffold(
             topBar = {
                 AppBar(
-                    title = Injekt.get<SourceManager>().getOrStub(sourceId).toString(),
+                    title = source.toString(),
                     navigateUp = navigator::pop,
                     scrollBehavior = it,
                 )
             },
         ) { contentPadding ->
-            FragmentContainer(
-                fragmentManager = (context as FragmentActivity).supportFragmentManager,
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(contentPadding),
+                    .padding(contentPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = 8.dp),
             ) {
-                add(it, SourcePreferencesFragment.getInstance(sourceId), null)
+                RenderPreferences(sourceScreen)
             }
         }
     }
 
-    /**
-     * From https://stackoverflow.com/questions/60520145/fragment-container-in-jetpack-compose/70817794#70817794
-     */
     @Composable
-    private fun FragmentContainer(
-        fragmentManager: FragmentManager,
-        modifier: Modifier = Modifier,
-        commit: FragmentTransaction.(containerId: Int) -> Unit,
-    ) {
-        val containerId by rememberSaveable {
-            mutableIntStateOf(View.generateViewId())
-        }
-        var initialized by rememberSaveable { mutableStateOf(false) }
-        AndroidView(
-            modifier = modifier,
-            factory = { context ->
-                FragmentContainerView(context)
-                    .apply { id = containerId }
-            },
-            update = { view ->
-                if (!initialized) {
-                    fragmentManager.commit { commit(view.id) }
-                    initialized = true
-                } else {
-                    fragmentManager.onContainerAvailable(view)
-                }
-            },
-        )
-    }
-
-    /** Access to package-private method in FragmentManager through reflection */
-    private fun FragmentManager.onContainerAvailable(view: FragmentContainerView) {
-        val method = FragmentManager::class.java.getDeclaredMethod(
-            "onContainerAvailable",
-            FragmentContainerView::class.java,
-        )
-        method.isAccessible = true
-        method.invoke(this, view)
-    }
-}
-
-class SourcePreferencesFragment : PreferenceFragmentCompat() {
-
-    override fun getContext(): Context? {
-        val superCtx = super.getContext() ?: return null
-        val tv = TypedValue()
-        superCtx.theme.resolveAttribute(R.attr.preferenceTheme, tv, true)
-        return ContextThemeWrapper(superCtx, tv.resourceId)
-    }
-
-    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        preferenceScreen = populateScreen()
-    }
-
-    private fun populateScreen(): PreferenceScreen {
-        val sourceId = requireArguments().getLong(SOURCE_ID)
-        val source = Injekt.get<SourceManager>().getOrStub(sourceId)
-        val sourceScreen = preferenceManager.createPreferenceScreen(requireContext())
-
-        if (source is ConfigurableSource) {
-            val dataStore = SharedPreferencesDataStore(source.sourcePreferences())
-            preferenceManager.preferenceDataStore = dataStore
-
-            source.setupPreferenceScreen(sourceScreen)
-            sourceScreen.forEach { pref ->
-                pref.isIconSpaceReserved = false
-                pref.isSingleLineTitle = false
-                if (pref is DialogPreference && pref.dialogTitle.isNullOrEmpty()) {
-                    pref.dialogTitle = pref.title
-                }
-
-                // Apply incognito IME for EditTextPreference
-                if (pref is EditTextPreference) {
-                    val setListener = pref.getOnBindEditTextListener()
-                    pref.setOnBindEditTextListener {
-                        setListener?.onBindEditText(it)
-                        it.setIncognito(lifecycleScope)
-                    }
-                }
+    private fun RenderPreferences(group: PreferenceGroup) {
+        (0 until group.preferenceCount).forEach { i ->
+            val pref = group.getPreference(i)
+            if (pref is PreferenceGroup) {
+                val title = pref.title?.toString() ?: ""
+                PreferenceGroupHeader(title = title)
+                RenderPreferences(pref)
+            } else {
+                PreferenceItem(pref)
             }
         }
-
-        return sourceScreen
     }
 
-    companion object {
-        private const val SOURCE_ID = "source_id"
+    @Composable
+    private fun PreferenceItem(pref: androidx.preference.Preference) {
+        val dataStore = (pref.preferenceManager?.preferenceDataStore as? SharedPreferencesDataStore)
+            ?: SharedPreferencesDataStore(
+                Injekt.get<SourceManager>().getOrStub(sourceId).let { (it as ConfigurableSource).sourcePreferences() },
+            )
 
-        fun getInstance(sourceId: Long): SourcePreferencesFragment {
-            return SourcePreferencesFragment().apply {
-                arguments = Bundle().apply {
-                    putLong(SOURCE_ID, sourceId)
+        val title = pref.title?.toString() ?: ""
+        val summary = pref.summary?.toString()
+
+        when (pref) {
+            is SwitchPreferenceCompat -> {
+                var checked by remember { mutableStateOf(dataStore.getBoolean(pref.key, pref.isChecked)) }
+                SwitchPreferenceWidget(
+                    title = title,
+                    subtitle = summary,
+                    checked = checked,
+                    onCheckedChanged = {
+                        dataStore.putBoolean(pref.key, it)
+                        checked = it
+                    },
+                )
+            }
+
+            is ListPreference -> {
+                var value by remember { mutableStateOf(dataStore.getString(pref.key, pref.value) ?: "") }
+                val entries = remember(pref) {
+                    pref.entryValues.map { it.toString() }.zip(pref.entries.map { it.toString() }).toMap()
+                        .toImmutableMap()
                 }
+                ListPreferenceWidget(
+                    value = value,
+                    title = title,
+                    subtitle = summary,
+                    icon = null,
+                    entries = entries,
+                    onValueChange = {
+                        dataStore.putString(pref.key, it)
+                        value = it
+                    },
+                )
+            }
+
+            is MultiSelectListPreference -> {
+                var values by remember { mutableStateOf(dataStore.getStringSet(pref.key, pref.values) ?: emptySet()) }
+                val entries = remember(pref) {
+                    pref.entryValues.map { it.toString() }.zip(pref.entries.map { it.toString() }).toMap()
+                        .toImmutableMap()
+                }
+                MultiSelectListPreferenceWidget(
+                    preference = eu.kanade.presentation.more.settings.Preference.PreferenceItem.MultiSelectListPreference(
+                        preference = object : Preference<Set<String>> {
+                            override fun key() = pref.key ?: ""
+                            override fun get() = values
+                            override fun set(value: Set<String>) {
+                                dataStore.putStringSet(pref.key, value.toMutableSet())
+                                values = value
+                            }
+
+                            override fun defaultValue() = pref.values ?: emptySet()
+                            override fun isSet() = dataStore.getStringSet(pref.key, null) != null
+                            override fun delete() { /* not implemented */
+                            }
+
+                            override fun changes(): Flow<Set<String>> = throw UnsupportedOperationException()
+                            override fun stateIn(scope: CoroutineScope): StateFlow<Set<String>> =
+                                throw UnsupportedOperationException()
+                        },
+                        entries = entries,
+                        title = title,
+                    ),
+                    values = values,
+                    onValuesChange = {
+                        dataStore.putStringSet(pref.key, it.toMutableSet())
+                        values = it
+                    },
+                )
+            }
+
+            is EditTextPreference -> {
+                var value by remember { mutableStateOf(dataStore.getString(pref.key, pref.text) ?: "") }
+                EditTextPreferenceWidget(
+                    title = title,
+                    subtitle = summary,
+                    icon = null,
+                    value = value,
+                    onConfirm = {
+                        dataStore.putString(pref.key, it)
+                        value = it
+                        true
+                    },
+                )
+            }
+
+            else -> {
+                TextPreferenceWidget(
+                    title = title,
+                    subtitle = summary,
+                    onPreferenceClick = { pref.onPreferenceClickListener?.onPreferenceClick(pref) },
+                )
             }
         }
     }

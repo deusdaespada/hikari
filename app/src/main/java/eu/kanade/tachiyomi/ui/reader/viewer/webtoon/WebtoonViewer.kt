@@ -1,11 +1,15 @@
 package eu.kanade.tachiyomi.ui.reader.viewer.webtoon
 
+import android.graphics.Rect
 import android.graphics.PointF
+import android.view.GestureDetector
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.widget.FrameLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
@@ -43,9 +47,68 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
     val recycler = WebtoonRecyclerView(activity)
 
     /**
-     * Frame containing the recycler view.
+     * Frame containing the recycler view. Handles touch events for scaling.
      */
-    private val frame = WebtoonFrame(activity)
+    private val frame = object : FrameLayout(activity) {
+        private val scaleDetector = ScaleGestureDetector(context, ScaleListener())
+        private val flingDetector = GestureDetector(context, FlingListener())
+
+        override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+            scaleDetector.onTouchEvent(ev)
+            flingDetector.onTouchEvent(ev)
+
+            val recyclerRect = Rect()
+            recycler.getHitRect(recyclerRect)
+            recyclerRect.inset(1, 1)
+
+            if (recyclerRect.right >= recyclerRect.left && recyclerRect.bottom >= recyclerRect.top) {
+                ev.setLocation(
+                    ev.x.coerceIn(recyclerRect.left.toFloat(), recyclerRect.right.toFloat()),
+                    ev.y.coerceIn(recyclerRect.top.toFloat(), recyclerRect.bottom.toFloat()),
+                )
+            }
+            return super.dispatchTouchEvent(ev)
+        }
+
+        private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+                recycler.onScaleBegin()
+                return true
+            }
+
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                recycler.onScale(detector.scaleFactor)
+                return true
+            }
+
+            override fun onScaleEnd(detector: ScaleGestureDetector) {
+                recycler.onScaleEnd()
+            }
+        }
+
+        private inner class FlingListener : GestureDetector.SimpleOnGestureListener() {
+            override fun onDown(e: MotionEvent): Boolean = true
+
+            override fun onFling(
+                e1: MotionEvent?,
+                e2: MotionEvent,
+                velocityX: Float,
+                velocityY: Float,
+            ): Boolean {
+                recycler.onManualScroll()
+                return recycler.zoomFling(velocityX.toInt(), velocityY.toInt())
+            }
+        }
+
+        fun setDoubleTapZoom(enabled: Boolean) {
+            recycler.doubleTapZoom = enabled
+            scaleDetector.isQuickScaleEnabled = enabled
+        }
+
+        fun setZoomOutDisabled(disabled: Boolean) {
+            recycler.zoomOutDisabled = disabled
+        }
+    }
 
     /**
      * Distance to scroll when the user taps on one side of the recycler view.
@@ -150,11 +213,11 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
         }
 
         config.doubleTapZoomChangedListener = {
-            frame.doubleTapZoom = it
+            frame.setDoubleTapZoom(it)
         }
 
         config.zoomPropertyChangedListener = {
-            frame.zoomOutDisabled = it
+            frame.setZoomOutDisabled(it)
         }
 
         config.navigationModeChangedListener = {
