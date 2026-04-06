@@ -235,6 +235,7 @@ dependencies {
 
     // Dependency injection
     implementation(libs.injekt)
+    implementation(libs.bundles.koin)
 
     // Image loading
     implementation(libs.bundles.coil)
