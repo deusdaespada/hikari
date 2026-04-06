@@ -23,6 +23,11 @@ class WebtoonRecyclerView @JvmOverloads constructor(
     defStyle: Int = 0,
 ) : RecyclerView(context, attrs, defStyle) {
 
+    init {
+        clipChildren = false
+        clipToPadding = false
+    }
+
     private var isZooming = false
     private var atLastPosition = false
     private var atFirstPosition = false
@@ -284,11 +289,13 @@ class WebtoonRecyclerView @JvmOverloads constructor(
                     downX = (ev.x + 0.5f).toInt()
                     downY = (ev.y + 0.5f).toInt()
                 }
+
                 MotionEvent.ACTION_POINTER_DOWN -> {
                     scrollPointerId = ev.getPointerId(actionIndex)
                     downX = (ev.getX(actionIndex) + 0.5f).toInt()
                     downY = (ev.getY(actionIndex) + 0.5f).toInt()
                 }
+
                 MotionEvent.ACTION_MOVE -> {
                     if (isDoubleTapping && isQuickScaling) {
                         return true
@@ -333,6 +340,7 @@ class WebtoonRecyclerView @JvmOverloads constructor(
                         zoomScrollBy(dx, dy)
                     }
                 }
+
                 MotionEvent.ACTION_UP -> {
                     if (isDoubleTapping && !isQuickScaling) {
                         listener.onDoubleTapConfirmed(ev)
@@ -341,6 +349,7 @@ class WebtoonRecyclerView @JvmOverloads constructor(
                     isDoubleTapping = false
                     isQuickScaling = false
                 }
+
                 MotionEvent.ACTION_CANCEL -> {
                     isZoomDragging = false
                     isDoubleTapping = false

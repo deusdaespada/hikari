@@ -9,6 +9,8 @@ import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.brotli.BrotliInterceptor
 import okhttp3.logging.HttpLoggingInterceptor
+import org.chromium.net.CronetEngine
+import com.google.net.cronet.okhttptransport.CronetInterceptor
 import java.io.File
 import java.util.concurrent.TimeUnit
 
@@ -19,6 +21,16 @@ class NetworkHelper(
 
     val cookieJar = AndroidCookieJar()
 
+    private val cronetEngine by lazy {
+        CronetEngine.Builder(context)
+            .enableQuic(true)
+            .enableHttp2(true)
+            .enableBrotli(true)
+            .setStoragePath(File(context.cacheDir, "cronet_cache").apply { mkdirs() }.absolutePath)
+            .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 10 * 1024 * 1024)
+            .build()
+    }
+
     private val clientBuilder: OkHttpClient.Builder = run {
         val builder = OkHttpClient.Builder()
             .cookieJar(cookieJar)
@@ -28,13 +40,17 @@ class NetworkHelper(
             .cache(
                 Cache(
                     directory = File(context.cacheDir, "network_cache"),
-                    maxSize = 5L * 1024 * 1024, // 5 MiB
+                    maxSize = 10L * 1024 * 1024, // 10 MiB
                 ),
             )
             .addInterceptor(UncaughtExceptionInterceptor())
             .addInterceptor(UserAgentInterceptor(::defaultUserAgentProvider))
             .addNetworkInterceptor(IgnoreGzipInterceptor())
             .addNetworkInterceptor(BrotliInterceptor)
+
+        if (preferences.enableCronet.get()) {
+            builder.addInterceptor(CronetInterceptor.newBuilder(cronetEngine).build())
+        }
 
         if (preferences.verboseLogging.get()) {
             val httpLoggingInterceptor = HttpLoggingInterceptor().apply {

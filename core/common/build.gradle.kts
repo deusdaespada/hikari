@@ -30,6 +30,8 @@ dependencies {
     api(libs.okhttp.brotli)
     api(libs.okhttp.dnsOverHttps)
     api(libs.okio)
+    api(libs.cronet.embedded)
+    api(libs.okhttp.cronet)
 
     implementation(libs.image.decoder)
 
