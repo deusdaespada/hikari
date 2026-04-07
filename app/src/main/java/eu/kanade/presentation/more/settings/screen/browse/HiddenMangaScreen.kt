@@ -11,21 +11,25 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.SelectAll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.library.components.CommonMangaItemDefaults
 import eu.kanade.presentation.library.components.MangaCompactGridItem
+import eu.kanade.presentation.components.AppBarTitle
+import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.manga.components.MangaBottomActionMenu
 import eu.kanade.presentation.util.Screen
-import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.i18n.MR
@@ -44,32 +48,41 @@ class HiddenMangaScreen(
         val screenModel = rememberScreenModel { HiddenMangaScreenModel(sourceId) }
         val state by screenModel.state.collectAsState()
 
-        BackHandler(enabled = state.selectionMode) {
-            screenModel.selectAll(false)
+        BackHandler(enabled = state.selectionMode || state.searchQuery != null) {
+            when {
+                state.selectionMode -> screenModel.selectAll(false)
+                state.searchQuery != null -> screenModel.search(null)
+            }
         }
 
         Scaffold(
             topBar = { scrollBehavior ->
-                AppBar(
-                    title = screenModel.source?.visualName ?: stringResource(MR.strings.label_hidden_manga),
-                    navigateUp = navigator::pop,
-                    actionModeCounter = state.selected.size,
-                    onCancelActionMode = { screenModel.selectAll(false) },
-                    actionModeActions = {
-                        AppBarActions(
-                            persistentListOf(
-                                AppBar.Action(
-                                    title = stringResource(MR.strings.action_select_all),
-                                    icon = Icons.Outlined.SelectAll,
-                                    onClick = { screenModel.selectAll(true) },
-                                ),
-                                AppBar.Action(
-                                    title = stringResource(MR.strings.action_select_inverse),
-                                    icon = Icons.Outlined.FlipToBack,
-                                    onClick = { screenModel.invertSelection() },
-                                ),
-                            ),
+                SearchToolbar(
+                    searchQuery = state.searchQuery,
+                    onChangeSearchQuery = screenModel::search,
+                    titleContent = {
+                        AppBarTitle(
+                            title = screenModel.source?.visualName ?: stringResource(MR.strings.label_hidden_manga),
                         )
+                    },
+                    navigateUp = navigator::pop,
+                    searchEnabled = !state.selectionMode,
+                    actions = {
+                        if (state.selectionMode) {
+                            var showMenu by remember { mutableStateOf(false) }
+                            IconButton(onClick = { screenModel.selectAll(true) }) {
+                                Icon(
+                                    Icons.Outlined.SelectAll,
+                                    contentDescription = stringResource(MR.strings.action_select_all),
+                                )
+                            }
+                            IconButton(onClick = { screenModel.invertSelection() }) {
+                                Icon(
+                                    Icons.Outlined.FlipToBack,
+                                    contentDescription = stringResource(MR.strings.action_select_inverse),
+                                )
+                            }
+                        }
                     },
                     scrollBehavior = scrollBehavior,
                 )
@@ -96,7 +109,7 @@ class HiddenMangaScreen(
                     horizontalArrangement = Arrangement.spacedBy(CommonMangaItemDefaults.GridHorizontalSpacer),
                 ) {
                     items(
-                        items = state.mangaList,
+                        items = state.filteredMangaList,
                         key = { it.id },
                     ) { manga ->
                         HiddenMangaGridItem(

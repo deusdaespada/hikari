@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.manga.components.MangaCover
+import eu.kanade.presentation.util.mangaSharedElement
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.i18n.stringResource
@@ -100,6 +101,7 @@ fun MangaCompactGridItem(
                 if (title != null) {
                     CoverTextOverlay(
                         title = title,
+                        mangaId = coverData.mangaId,
                         onClickContinueReading = onClickContinueReading,
                     )
                 } else if (onClickContinueReading != null) {
@@ -123,6 +125,7 @@ fun MangaCompactGridItem(
 @Composable
 private fun BoxScope.CoverTextOverlay(
     title: String,
+    mangaId: Long,
     onClickContinueReading: (() -> Unit)? = null,
 ) {
     Box(
@@ -145,6 +148,7 @@ private fun BoxScope.CoverTextOverlay(
         GridItemTitle(
             modifier = Modifier
                 .weight(1f)
+                .mangaSharedElement("title", mangaId)
                 .padding(8.dp),
             title = title,
             style = MaterialTheme.typography.titleSmall.copy(
@@ -217,7 +221,9 @@ fun MangaComfortableGridItem(
                 },
             )
             GridItemTitle(
-                modifier = Modifier.padding(4.dp),
+                modifier = Modifier
+                    .mangaSharedElement("title", coverData.mangaId)
+                    .padding(4.dp),
                 title = title,
                 style = MaterialTheme.typography.titleSmall,
                 minLines = 2,
@@ -359,6 +365,7 @@ fun MangaListItem(
         Text(
             text = title,
             modifier = Modifier
+                .mangaSharedElement("title", coverData.mangaId)
                 .padding(horizontal = 16.dp)
                 .weight(1f),
             maxLines = 2,

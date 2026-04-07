@@ -2,10 +2,16 @@ package eu.kanade.presentation.util
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.model.ScreenModel
@@ -33,6 +39,12 @@ val LocalBackPress: ProvidableCompositionLocal<(() -> Unit)?> = staticCompositio
 interface Tab : cafe.adriel.voyager.navigator.tab.Tab {
     suspend fun onReselect(navigator: Navigator) {}
 }
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope?> { null }
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+val LocalNavAnimatedVisibilityScope = compositionLocalOf<AnimatedContentScope?> { null }
 
 abstract class Screen : Screen {
 
@@ -73,6 +85,27 @@ fun DefaultNavigatorScreenTransition(
     )
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+fun Modifier.mangaSharedElement(
+    tag: String,
+    mangaId: Long?,
+): Modifier {
+    val sharedTransitionScope = LocalSharedTransitionScope.current
+    val animatedVisibilityScope = LocalNavAnimatedVisibilityScope.current
+    return if (sharedTransitionScope != null && animatedVisibilityScope != null && mangaId != null) {
+        with(sharedTransitionScope) {
+            this@mangaSharedElement.sharedElement(
+                rememberSharedContentState(key = "manga-$tag-$mangaId"),
+                animatedVisibilityScope = animatedVisibilityScope,
+            )
+        }
+    } else {
+        this
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ScreenTransition(
     navigator: Navigator,
@@ -80,14 +113,21 @@ fun ScreenTransition(
     modifier: Modifier = Modifier,
     content: ScreenTransitionContent = { it.Content() },
 ) {
-    AnimatedContent(
-        targetState = navigator.lastItem,
-        transitionSpec = transition,
-        modifier = modifier,
-        label = "transition",
-    ) { screen ->
-        navigator.saveableState("transition", screen) {
-            content(screen)
+    SharedTransitionLayout {
+        AnimatedContent(
+            targetState = navigator.lastItem,
+            transitionSpec = transition,
+            modifier = modifier,
+            label = "transition",
+        ) { screen ->
+            CompositionLocalProvider(
+                LocalSharedTransitionScope provides this@SharedTransitionLayout,
+                LocalNavAnimatedVisibilityScope provides this,
+            ) {
+                navigator.saveableState("transition", screen) {
+                    content(screen)
+                }
+            }
         }
     }
 

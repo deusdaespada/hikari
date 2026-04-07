@@ -46,6 +46,10 @@ class HiddenMangaScreenModel(
         }
     }
 
+    fun search(query: String?) {
+        mutableState.update { it.copy(searchQuery = query) }
+    }
+
     fun toggleSelection(manga: Manga) {
         mutableState.update { state ->
             val newSelected = state.selected.toMutableList().apply {
@@ -87,7 +91,18 @@ class HiddenMangaScreenModel(
     data class State(
         val mangaList: ImmutableList<Manga> = kotlinx.collections.immutable.persistentListOf(),
         val selected: List<Manga> = emptyList(),
+        val searchQuery: String? = null,
     ) {
         val selectionMode: Boolean = selected.isNotEmpty()
+
+        val filteredMangaList: ImmutableList<Manga>
+            get() {
+                val query = searchQuery
+                return if (query.isNullOrBlank()) {
+                    mangaList
+                } else {
+                    mangaList.filter { it.title.contains(query, ignoreCase = true) }.toImmutableList()
+                }
+            }
     }
 }

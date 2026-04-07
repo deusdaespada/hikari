@@ -101,6 +101,7 @@ import tachiyomi.presentation.core.components.material.TextButton
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
+import eu.kanade.presentation.util.mangaSharedElement
 import tachiyomi.presentation.core.util.clickableNoIndication
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 import uy.kohesive.injekt.Injekt
@@ -340,12 +341,14 @@ private fun MangaAndSourceTitlesLarge(
                 .data(manga)
                 .crossfade(true)
                 .build(),
+            mangaId = manga.id,
             contentDescription = stringResource(MR.strings.manga_cover),
             onClick = onCoverClick,
         )
         Spacer(modifier = Modifier.height(16.dp))
         MangaContentInfo(
             title = manga.title,
+            mangaId = manga.id,
             author = manga.author,
             artist = manga.artist,
             status = manga.status,
@@ -381,6 +384,7 @@ private fun MangaAndSourceTitlesSmall(
                 .data(manga)
                 .crossfade(true)
                 .build(),
+            mangaId = manga.id,
             contentDescription = stringResource(MR.strings.manga_cover),
             onClick = onCoverClick,
         )
@@ -389,6 +393,7 @@ private fun MangaAndSourceTitlesSmall(
         ) {
             MangaContentInfo(
                 title = manga.title,
+                mangaId = manga.id,
                 author = manga.author,
                 artist = manga.artist,
                 status = manga.status,
@@ -403,6 +408,7 @@ private fun MangaAndSourceTitlesSmall(
 @Composable
 private fun ColumnScope.MangaContentInfo(
     title: String,
+    mangaId: Long,
     author: String?,
     artist: String?,
     status: Long,
@@ -415,17 +421,19 @@ private fun ColumnScope.MangaContentInfo(
     Text(
         text = title.ifBlank { stringResource(MR.strings.unknown_title) },
         style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.clickableNoIndication(
-            onLongClick = {
-                if (title.isNotBlank()) {
-                    context.copyToClipboard(
-                        title,
-                        title,
-                    )
-                }
-            },
-            onClick = { if (title.isNotBlank()) doSearch(title, true) },
-        ),
+        modifier = Modifier
+            .mangaSharedElement("title", mangaId)
+            .clickableNoIndication(
+                onLongClick = {
+                    if (title.isNotBlank()) {
+                        context.copyToClipboard(
+                            title,
+                            title,
+                        )
+                    }
+                },
+                onClick = { if (title.isNotBlank()) doSearch(title, true) },
+            ),
         textAlign = textAlign,
     )
 
