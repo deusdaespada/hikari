@@ -8,6 +8,9 @@ import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ProvidableCompositionLocal
@@ -116,7 +119,21 @@ fun ScreenTransition(
     SharedTransitionLayout {
         AnimatedContent(
             targetState = navigator.lastItem,
-            transitionSpec = transition,
+            transitionSpec = {
+                val transition = transition()
+                val (enter, exit) = transition.targetContentEnter to transition.initialContentExit
+
+                val scaleEnter = androidx.compose.animation.scaleIn(
+                    initialScale = 0.96f,
+                    animationSpec = spring(stiffness = Spring.StiffnessLow),
+                )
+                val scaleExit = androidx.compose.animation.scaleOut(
+                    targetScale = 0.96f,
+                    animationSpec = spring(stiffness = Spring.StiffnessLow),
+                )
+
+                (enter + scaleEnter) togetherWith (exit + scaleExit)
+            },
             modifier = modifier,
             label = "transition",
         ) { screen ->

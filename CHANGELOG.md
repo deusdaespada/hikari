@@ -3,10 +3,17 @@
 ## [Unreleased] - 2026-04-07
 
 ### Added
-- Immersive Shared Element Transitions between library/browse grids and manga details screen
-- Synchronized motion for manga titles during screen transitions for a more cohesive navigation experience
+- **Liquid Pull-to-Refresh**: Implemented a custom high-end "stretching blob" interaction with bouncy spring physics
+- **Staggered Details Entrance**: Added coordinated "unfolding" animations for manga title, author, and status on the details screen
+- **Depth-Shift Navigation**: Integrated a subtle perspective scale (0.96f) and fade effect for background elements during screen transitions
+- **Pulsing Loading State**: Added an elastic heartbeat animation for the refresh indicator
+- **Animated Navigation Items**: Created a reusable spring-scaled "pop" interaction for bottom navigation tabs
 
 ### Changed
+- Refactored NavigationBar to support custom animated background layers
+- Optimized screen transition engine in Navigator.kt to provide a greater sense of 3D depth
+- Immersive Shared Element Transitions between library/browse grids and manga details screen
+- Synchronized motion for manga titles during screen transitions for a more cohesive navigation experience
 - Refactored screen transition logic to use SharedTransitionLayout and AnimatedContentScope
 - Standardized shared content keys for manga covers and titles via reusable modifier extensions
 - Updated MangaCover and grid items to automatically support shared transitions when navigation scopes are present

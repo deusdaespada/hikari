@@ -1,6 +1,7 @@
 package eu.kanade.presentation.manga.components
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.graphics.res.animatedVectorResource
@@ -418,55 +419,75 @@ private fun ColumnScope.MangaContentInfo(
     textAlign: TextAlign? = LocalTextStyle.current.textAlign,
 ) {
     val context = LocalContext.current
-    Text(
-        text = title.ifBlank { stringResource(MR.strings.unknown_title) },
-        style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier
-            .mangaSharedElement("title", mangaId)
-            .clickableNoIndication(
-                onLongClick = {
-                    if (title.isNotBlank()) {
-                        context.copyToClipboard(
-                            title,
-                            title,
-                        )
-                    }
-                },
-                onClick = { if (title.isNotBlank()) doSearch(title, true) },
+    androidx.compose.animation.AnimatedVisibility(
+        visible = true,
+        enter = androidx.compose.animation.fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow)) +
+            androidx.compose.animation.slideInVertically(
+                initialOffsetY = { it / 2 },
+                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
             ),
-        textAlign = textAlign,
-    )
-
-    Spacer(modifier = Modifier.height(2.dp))
-
-    Row(
-        modifier = Modifier.secondaryItemAlpha(),
-        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
-        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(
-            imageVector = Icons.Filled.PersonOutline,
-            contentDescription = null,
-            modifier = Modifier.size(16.dp),
-        )
         Text(
-            text = author?.takeIf { it.isNotBlank() }
-                ?: stringResource(MR.strings.unknown_author),
-            style = MaterialTheme.typography.titleSmall,
+            text = title.ifBlank { stringResource(MR.strings.unknown_title) },
+            style = MaterialTheme.typography.titleLarge,
             modifier = Modifier
+                .mangaSharedElement("title", mangaId)
                 .clickableNoIndication(
                     onLongClick = {
-                        if (!author.isNullOrBlank()) {
+                        if (title.isNotBlank()) {
                             context.copyToClipboard(
-                                author,
-                                author,
+                                title,
+                                title,
                             )
                         }
                     },
-                    onClick = { if (!author.isNullOrBlank()) doSearch(author, true) },
+                    onClick = { if (title.isNotBlank()) doSearch(title, true) },
                 ),
             textAlign = textAlign,
         )
+    }
+
+    Spacer(modifier = Modifier.height(2.dp))
+
+    androidx.compose.animation.AnimatedVisibility(
+        visible = true,
+        enter = androidx.compose.animation.fadeIn(
+            animationSpec = spring(stiffness = Spring.StiffnessLow),
+            initialAlpha = 0f,
+        ) + androidx.compose.animation.slideInVertically(
+            initialOffsetY = { it },
+            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        ),
+    ) {
+        Row(
+            modifier = Modifier.secondaryItemAlpha(),
+            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Filled.PersonOutline,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+            )
+            Text(
+                text = author?.takeIf { it.isNotBlank() }
+                    ?: stringResource(MR.strings.unknown_author),
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier
+                    .clickableNoIndication(
+                        onLongClick = {
+                            if (!author.isNullOrBlank()) {
+                                context.copyToClipboard(
+                                    author,
+                                    author,
+                                )
+                            }
+                        },
+                        onClick = { if (!author.isNullOrBlank()) doSearch(author, true) },
+                    ),
+                textAlign = textAlign,
+            )
+        }
     }
 
     if (!artist.isNullOrBlank() && author != artist) {
@@ -495,61 +516,70 @@ private fun ColumnScope.MangaContentInfo(
 
     Spacer(modifier = Modifier.height(2.dp))
 
-    Row(
-        modifier = Modifier.secondaryItemAlpha(),
-        verticalAlignment = Alignment.CenterVertically,
+    androidx.compose.animation.AnimatedVisibility(
+        visible = true,
+        enter = androidx.compose.animation.fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow)) +
+            androidx.compose.animation.slideInVertically(
+                initialOffsetY = { it * 2 },
+                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+            ),
     ) {
-        Icon(
-            imageVector = when (status) {
-                SManga.ONGOING.toLong() -> Icons.Outlined.Schedule
-                SManga.COMPLETED.toLong() -> Icons.Outlined.DoneAll
-                SManga.LICENSED.toLong() -> Icons.Outlined.AttachMoney
-                SManga.PUBLISHING_FINISHED.toLong() -> Icons.Outlined.Done
-                SManga.CANCELLED.toLong() -> Icons.Outlined.Close
-                SManga.ON_HIATUS.toLong() -> Icons.Outlined.Pause
-                else -> Icons.Outlined.Block
-            },
-            contentDescription = null,
-            modifier = Modifier
-                .padding(end = 4.dp)
-                .size(16.dp),
-        )
-        ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-            Text(
-                text = when (status) {
-                    SManga.ONGOING.toLong() -> stringResource(MR.strings.ongoing)
-                    SManga.COMPLETED.toLong() -> stringResource(MR.strings.completed)
-                    SManga.LICENSED.toLong() -> stringResource(MR.strings.licensed)
-                    SManga.PUBLISHING_FINISHED.toLong() -> stringResource(MR.strings.publishing_finished)
-                    SManga.CANCELLED.toLong() -> stringResource(MR.strings.cancelled)
-                    SManga.ON_HIATUS.toLong() -> stringResource(MR.strings.on_hiatus)
-                    else -> stringResource(MR.strings.unknown)
+        Row(
+            modifier = Modifier.secondaryItemAlpha(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = when (status) {
+                    SManga.ONGOING.toLong() -> Icons.Outlined.Schedule
+                    SManga.COMPLETED.toLong() -> Icons.Outlined.DoneAll
+                    SManga.LICENSED.toLong() -> Icons.Outlined.AttachMoney
+                    SManga.PUBLISHING_FINISHED.toLong() -> Icons.Outlined.Done
+                    SManga.CANCELLED.toLong() -> Icons.Outlined.Close
+                    SManga.ON_HIATUS.toLong() -> Icons.Outlined.Pause
+                    else -> Icons.Outlined.Block
                 },
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(end = 4.dp)
+                    .size(16.dp),
             )
-            DotSeparatorText()
-            if (isStubSource) {
-                Icon(
-                    imageVector = Icons.Filled.Warning,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(end = 4.dp)
-                        .size(16.dp),
-                    tint = MaterialTheme.colorScheme.error,
+            ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                Text(
+                    text = when (status) {
+                        SManga.ONGOING.toLong() -> stringResource(MR.strings.ongoing)
+                        SManga.COMPLETED.toLong() -> stringResource(MR.strings.completed)
+                        SManga.LICENSED.toLong() -> stringResource(MR.strings.licensed)
+                        SManga.PUBLISHING_FINISHED.toLong() -> stringResource(MR.strings.publishing_finished)
+                        SManga.CANCELLED.toLong() -> stringResource(MR.strings.cancelled)
+                        SManga.ON_HIATUS.toLong() -> stringResource(MR.strings.on_hiatus)
+                        else -> stringResource(MR.strings.unknown)
+                    },
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                )
+                DotSeparatorText()
+                if (isStubSource) {
+                    Icon(
+                        imageVector = Icons.Filled.Warning,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(end = 4.dp)
+                            .size(16.dp),
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                }
+                Text(
+                    text = sourceName,
+                    modifier = Modifier.clickableNoIndication {
+                        doSearch(
+                            sourceName,
+                            false,
+                        )
+                    },
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
                 )
             }
-            Text(
-                text = sourceName,
-                modifier = Modifier.clickableNoIndication {
-                    doSearch(
-                        sourceName,
-                        false,
-                    )
-                },
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-            )
         }
     }
 }
