@@ -16,5 +16,6 @@ local.properties
 .DS_Store
 
 app/release
+app/.cxx/
 
 *.log

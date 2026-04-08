@@ -264,24 +264,24 @@ open class ReaderPageImageView @JvmOverloads constructor(
         pageView = if (isWebtoon) {
             WebtoonSubsamplingImageView(context)
         } else {
-            SubsamplingScaleImageView(context)
-        }.apply {
-            setMaxTileSize(ImageUtil.hardwareBitmapThreshold)
-            setDoubleTapZoomStyle(SubsamplingScaleImageView.ZOOM_FOCUS_CENTER)
-            setPanLimit(SubsamplingScaleImageView.PAN_LIMIT_INSIDE)
-            setMinimumTileDpi(180)
-            setOnStateChangedListener(
-                object : SubsamplingScaleImageView.OnStateChangedListener {
-                    override fun onScaleChanged(newScale: Float, origin: Int) {
-                        this@ReaderPageImageView.onScaleChanged(newScale)
-                    }
+            SubsamplingScaleImageView(context).apply {
+                setMaxTileSize(ImageUtil.hardwareBitmapThreshold)
+                setDoubleTapZoomStyle(SubsamplingScaleImageView.ZOOM_FOCUS_CENTER)
+                setPanLimit(SubsamplingScaleImageView.PAN_LIMIT_INSIDE)
+                setMinimumTileDpi(180)
+                setOnStateChangedListener(
+                    object : SubsamplingScaleImageView.OnStateChangedListener {
+                        override fun onScaleChanged(newScale: Float, origin: Int) {
+                            this@ReaderPageImageView.onScaleChanged(newScale)
+                        }
 
-                    override fun onCenterChanged(newCenter: PointF?, origin: Int) {
-                        // Not used
-                    }
-                },
-            )
-            setOnClickListener { this@ReaderPageImageView.onViewClicked() }
+                        override fun onCenterChanged(newCenter: PointF?, origin: Int) {
+                            // Not used
+                        }
+                    },
+                )
+                setOnClickListener { this@ReaderPageImageView.onViewClicked() }
+            }
         }
         addView(pageView, MATCH_PARENT, MATCH_PARENT)
     }
@@ -305,7 +305,7 @@ open class ReaderPageImageView @JvmOverloads constructor(
     ) = (pageView as? SubsamplingScaleImageView)?.apply {
         setDoubleTapZoomDuration(config.zoomDuration.getSystemScaledDuration())
         setMinimumScaleType(config.minimumScaleType)
-        setMinimumDpi(1) // Just so that very small image will be fit for initial load
+        setMinimumDpi(1)
         setCropBorders(config.cropBorders)
         setOnImageEventListener(
             object : SubsamplingScaleImageView.DefaultOnImageEventListener() {
@@ -313,7 +313,6 @@ open class ReaderPageImageView @JvmOverloads constructor(
                     setupZoom(config)
                     if (isVisibleOnScreen()) landscapeZoom(true)
                     this@ReaderPageImageView.onImageLoaded()
-                    // Defer requestLayout so it fires after any in-progress RecyclerView layout pass
                     post { this@ReaderPageImageView.requestLayout() }
                 }
 
@@ -354,7 +353,6 @@ open class ReaderPageImageView @JvmOverloads constructor(
 
             if (this is PhotoView) {
                 setScaleLevels(1F, 2F, MAX_ZOOM_SCALE)
-                // Force 2 scale levels on double tap
                 setOnDoubleTapListener(
                     object : GestureDetector.SimpleOnGestureListener() {
                         override fun onDoubleTap(e: MotionEvent): Boolean {

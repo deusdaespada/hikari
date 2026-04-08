@@ -103,6 +103,7 @@ import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import eu.kanade.presentation.util.mangaSharedElement
+import tachiyomi.presentation.core.util.liquidEntrance
 import tachiyomi.presentation.core.util.clickableNoIndication
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 import uy.kohesive.injekt.Injekt
@@ -421,17 +422,14 @@ private fun ColumnScope.MangaContentInfo(
     val context = LocalContext.current
     androidx.compose.animation.AnimatedVisibility(
         visible = true,
-        enter = androidx.compose.animation.fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow)) +
-            androidx.compose.animation.slideInVertically(
-                initialOffsetY = { it / 2 },
-                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-            ),
+        enter = androidx.compose.animation.fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow)),
     ) {
         Text(
             text = title.ifBlank { stringResource(MR.strings.unknown_title) },
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier
                 .mangaSharedElement("title", mangaId)
+                .liquidEntrance(visible = true, durationMillis = 1000)
                 .clickableNoIndication(
                     onLongClick = {
                         if (title.isNotBlank()) {
@@ -454,13 +452,12 @@ private fun ColumnScope.MangaContentInfo(
         enter = androidx.compose.animation.fadeIn(
             animationSpec = spring(stiffness = Spring.StiffnessLow),
             initialAlpha = 0f,
-        ) + androidx.compose.animation.slideInVertically(
-            initialOffsetY = { it },
-            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
         ),
     ) {
         Row(
-            modifier = Modifier.secondaryItemAlpha(),
+            modifier = Modifier
+                .secondaryItemAlpha()
+                .liquidEntrance(visible = true, durationMillis = 1200),
             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -518,14 +515,12 @@ private fun ColumnScope.MangaContentInfo(
 
     androidx.compose.animation.AnimatedVisibility(
         visible = true,
-        enter = androidx.compose.animation.fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow)) +
-            androidx.compose.animation.slideInVertically(
-                initialOffsetY = { it * 2 },
-                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-            ),
+        enter = androidx.compose.animation.fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow)),
     ) {
         Row(
-            modifier = Modifier.secondaryItemAlpha(),
+            modifier = Modifier
+                .secondaryItemAlpha()
+                .liquidEntrance(visible = true, durationMillis = 1400),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
