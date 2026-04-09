@@ -1,26 +1,31 @@
 # Changelog
 
-## [Unreleased] - 2026-04-07
+## [Unreleased] - 2026-04-09
 
 ### Added
-- **Liquid Pull-to-Refresh**: Implemented a custom high-end "stretching blob" interaction with bouncy spring physics
-- **Staggered Details Entrance**: Added coordinated "unfolding" animations for manga title, author, and status on the details screen
-- **Depth-Shift Navigation**: Integrated a subtle perspective scale (0.96f) and fade effect for background elements during screen transitions
-- **Pulsing Loading State**: Added an elastic heartbeat animation for the refresh indicator
-- **Animated Navigation Items**: Created a reusable spring-scaled "pop" interaction for bottom navigation tabs
+- Native C++ image pipeline for reader performance and zero-copy bitmap operations
+- AGSL shader-based UI skinning system supporting Glass, Liquid, and Frosted materials
+- Liquid pull-to-refresh animations with bouncy spring physics
+- Staggered "unfolding" entrance animations for manga details screen
+- Depth-shift perspective transitions for background elements during navigation
+- Immersive shared element transitions for manga covers and titles
+- Pulsing elastic heartbeat animation for the refresh indicator
+- Reusable spring-scaled pop interactions for navigation items
+- Physics-based bounce and squish micro-interactions for library grid and list items
 
 ### Changed
-- Refactored NavigationBar to support custom animated background layers
-- Optimized screen transition engine in Navigator.kt to provide a greater sense of 3D depth
-- Immersive Shared Element Transitions between library/browse grids and manga details screen
-- Synchronized motion for manga titles during screen transitions for a more cohesive navigation experience
-- Refactored screen transition logic to use SharedTransitionLayout and AnimatedContentScope
-- Standardized shared content keys for manga covers and titles via reusable modifier extensions
-- Updated MangaCover and grid items to automatically support shared transitions when navigation scopes are present
-- Refactored database operations to use batch processing for manga, chapters, and history
+- Refactored global search to a reactive streaming multiplexer for faster, non-blocking hits
+- Optimized database operations with batching for manga, chapters, and history
 - Optimized UpdatesScreenModel to avoid N+1 query patterns during bulk actions
-- Standardized coroutine scopes by migrating local extensions to global core utilities
-- Refined coroutine usage by replacing runBlocking with non-blocking suspending calls in data restoration and download management pipelines
+- Modernized coroutine usage across app modules and removed runBlocking from restoration pipelines
+- Refactored screen transition engine to use SharedTransitionLayout and AnimatedContentScope
+
+### Fixed
+- Resolved binary compatibility issues and NoSuchMethodError in theme engine
+- Fixed type mismatches in native image decoder and shader uniform pipelines
+- Fixed WorkManager IllegalStateException on app startup
+- Fixed NullPointerException in networking layer on empty response bodies
+- Optimized haptic feedback to prevent accidental triggers during library scrolling
 
 ## [0.1.2] - 2026-04-06
 

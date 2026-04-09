@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.manga.components.MangaCover
+import eu.kanade.presentation.util.bounceClick
 import eu.kanade.presentation.util.mangaSharedElement
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.BadgeGroup
@@ -93,6 +94,7 @@ fun MangaCompactGridItem(
                         .fillMaxWidth()
                         .alpha(if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha),
                     data = coverData,
+                    mangaId = coverData.mangaId,
                 )
             },
             badgesStart = coverBadgeStart,
@@ -203,6 +205,7 @@ fun MangaComfortableGridItem(
                             .fillMaxWidth()
                             .alpha(if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha),
                         data = coverData,
+                        mangaId = coverData.mangaId,
                     )
                 },
                 badgesStart = coverBadgeStart,
@@ -305,6 +308,7 @@ private fun GridItemSelectable(
     Box(
         modifier = modifier
             .clip(MaterialTheme.shapes.small)
+            .bounceClick()
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick,
@@ -348,6 +352,7 @@ fun MangaListItem(
     Row(
         modifier = Modifier
             .selectedBackground(isSelected)
+            .bounceClick()
             .height(56.dp)
             .combinedClickable(
                 onClick = onClick,
@@ -361,6 +366,7 @@ fun MangaListItem(
                 .fillMaxHeight()
                 .alpha(coverAlpha),
             data = coverData,
+            mangaId = coverData.mangaId,
         )
         Text(
             text = title,

@@ -23,12 +23,7 @@ fun Context.isOnline(): Boolean {
     return (NetworkCapabilities.TRANSPORT_CELLULAR..maxTransport).any(networkCapabilities::hasTransport)
 }
 
-/**
- * Returns true if device is connected to Wifi.
- */
 fun Context.isConnectedToWifi(): Boolean {
-    if (!wifiManager.isWifiEnabled) return false
-
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         val activeNetwork = connectivityManager.activeNetwork ?: return false
         val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false

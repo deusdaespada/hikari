@@ -101,7 +101,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
                 val preferences = Injekt.get<LibraryPreferences>()
                 val restrictions = preferences.autoUpdateDeviceRestrictions.get()
-                if ((DEVICE_ONLY_ON_WIFI in restrictions) && !context.isConnectedToWifi()) {
+                if (DEVICE_ONLY_ON_WIFI in restrictions && !context.isConnectedToWifi()) {
                     return Result.retry()
                 }
             }
