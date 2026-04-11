@@ -11,7 +11,9 @@ Manga reader for Android based on Mihon featuring offline downloads and security
 - Material You UI with dynamic palette-aware skins using AGSL shaders
 - Library organization and chapter downloads for offline viewing
 - Biometric security, automatic updates, and background backups
-- High-performance native image upscaling using AMD FSR 1.0 (EASU)
+- High-performance native image upscaling using AMD FSR 1.0 (EASU) in the reader
+- Shader-animated liquid progress bar with dynamic Hikari skin integration
+- Asynchronous color extraction for smoother transitions when opening manga details
 
 ## Installation
 

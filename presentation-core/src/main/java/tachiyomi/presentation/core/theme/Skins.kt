@@ -164,23 +164,42 @@ const val LIQUID_PROGRESS_SHADER = """
     uniform vec4 accentColor;
     uniform vec2 resolution;
 
+    float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(12.71, 31.17))) * 43758.5453);
+    }
+
     half4 main(float2 coords) {
         float2 uv = coords / resolution;
 
-        float wave1 = sin(uv.y * 12.0 + time * 5.0) * 0.04;
-        float wave2 = sin(uv.y * 22.0 - time * 3.0) * 0.02;
-        float threshold = progress + wave1 + wave2;
+        float w1 = sin(uv.y * 10.0 + time * 4.0) * 0.02;
+        float w2 = sin(uv.y * 25.0 - time * 6.0) * 0.01;
+        float w3 = sin(uv.y * 5.0 + time * 2.0) * 0.03;
+        float threshold = progress + w1 + w2 + w3;
 
         if (uv.x < threshold) {
-            float edge = smoothstep(threshold - 0.06, threshold, uv.x);
-            vec4 col = mix(mainColor, accentColor, uv.x / max(progress, 0.01));
-            
-            float shimmer = sin(uv.x * 30.0 - time * 10.0) * 0.05;
-            float reflection = smoothstep(0.0, 0.5, uv.y) * 0.15;
-            
-            return half4(mix(col + shimmer + reflection, vec4(1.0, 1.0, 1.0, col.a), edge * 0.5));
+            float depth = uv.y;
+            vec4 col = mix(mainColor, accentColor, uv.x / max(progress, 0.1));
+
+            col.rgb *= (1.0 - depth * 0.2); // Darker at bottom
+            float topHighlight = smoothstep(0.15, 0.0, depth) * 0.2;
+            col.rgb += topHighlight;
+
+            float distToEdge = threshold - uv.x;
+            float edgeGlow = smoothstep(0.12, 0.0, distToEdge);
+            vec4 glowCol = mix(col, vec4(1.0, 1.0, 1.0, col.a), edgeGlow * 0.4);
+
+            float2 bubbleUv = uv * vec2(20.0, 5.0);
+            float n = hash(floor(bubbleUv + vec2(time * 2.0, 0.0)));
+            float bubble = smoothstep(0.1, 0.0, length(fract(bubbleUv + vec2(time * 2.0, 0.0)) - 0.5)) * step(0.98, n);
+            glowCol.rgb += bubble * 0.3;
+
+            float shimmer = sin(uv.x * 40.0 - time * 12.0) * 0.03;
+            glowCol.rgb += shimmer;
+
+            return half4(glowCol);
         }
 
-        return half4(vec4(mainColor.rgb, 0.1));
+        float bgGlow = smoothstep(0.05, 0.0, uv.x - threshold) * 0.1;
+        return half4(vec4(mainColor.rgb, 0.1 + bgGlow));
     }
 """

@@ -199,6 +199,11 @@ FROM mangas
 WHERE hidden = 1
 AND source = :sourceId;
 
+getHiddenManga:
+SELECT *
+FROM mangas
+WHERE hidden = 1;
+
 deleteNonLibraryManga:
 DELETE FROM mangas
 WHERE favorite = 0

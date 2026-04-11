@@ -1,20 +1,20 @@
 # Changelog
 
-## [Unreleased] - 2026-04-11
+## [0.3.3] - 2026-04-11
 
 ### Added
 
+- High-end multi-layered "Liquid" slider for reader progress with sub-surface bubbles and dynamic shimmer
+- Global hidden manga list preservation in backups to ensure hidden list is kept across device migrations
 - Dynamic palette-aware UI skinning system with AGSL shaders for manga covers
 - High-performance native image upscaling using AMD FSR 1.0 (EASU) in the reader
 - Asynchronous color extraction for smoother transitions when opening manga details
 
-### Changed
-
-- Migrated reader settings UI selection loops to improve performance
-- Optimized reader tile decoding to support real-time native filters
-
 ### Fixed
 
+- Fixed critical backup issues where library filters, sorting, and extension languages were not being saved
+- Fixed initial delay bug in scheduled updates where jobs would wait 24 hours to start if scheduled for the current hour
+- Improved auto-update reliability on Android 13+ by simplifying network constraints and VPN handling
 - Resolved `ui-graphics` unresolved reference errors in presentation-core
 - Fixed Coil 3 migration issues with `asDrawable` conversion for manga covers
 

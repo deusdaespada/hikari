@@ -437,34 +437,34 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
             if (schedule.isNotEmpty()) {
                 val restrictions = preferences.autoUpdateDeviceRestrictions.get()
-                val networkType = if (DEVICE_NETWORK_NOT_METERED in restrictions) {
-                    NetworkType.UNMETERED
-                } else {
-                    NetworkType.CONNECTED
+                val networkType = when {
+                    DEVICE_ONLY_ON_WIFI in restrictions -> NetworkType.UNMETERED
+                    DEVICE_NETWORK_NOT_METERED in restrictions -> NetworkType.UNMETERED
+                    else -> NetworkType.CONNECTED
                 }
-                val networkRequest = NetworkRequest.Builder().apply {
-                    removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
-                    if (DEVICE_ONLY_ON_WIFI in restrictions) {
-                        addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                    }
-                    if (DEVICE_NETWORK_NOT_METERED in restrictions) {
-                        addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
-                    }
-                }
-                    .build()
+
                 val constraints = Constraints.Builder()
-                    .setRequiredNetworkRequest(networkRequest, networkType)
+                    .setRequiredNetworkType(networkType)
                     .setRequiresCharging(DEVICE_CHARGING in restrictions)
                     .setRequiresBatteryNotLow(true)
+                    .apply {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && DEVICE_ONLY_ON_WIFI in restrictions) {
+                            val networkRequest = NetworkRequest.Builder()
+                                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                                .build()
+                            setRequiredNetworkRequest(networkRequest, NetworkType.UNMETERED)
+                        }
+                    }
                     .build()
 
                 val now = LocalDateTime.now()
                 schedule.forEach { hour ->
                     val target = now.withHour(hour).withMinute(0).withSecond(0).withNano(0)
-                    val initialDelay = if (target.isBefore(now)) {
-                        Duration.between(now, target.plusDays(1))
-                    } else {
-                        Duration.between(now, target)
+                    val initialDelay = when {
+                        hour == now.hour -> 0L
+                        target.isBefore(now) -> Duration.between(now, target.plusDays(1)).toMillis()
+                        else -> Duration.between(now, target).toMillis()
                     }
 
                     val request = PeriodicWorkRequestBuilder<LibraryUpdateJob>(
@@ -476,7 +476,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                         .addTag(TAG)
                         .addTag("$WORK_NAME_AUTO_PREFIX$hour")
                         .setConstraints(constraints)
-                        .setInitialDelay(initialDelay.toMillis(), TimeUnit.MILLISECONDS)
+                        .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
                         .setBackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.MINUTES)
                         .build()
 

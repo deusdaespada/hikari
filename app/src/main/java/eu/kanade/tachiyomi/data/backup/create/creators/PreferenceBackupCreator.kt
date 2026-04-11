@@ -46,7 +46,11 @@ class PreferenceBackupCreator(
             .filterKeys {
                 !Preference.isAppState(it) ||
                     it.contains("library_update_last_timestamp") ||
-                    it.contains("enabled_languages")
+                    it.contains("source_languages") ||
+                    it.contains("enabled_languages") ||
+                    it.contains("library_sorting_mode") ||
+                    it.contains("pref_filter_library_") ||
+                    it.contains("browse_show_hidden_manga")
             }
             .mapNotNull { (key, value) ->
                 when (value) {

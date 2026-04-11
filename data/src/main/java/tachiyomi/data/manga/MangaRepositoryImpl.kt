@@ -72,6 +72,9 @@ class MangaRepositoryImpl(
     override suspend fun getHiddenMangaBySourceId(sourceId: Long): List<Manga> {
         return handler.awaitList { mangasQueries.getHiddenMangaBySourceId(sourceId, MangaMapper::mapManga) }
     }
+    override suspend fun getHiddenManga(): List<Manga> {
+        return handler.awaitList { mangasQueries.getHiddenManga(MangaMapper::mapManga) }
+    }
 
     override fun getHiddenMangaBySourceIdAsFlow(sourceId: Long): Flow<List<Manga>> {
         return handler.subscribeToList { mangasQueries.getHiddenMangaBySourceId(sourceId, MangaMapper::mapManga) }
