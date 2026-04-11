@@ -4,6 +4,7 @@ import android.graphics.RuntimeShader
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.graphics.Color
+import org.intellij.lang.annotations.Language
 
 /**
  * Defines a set of colors used to drive the AGSL materials.
@@ -144,9 +145,42 @@ object DefaultSkin : Skin {
     }
 }
 
+
 /**
  * Internal helper to convert Compose color to AGSL uniform array.
  */
 private fun Color.targetColor(): FloatArray {
     return floatArrayOf(red, green, blue, alpha)
 }
+
+/**
+ * Shader for the flowing liquid progress bar.
+ */
+@Language("AGSL")
+const val LIQUID_PROGRESS_SHADER = """
+    uniform float progress;
+    uniform float time;
+    uniform vec4 mainColor;
+    uniform vec4 accentColor;
+    uniform vec2 resolution;
+
+    half4 main(float2 coords) {
+        float2 uv = coords / resolution;
+
+        float wave1 = sin(uv.y * 12.0 + time * 5.0) * 0.04;
+        float wave2 = sin(uv.y * 22.0 - time * 3.0) * 0.02;
+        float threshold = progress + wave1 + wave2;
+
+        if (uv.x < threshold) {
+            float edge = smoothstep(threshold - 0.06, threshold, uv.x);
+            vec4 col = mix(mainColor, accentColor, uv.x / max(progress, 0.01));
+            
+            float shimmer = sin(uv.x * 30.0 - time * 10.0) * 0.05;
+            float reflection = smoothstep(0.0, 0.5, uv.y) * 0.15;
+            
+            return half4(mix(col + shimmer + reflection, vec4(1.0, 1.0, 1.0, col.a), edge * 0.5));
+        }
+
+        return half4(vec4(mainColor.rgb, 0.1));
+    }
+"""

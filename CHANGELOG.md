@@ -1,8 +1,27 @@
 # Changelog
 
+## [Unreleased] - 2026-04-11
+
+### Added
+
+- Dynamic palette-aware UI skinning system with AGSL shaders for manga covers
+- High-performance native image upscaling using AMD FSR 1.0 (EASU) in the reader
+- Asynchronous color extraction for smoother transitions when opening manga details
+
+### Changed
+
+- Migrated reader settings UI selection loops to improve performance
+- Optimized reader tile decoding to support real-time native filters
+
+### Fixed
+
+- Resolved `ui-graphics` unresolved reference errors in presentation-core
+- Fixed Coil 3 migration issues with `asDrawable` conversion for manga covers
+
 ## [0.3.2] - 2026-04-10
 
 ### Added
+
 - Native C++ image pipeline for reader performance and zero-copy bitmap operations
 - AGSL shader-based UI skinning system supporting Glass, Liquid, and Frosted materials
 - Global Search Deduplication Engine to group identical manga across multiple sources
@@ -16,6 +35,7 @@
 - Physics-based bounce and squish micro-interactions for library grid and list items
 
 ### Changed
+
 - Refactored global search to a reactive streaming multiplexer with automatic result clearing
 - Optimized database operations with batching for manga, chapters, and history
 - Optimized UpdatesScreenModel to avoid N+1 query patterns during bulk actions
@@ -23,6 +43,7 @@
 - Refactored screen transition engine to use SharedTransitionLayout and AnimatedContentScope
 
 ### Fixed
+
 - Resolved binary compatibility issues and NoSuchMethodError in theme engine
 - Fixed type mismatches in native image decoder and shader uniform pipelines
 - Fixed WorkManager IllegalStateException on app startup
@@ -32,6 +53,7 @@
 ## [0.1.2] - 2026-04-06
 
 ### Added
+
 - Parallel source update concurrency setting to speed up updates for large libraries
 - Targeted database indexes for mangas and chapters for significantly improved loading times
 - Custom WebtoonImageDecoder for efficient handling of extremely tall vertical content
@@ -42,11 +64,13 @@
 - **Manual WorkManager Initialization**: Fixed startup crashes by implementing custom Configuration.Provider
 
 ### Changed
+
 - Migrated SourcePreferencesScreen from legacy Fragment bridge to pure Jetpack Compose
 - Updated AniList OAuth to use explicit `redirect_uri` for better browser compatibility
 - Refined AniList token expiration calculation and added diagnostic handshake logging
 
 ### Fixed
+
 - Resolved AniList login failures where account connection would fail after browser redirect
 - Resolved `java.lang.IllegalArgumentException` by ensuring Cronet storage directories are created before engine initialization
 - Fixed module-level unresolved reference errors for Cronet in core:common
@@ -55,11 +79,12 @@
 ## [0.0.2] - 2026-04-04
 
 ### Added
+
 - Fixed-hour schedule for library updates and backups
 
 ### Changed
-- Refactored migration strategy and fixed migration crashes
 
+- Refactored migration strategy and fixed migration crashes
 
 ## [0.0.1] - 2026-04-03
 

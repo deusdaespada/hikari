@@ -100,11 +100,6 @@ private fun ColumnScope.PagerViewerSettings(screenModel: ReaderSettingsScreenMod
     )
 
     CheckboxItem(
-        label = stringResource(MR.strings.pref_reader_upscaling),
-        pref = screenModel.preferences.readerUpscaling,
-    )
-
-    CheckboxItem(
         label = stringResource(MR.strings.pref_landscape_zoom),
         pref = screenModel.preferences.landscapeZoom,
     )

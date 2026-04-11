@@ -7,13 +7,11 @@ Manga reader for Android based on Mihon featuring offline downloads and security
 
 ## Features
 
-- Extension management from multiple repositories
-- Library organization with customized interface
-- Out-of-the-box Keiyoushi extension sync
-- Chapter downloads for offline viewing
-- Biometric lock and security modes
-- Material You UI
-- Automatic library updates and background backups
+- Extension management across multiple repositories with automatic Keiyoushi sync
+- Material You UI with dynamic palette-aware skins using AGSL shaders
+- Library organization and chapter downloads for offline viewing
+- Biometric security, automatic updates, and background backups
+- High-performance native image upscaling using AMD FSR 1.0 (EASU)
 
 ## Installation
 
