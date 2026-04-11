@@ -16,12 +16,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
 import tachiyomi.presentation.core.theme.DefaultSkin
 import tachiyomi.presentation.core.theme.Skin
+import tachiyomi.presentation.core.theme.SkinColors
 
 val LocalSkin = staticCompositionLocalOf<Skin> { DefaultSkin }
+val LocalSkinColors = staticCompositionLocalOf<SkinColors?> { null }
 
 @Composable
 @ReadOnlyComposable
@@ -39,7 +42,12 @@ fun Modifier.skin(
     }
 
     val skin = LocalSkin.current
-    val color = MaterialTheme.colorScheme.primary
+    val colors = LocalSkinColors.current ?: SkinColors(
+        main = MaterialTheme.colorScheme.primary,
+        accent = MaterialTheme.colorScheme.secondary,
+        background = MaterialTheme.colorScheme.surface,
+        isDark = !MaterialTheme.colorScheme.surface.isLight(),
+    )
 
     var time by remember { mutableFloatStateOf(0f) }
     LaunchedEffect(Unit) {
@@ -56,7 +64,7 @@ fun Modifier.skin(
 
     this.then(
         Modifier.graphicsLayer {
-            skin.updateUniforms(runtimeShader, time, color)
+            skin.updateUniforms(runtimeShader, time, colors)
             renderEffect = RenderEffect.createRuntimeShaderEffect(
                 runtimeShader,
                 "content",
@@ -69,6 +77,19 @@ fun Modifier.skin(
  * Provides a [Skin] to the local composition.
  */
 @Composable
-fun ProvideSkin(skin: Skin, content: @Composable () -> Unit) {
-    CompositionLocalProvider(LocalSkin provides skin, content = content)
+fun ProvideSkin(
+    skin: Skin,
+    colors: SkinColors? = null,
+    content: @Composable () -> Unit,
+) {
+    CompositionLocalProvider(
+        LocalSkin provides skin,
+        LocalSkinColors provides colors,
+        content = content,
+    )
+}
+
+private fun Color.isLight(): Boolean {
+    val luminance = 0.299 * red + 0.587 * green + 0.114 * blue
+    return luminance > 0.5
 }

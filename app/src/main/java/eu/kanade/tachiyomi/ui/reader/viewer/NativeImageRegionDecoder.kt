@@ -8,14 +8,18 @@ import android.graphics.Point
 import android.graphics.Rect
 import com.davemorrissey.labs.subscaleview.decoder.ImageRegionDecoder
 import com.davemorrissey.labs.subscaleview.provider.InputProvider
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import tachiyomi.core.common.util.system.NativeImageDecoder
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 /**
- * A custom ImageRegionDecoder for SubsamplingScaleImageView that uses our
- * high-performance NativeImageDecoder pipeline.
- *
- * Moved to app module to satisfy SubsamplingScaleImageView dependency.
+ * A custom ImageRegionDecoder for SubsamplingScaleImageView that uses
+ * high-performance NativeImageDecoder pipeline for post-processing filters.
  */
 class NativeImageRegionDecoder : ImageRegionDecoder {
+
+    private val preferences: ReaderPreferences by lazy { Injekt.get() }
 
     @Volatile
     private var decoder: BitmapRegionDecoder? = null
@@ -48,8 +52,22 @@ class NativeImageRegionDecoder : ImageRegionDecoder {
             inSampleSize = sampleSize
             inPreferredConfig = Bitmap.Config.ARGB_8888
         }
-        return checkNotNull(decoder) { "Decoder not initialized" }
+        val bitmap = checkNotNull(decoder) { "Decoder not initialized" }
             .decodeRegion(sRect, options)
+
+        if (preferences.readerUpscaling.get()) {
+            NativeImageDecoder.decodeRegion(
+                bitmap = bitmap,
+                left = 0,
+                top = 0,
+                right = bitmap.width,
+                bottom = bitmap.height,
+                sampleSize = 1,
+                filters = NativeImageDecoder.FILTER_UPSCALING,
+            )
+        }
+
+        return bitmap
     }
 
     override fun isReady(): Boolean = decoder?.isRecycled == false

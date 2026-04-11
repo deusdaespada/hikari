@@ -12,8 +12,6 @@ class ReaderPreferences(
     preferenceStore: PreferenceStore,
 ) {
 
-    // region General
-
     val pageTransitions: Preference<Boolean> = preferenceStore.getBoolean("pref_enable_transitions_key", true)
 
     val flashOnPageChange: Preference<Boolean> = preferenceStore.getBoolean("pref_reader_flash", false)
@@ -86,6 +84,8 @@ class ReaderPreferences(
     val skipDupe: Preference<Boolean> = preferenceStore.getBoolean("skip_dupe", false)
 
     val webtoonDisableZoomOut: Preference<Boolean> = preferenceStore.getBoolean("webtoon_disable_zoom_out", false)
+
+    val readerUpscaling: Preference<Boolean> = preferenceStore.getBoolean("reader_upscaling", false)
 
     // endregion
 

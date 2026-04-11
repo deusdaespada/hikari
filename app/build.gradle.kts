@@ -250,6 +250,7 @@ dependencies {
     implementation(libs.subsamplingScaleImageView) {
         exclude(module = "image-decoder")
     }
+    implementation(libs.androidx.palette)
     implementation(libs.image.decoder)
 
     // UI libraries

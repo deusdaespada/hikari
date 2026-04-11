@@ -18,6 +18,7 @@ import uy.kohesive.injekt.api.get
 import tachiyomi.presentation.core.theme.DefaultSkin
 import tachiyomi.presentation.core.theme.GlassSkin
 import tachiyomi.presentation.core.theme.LiquidSkin
+import tachiyomi.presentation.core.theme.FrostedSkin
 import tachiyomi.presentation.core.util.ProvideSkin
 
 @Composable
@@ -66,6 +67,7 @@ private fun BaseTachiyomiTheme(
         when (skinType) {
             SkinType.GLASS -> GlassSkin
             SkinType.LIQUID -> LiquidSkin
+            SkinType.FROSTED -> FrostedSkin
             SkinType.DEFAULT -> DefaultSkin
             else -> DefaultSkin
         }
