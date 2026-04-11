@@ -78,7 +78,7 @@ private suspend fun Call.await(callStack: Array<StackTraceElement>): Response {
             object : Callback {
                 override fun onResponse(call: Call, response: Response) {
                     continuation.resume(response) { _, _, _ ->
-                        response.body.close()
+                        response.close()
                     }
                 }
 
@@ -126,13 +126,12 @@ fun OkHttpClient.newCachelessCallWithProgress(request: Request, listener: Progre
         .addNetworkInterceptor { chain ->
             val originalResponse = chain.proceed(chain.request())
             val responseBody = originalResponse.body
-            if (responseBody == null) {
-                originalResponse
-            } else {
-                originalResponse.newBuilder()
-                    .body(ProgressResponseBody(responseBody, listener))
-                    .build()
+            if (responseBody == null || originalResponse.code == 204 || originalResponse.code == 205) {
+                return@addNetworkInterceptor originalResponse
             }
+            originalResponse.newBuilder()
+                .body(ProgressResponseBody(responseBody, listener))
+                .build()
         }
         .build()
 
@@ -149,7 +148,8 @@ fun <T> decodeFromJsonResponse(
     deserializer: DeserializationStrategy<T>,
     response: Response,
 ): T {
-    return response.body.source().use {
+    val body = response.body ?: throw IOException("Empty response body")
+    return body.source().use {
         json.decodeFromBufferedSource(deserializer, it)
     }
 }

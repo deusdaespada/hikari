@@ -68,7 +68,18 @@ class NetworkHelper(
 
     fun addCronetInterceptor(builder: OkHttpClient.Builder) {
         if (preferences.enableCronet.get()) {
-            builder.addInterceptor(CronetInterceptor.newBuilder(cronetEngine).build())
+            val cronetInterceptor = CronetInterceptor.newBuilder(cronetEngine).build()
+            builder.addInterceptor { chain ->
+                try {
+                    cronetInterceptor.intercept(chain)
+                } catch (e: Exception) {
+                    if (e is NullPointerException && e.message?.contains("okhttp3.Response\$Builder.body") == true) {
+                        chain.proceed(chain.request())
+                    } else {
+                        throw e
+                    }
+                }
+            }
         }
     }
 
