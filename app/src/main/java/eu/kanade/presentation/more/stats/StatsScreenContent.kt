@@ -1,6 +1,7 @@
 package eu.kanade.presentation.more.stats
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material.icons.outlined.LocalLibrary
@@ -38,6 +40,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import java.util.Calendar
 import java.util.Locale
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -57,6 +60,9 @@ fun StatsScreenContent(
         }
         item {
             OverviewSection(state.overview)
+        }
+        item {
+            HeatmapSection(state.heatmap)
         }
         item {
             TitlesStats(state.titles)
@@ -174,6 +180,74 @@ private fun LazyItemScope.TrackerStats(
                 data.trackerCount.toString(),
                 stringResource(MR.strings.label_used),
             )
+        }
+    }
+}
+
+@Composable
+private fun LazyItemScope.HeatmapSection(
+    data: StatsData.HistoryHeatmap,
+) {
+    SectionCard(MR.strings.label_heatmap_section) {
+        val calendar = remember { Calendar.getInstance() }
+
+        val days = remember(data.history) {
+            val list = mutableListOf<Pair<Long, Int>>()
+            val cal = Calendar.getInstance()
+
+            while (cal.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
+                cal.add(Calendar.DAY_OF_YEAR, 1)
+            }
+            cal.add(Calendar.WEEK_OF_YEAR, -52)
+
+            repeat(53 * 7) {
+                cal.set(Calendar.HOUR_OF_DAY, 0)
+                cal.set(Calendar.MINUTE, 0)
+                cal.set(Calendar.SECOND, 0)
+                cal.set(Calendar.MILLISECOND, 0)
+                val time = cal.timeInMillis
+                list.add(time to (data.history[time] ?: 0))
+                cal.add(Calendar.DAY_OF_YEAR, 1)
+            }
+            list
+        }
+
+        val primaryColor = MaterialTheme.colorScheme.primary
+        val surfaceColor = MaterialTheme.colorScheme.surfaceVariant
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = MaterialTheme.padding.small),
+        ) {
+            val scrollState = rememberScrollState(Int.MAX_VALUE)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(3.dp),
+                modifier = Modifier
+                    .horizontalScroll(scrollState)
+                    .padding(horizontal = MaterialTheme.padding.medium),
+            ) {
+                days.chunked(7).forEach { week ->
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(3.dp),
+                    ) {
+                        week.forEach { (_, count) ->
+                            val color = when {
+                                count == 0 -> surfaceColor.copy(alpha = 0.2f)
+                                count <= 3 -> primaryColor.copy(alpha = 0.3f)
+                                count <= 7 -> primaryColor.copy(alpha = 0.5f)
+                                count <= 12 -> primaryColor.copy(alpha = 0.8f)
+                                else -> primaryColor
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .background(color, MaterialTheme.shapes.extraSmall),
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

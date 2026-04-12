@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.source.model.SManga
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.domain.history.interactor.GetHistoryHeatmap
 import tachiyomi.domain.history.interactor.GetTotalReadDuration
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.service.LibraryPreferences
@@ -27,6 +28,7 @@ import uy.kohesive.injekt.api.get
 
 class StatsScreenModel(
     private val downloadManager: DownloadManager = Injekt.get(),
+    private val getHistoryHeatmap: GetHistoryHeatmap = Injekt.get(),
     private val getLibraryManga: GetLibraryManga = Injekt.get(),
     private val getTotalReadDuration: GetTotalReadDuration = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
@@ -73,12 +75,17 @@ class StatsScreenModel(
                 trackerCount = loggedInTrackers.size,
             )
 
+            val heatmapData = StatsData.HistoryHeatmap(
+                history = getHistoryHeatmap.await(),
+            )
+
             mutableState.update {
                 StatsScreenState.Success(
                     overview = overviewStatData,
                     titles = titlesStatData,
                     chapters = chaptersStatData,
                     trackers = trackersStatData,
+                    heatmap = heatmapData,
                 )
             }
         }

@@ -4,6 +4,7 @@
 
 ### Added
 
+- GitHub-Style Reading Activity heatmap in Statistics screen with a 365-day scrollable grid
 - "Manga Wrapped" Year-in-Review feature with immersive story-style navigation
 - High-end parallax transitions and micro-animations for yearly reading statistics
 - Integrated social share functionality for generating and sharing yearly summary cards

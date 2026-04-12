@@ -25,4 +25,8 @@ sealed interface StatsData {
         val meanScore: Double,
         val trackerCount: Int,
     ) : StatsData
+
+    data class HistoryHeatmap(
+        val history: Map<Long, Int>,
+    ) : StatsData
 }

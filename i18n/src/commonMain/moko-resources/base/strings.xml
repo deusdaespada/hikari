@@ -1191,6 +1191,8 @@
         be used for migration
     </string>
 
+    <string name="label_heatmap_section">Reading Activity</string>
+
     <!-- Wrapped -->
     <string name="label_wrapped">Hikari Wrapped</string>
     <string name="wrapped_intro">Your Year in Manga</string>
