@@ -1,5 +1,24 @@
 # Changelog
 
+## [Unreleased] - 2026-04-12
+
+### Added
+
+- "Manga Wrapped" Year-in-Review feature with immersive story-style navigation
+- High-end parallax transitions and micro-animations for yearly reading statistics
+- Integrated social share functionality for generating and sharing yearly summary cards
+- "Shareable Card" system for capturing localized reading milestones as high-quality posters
+
+### Changed
+
+- Modernized Statistics screen entry point with a premium linear-gradient banner
+- Upgraded Wrapped navigation with Instagram-style tap segments, long-press pause, and auto-advance logic
+
+### Fixed
+
+- Resolved timer synchronization and bleed issues in story-style navigation
+- Implemented full edge-to-edge support and theme-compliant token usage in Statistics feature
+
 ## [0.3.3] - 2026-04-11
 
 ### Added

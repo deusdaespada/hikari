@@ -1190,4 +1190,16 @@
     <string name="migrationListScreen.matchWithoutChapterToast">No chapters found, this entry cannot
         be used for migration
     </string>
+
+    <!-- Wrapped -->
+    <string name="label_wrapped">Hikari Wrapped</string>
+    <string name="wrapped_intro">Your Year in Manga</string>
+    <string name="wrapped_stats_time">You spent %1$s reading</string>
+    <string name="wrapped_stats_chapters">You finished %1$d chapters</string>
+    <string name="wrapped_stats_genres">Your reading soul is %1$s</string>
+    <string name="wrapped_stats_top_manga">Most read titles</string>
+    <string name="wrapped_stats_streak">Longest streak: %1$d days</string>
+    <string name="wrapped_share">Share Summary</string>
+    <string name="wrapped_empty">Not enough history for a Wrapped review yet.</string>
+    <string name="action_view_wrapped">View 2026 Wrapped</string>
 </resources>
