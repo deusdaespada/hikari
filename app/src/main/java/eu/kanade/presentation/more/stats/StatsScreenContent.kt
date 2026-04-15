@@ -1,6 +1,7 @@
 package eu.kanade.presentation.more.stats
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,15 +24,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import eu.kanade.presentation.more.stats.components.StatsItem
 import eu.kanade.presentation.more.stats.components.StatsOverviewItem
 import eu.kanade.presentation.more.stats.data.StatsData
@@ -39,7 +47,9 @@ import eu.kanade.presentation.util.toDurationString
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import kotlin.time.DurationUnit
@@ -49,15 +59,11 @@ import kotlin.time.toDuration
 fun StatsScreenContent(
     state: StatsScreenState.Success,
     paddingValues: PaddingValues,
-    onWrappedClick: () -> Unit,
 ) {
     LazyColumn(
         contentPadding = paddingValues,
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
     ) {
-        item {
-            WrappedBanner(onClick = onWrappedClick)
-        }
         item {
             OverviewSection(state.overview)
         }
@@ -190,6 +196,8 @@ private fun LazyItemScope.HeatmapSection(
 ) {
     SectionCard(MR.strings.label_heatmap_section) {
         val calendar = remember { Calendar.getInstance() }
+        var selectedDay by remember { mutableStateOf<Pair<Long, Int>?>(null) }
+        val dateFormatter = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
 
         val days = remember(data.history) {
             val list = mutableListOf<Pair<Long, Int>>()
@@ -231,7 +239,7 @@ private fun LazyItemScope.HeatmapSection(
                     Column(
                         verticalArrangement = Arrangement.spacedBy(3.dp),
                     ) {
-                        week.forEach { (_, count) ->
+                        week.forEach { (time, count) ->
                             val color = when {
                                 count == 0 -> surfaceColor.copy(alpha = 0.2f)
                                 count <= 3 -> primaryColor.copy(alpha = 0.3f)
@@ -239,11 +247,48 @@ private fun LazyItemScope.HeatmapSection(
                                 count <= 12 -> primaryColor.copy(alpha = 0.8f)
                                 else -> primaryColor
                             }
+
                             Box(
                                 modifier = Modifier
                                     .size(10.dp)
-                                    .background(color, MaterialTheme.shapes.extraSmall),
-                            )
+                                    .clip(MaterialTheme.shapes.extraSmall)
+                                    .background(color)
+                                    .clickable {
+                                        selectedDay = if (selectedDay?.first == time) null else time to count
+                                    },
+                            ) {
+                                if (selectedDay?.first == time) {
+                                    Popup(
+                                        alignment = Alignment.TopCenter,
+                                        offset = IntOffset(0, -40),
+                                        onDismissRequest = { selectedDay = null },
+                                        properties = PopupProperties(focusable = false),
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .background(
+                                                    MaterialTheme.colorScheme.surfaceVariant,
+                                                    MaterialTheme.shapes.medium,
+                                                )
+                                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                                        ) {
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                Text(
+                                                    text = dateFormatter.format(time),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                )
+                                                Text(
+                                                    text = pluralStringResource(MR.plurals.manga_num_chapters, count, count),
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -252,54 +297,3 @@ private fun LazyItemScope.HeatmapSection(
     }
 }
 
-@Composable
-private fun WrappedBanner(
-    onClick: () -> Unit,
-) {
-    androidx.compose.material3.Surface(
-        onClick = onClick,
-        shape = MaterialTheme.shapes.extraLarge,
-        color = Color.Transparent,
-        modifier = Modifier
-            .padding(horizontal = MaterialTheme.padding.medium)
-            .padding(top = MaterialTheme.padding.small),
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.linearGradient(
-                        listOf(Color(0xFF6A11CB), Color(0xFF2575FC)),
-                    ),
-                )
-                .padding(24.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(MR.strings.label_wrapped),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp,
-                    )
-                    Text(
-                        text = stringResource(MR.strings.action_view_wrapped),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White.copy(alpha = 0.8f),
-                    )
-                }
-                Icon(
-                    imageVector = Icons.Outlined.Schedule,
-                    contentDescription = null,
-                    tint = Color.White.copy(alpha = 0.2f),
-                    modifier = Modifier.size(48.dp),
-                )
-            }
-        }
-    }
-}

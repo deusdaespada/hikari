@@ -41,7 +41,6 @@ class StatsScreen : Screen() {
             StatsScreenContent(
                 state = state as StatsScreenState.Success,
                 paddingValues = paddingValues,
-                onWrappedClick = { navigator.push(WrappedScreen()) },
             )
         }
     }

@@ -68,7 +68,6 @@ import tachiyomi.domain.history.interactor.GetHistory
 import tachiyomi.domain.history.interactor.GetHistoryHeatmap
 import tachiyomi.domain.history.interactor.GetNextChapters
 import tachiyomi.domain.history.interactor.GetTotalReadDuration
-import tachiyomi.domain.history.interactor.GetWrappedStats
 import tachiyomi.domain.history.interactor.RemoveHistory
 import tachiyomi.domain.history.interactor.UpsertHistory
 import tachiyomi.domain.history.repository.HistoryRepository
@@ -175,7 +174,6 @@ class DomainModule : InjektModule {
         addFactory { UpsertHistory(get()) }
         addFactory { RemoveHistory(get()) }
         addFactory { GetTotalReadDuration(get()) }
-        addFactory { GetWrappedStats(get(), get()) }
         addFactory { GetHistoryHeatmap(get()) }
 
         addFactory { DeleteDownload(get(), get()) }
