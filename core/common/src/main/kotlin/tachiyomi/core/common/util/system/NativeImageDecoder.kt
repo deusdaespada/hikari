@@ -12,8 +12,10 @@ object NativeImageDecoder {
 
     /** Bitmask for sharpening filter */
     const val FILTER_SHARPEN = 1 shl 0
+
     /** Bitmask for denoising filter */
     const val FILTER_DENOISE = 1 shl 1
+
     /** Bitmask for AI-based upscaling */
     const val FILTER_UPSCALING = 1 shl 2
 
@@ -30,13 +32,14 @@ object NativeImageDecoder {
      *
      * @param bitmap The target bitmap (must be RGBA_8888).
      * @param data The raw encoded image data (JPEG, WebP, etc.).
+     * @param filters Bitmask of [FILTER] values to apply during decoding.
      * @return True if decoding was successful.
      */
-    fun decode(bitmap: Bitmap, data: ByteArray): Boolean {
+    fun decode(bitmap: Bitmap, data: ByteArray, filters: Int = 0): Boolean {
         if (bitmap.config != Bitmap.Config.ARGB_8888) {
             return false
         }
-        return nativeDecode(bitmap, data, data.size)
+        return nativeDecode(bitmap, data, data.size, filters)
     }
 
     /**
@@ -52,6 +55,7 @@ object NativeImageDecoder {
      */
     fun decodeRegion(
         bitmap: Bitmap,
+        data: ByteArray,
         left: Int,
         top: Int,
         right: Int,
@@ -59,7 +63,19 @@ object NativeImageDecoder {
         sampleSize: Int,
         filters: Int = 0,
     ): Boolean {
-        return nativeDecodeRegion(bitmap, left, top, right, bottom, sampleSize, filters)
+        return nativeDecodeRegion(bitmap, data, data.size, left, top, right, bottom, sampleSize, filters)
+    }
+
+    /**
+     * Applies native post-processing filters to an existing [Bitmap].
+     *
+     * @param bitmap The target bitmap.
+     * @param filters Bitmask of [FILTER] values to apply.
+     * @return True if processing was successful.
+     */
+    fun process(bitmap: Bitmap, filters: Int): Boolean {
+        if (bitmap.config != Bitmap.Config.ARGB_8888) return false
+        return nativeProcess(bitmap, filters)
     }
 
     /**
@@ -78,10 +94,12 @@ object NativeImageDecoder {
         }
     }
 
-    private external fun nativeDecode(bitmap: Bitmap, data: ByteArray, length: Int): Boolean
+    private external fun nativeDecode(bitmap: Bitmap, data: ByteArray, length: Int, filters: Int): Boolean
 
     private external fun nativeDecodeRegion(
         bitmap: Bitmap,
+        data: ByteArray,
+        length: Int,
         left: Int,
         top: Int,
         right: Int,
@@ -89,6 +107,8 @@ object NativeImageDecoder {
         sampleSize: Int,
         filters: Int,
     ): Boolean
+
+    private external fun nativeProcess(bitmap: Bitmap, filters: Int): Boolean
 
     private external fun nativeDecodeToHardwareBuffer(width: Int, height: Int): HardwareBuffer?
 }

@@ -1,6 +1,8 @@
 package eu.kanade.tachiyomi.data.coil
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Build
 import coil3.ImageLoader
 import coil3.asImage
 import coil3.decode.DecodeResult
@@ -8,10 +10,11 @@ import coil3.decode.Decoder
 import coil3.fetch.SourceFetchResult
 import coil3.request.Options
 import coil3.request.allowRgb565
-import coil3.request.bitmapConfig
 import okio.BufferedSource
 import tachiyomi.core.common.util.system.ImageUtil
+import tachiyomi.core.common.util.system.NativeImageDecoder
 import tachiyomi.core.common.util.system.logcat
+import androidx.core.graphics.createBitmap
 
 /**
  * A Coil [Decoder] specifically tuned for very tall webtoon-style images.
@@ -21,17 +24,11 @@ import tachiyomi.core.common.util.system.logcat
 class WebtoonImageDecoder(private val source: BufferedSource, private val options: Options) : Decoder {
 
     override suspend fun decode(): DecodeResult? {
-        val decodeOptions = BitmapFactory.Options().apply {
-            inJustDecodeBounds = true
-        }
+        val bytes = source.readByteArray()
+        val dimenOptions = ImageUtil.extractImageOptions(okio.Buffer().write(bytes))
 
-        // Peek to get dimensions without consuming the source
-        source.peek().inputStream().use {
-            BitmapFactory.decodeStream(it, null, decodeOptions)
-        }
-
-        val srcWidth = decodeOptions.outWidth
-        val srcHeight = decodeOptions.outHeight
+        val srcWidth = dimenOptions.outWidth
+        val srcHeight = dimenOptions.outHeight
 
         if (srcWidth <= 0 || srcHeight <= 0) return null
 
@@ -55,13 +52,35 @@ class WebtoonImageDecoder(private val source: BufferedSource, private val option
             inSampleSize = 2
         }
 
-        decodeOptions.inJustDecodeBounds = false
-        decodeOptions.inSampleSize = inSampleSize
-        decodeOptions.inPreferredConfig = options.bitmapConfig
+        val dstWidth = srcWidth / inSampleSize
+        val dstHeight = srcHeight / inSampleSize
 
-        val bitmap = source.inputStream().use {
-            BitmapFactory.decodeStream(it, null, decodeOptions)
-        } ?: throw IllegalStateException("Failed to decode extremely tall image.")
+        val bitmap = createBitmap(
+            dstWidth,
+            dstHeight,
+            if (options.allowRgb565) Bitmap.Config.RGB_565 else Bitmap.Config.ARGB_8888,
+        )
+
+        val success = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            NativeImageDecoder.decode(bitmap, bytes)
+        } else {
+            val decodeOptions = BitmapFactory.Options().apply {
+                this.inSampleSize = inSampleSize
+                this.inPreferredConfig = if (options.allowRgb565) Bitmap.Config.RGB_565 else Bitmap.Config.ARGB_8888
+            }
+            val b = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, decodeOptions)
+            if (b != null) {
+                val canvas = android.graphics.Canvas(bitmap)
+                canvas.drawBitmap(b, 0f, 0f, null)
+                b.recycle()
+                true
+            } else false
+        }
+
+        if (!success) {
+            bitmap.recycle()
+            throw IllegalStateException("Failed to decode extremely tall image.")
+        }
 
         return DecodeResult(
             image = bitmap.asImage(),

@@ -56,13 +56,8 @@ class NativeImageRegionDecoder : ImageRegionDecoder {
             .decodeRegion(sRect, options)
 
         if (preferences.readerUpscaling.get()) {
-            NativeImageDecoder.decodeRegion(
+            NativeImageDecoder.process(
                 bitmap = bitmap,
-                left = 0,
-                top = 0,
-                right = bitmap.width,
-                bottom = bitmap.height,
-                sampleSize = 1,
                 filters = NativeImageDecoder.FILTER_UPSCALING,
             )
         }

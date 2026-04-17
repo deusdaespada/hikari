@@ -32,6 +32,7 @@ import eu.kanade.domain.ui.model.setAppCompatDelegateThemeMode
 import eu.kanade.tachiyomi.crash.CrashActivity
 import eu.kanade.tachiyomi.crash.GlobalExceptionHandler
 import eu.kanade.tachiyomi.data.coil.BufferedSourceFetcher
+import eu.kanade.tachiyomi.data.coil.HikariImageDecoder
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher
 import eu.kanade.tachiyomi.data.coil.MangaCoverKeyer
 import eu.kanade.tachiyomi.data.coil.MangaKeyer
@@ -58,6 +59,7 @@ import logcat.AndroidLogcatLogger
 import logcat.LogPriority
 import logcat.LogcatLogger
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
+import tachiyomi.domain.library.service.LibraryPreferences
 import hikari.core.migration.Migrator
 import hikari.core.migration.migrations.migrations
 import org.conscrypt.Conscrypt
@@ -176,6 +178,10 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         LibraryUpdateJob.setupTask(this)
         ExtensionUpdateJob.setupTask(this)
 
+        Injekt.get<LibraryPreferences>().autoUpdateSchedule.changes()
+            .onEach { LibraryUpdateJob.setupTask(this@App) }
+            .launchIn(scope)
+
         Injekt.get<SourcePreferences>().autoUpdateExtensions.changes()
             .onEach { ExtensionUpdateJob.setupTask(this@App) }
             .launchIn(scope)
@@ -208,6 +214,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
                 // NetworkFetcher.Factory
                 add(OkHttpNetworkFetcherFactory(callFactoryLazy::value))
                 // Decoder.Factory
+                add(HikariImageDecoder.Factory())
                 add(WebtoonImageDecoder.Factory())
                 add(TachiyomiImageDecoder.Factory())
                 // Fetcher.Factory
