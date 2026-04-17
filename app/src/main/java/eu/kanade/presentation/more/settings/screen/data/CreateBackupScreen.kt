@@ -6,15 +6,23 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.presentation.util.Screen
@@ -30,7 +38,9 @@ import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.components.LazyColumnWithAction
 import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 class CreateBackupScreen : Screen() {
 
@@ -87,6 +97,24 @@ class CreateBackupScreen : Screen() {
                 }
 
                 item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
+                    ) {
+                        Text(
+                            text = stringResource(MR.strings.backup_choice),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Text(
+                            text = stringResource(MR.strings.pref_create_backup_summ),
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.secondaryItemAlpha(),
+                        )
+                    }
+                }
+
+                item {
                     SectionCard(MR.strings.label_library) {
                         Options(BackupOptions.libraryOptions, state, model)
                     }
@@ -110,12 +138,25 @@ class CreateBackupScreen : Screen() {
         options.forEach { option ->
             LabeledCheckbox(
                 label = stringResource(option.label),
+                subtitle = getSubtitleForOption(option.label),
                 checked = option.getter(state.options),
                 onCheckedChange = {
                     model.toggle(option.setter, it)
                 },
                 enabled = option.enabled(state.options),
             )
+        }
+    }
+
+    @Composable
+    @ReadOnlyComposable
+    private fun getSubtitleForOption(label: StringResource): String? {
+        return when (label) {
+            MR.strings.manga -> stringResource(MR.strings.pref_hide_in_library_items).substringBeforeLast(" ")
+            MR.strings.app_settings -> stringResource(MR.strings.app_settings)
+            MR.strings.private_settings -> stringResource(MR.strings.private_settings)
+            MR.strings.non_library_settings -> stringResource(MR.strings.non_library_settings)
+            else -> null
         }
     }
 }

@@ -13,31 +13,47 @@ import androidx.compose.ui.Modifier
 import dev.icerock.moko.resources.StringResource
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.secondaryItemAlpha
+
+@Composable
+fun SectionCard(
+    modifier: Modifier = Modifier,
+    titleRes: StringResource? = null,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(modifier = modifier) {
+        if (titleRes != null) {
+            Text(
+                modifier = Modifier.padding(horizontal = MaterialTheme.padding.extraLarge),
+                text = stringResource(titleRes),
+                style = MaterialTheme.typography.titleSmall,
+            )
+        }
+
+        ElevatedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = MaterialTheme.padding.medium,
+                    vertical = MaterialTheme.padding.small,
+                ),
+            shape = MaterialTheme.shapes.extraLarge,
+        ) {
+            Column(modifier = Modifier.padding(MaterialTheme.padding.medium)) {
+                content()
+            }
+        }
+    }
+}
 
 @Composable
 fun LazyItemScope.SectionCard(
     titleRes: StringResource? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    if (titleRes != null) {
-        Text(
-            modifier = Modifier.padding(horizontal = MaterialTheme.padding.extraLarge),
-            text = stringResource(titleRes),
-            style = MaterialTheme.typography.titleSmall,
-        )
-    }
-
-    ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = MaterialTheme.padding.medium,
-                vertical = MaterialTheme.padding.small,
-            ),
-        shape = MaterialTheme.shapes.extraLarge,
-    ) {
-        Column(modifier = Modifier.padding(MaterialTheme.padding.medium)) {
-            content()
-        }
-    }
+    SectionCard(
+        modifier = Modifier,
+        titleRes = titleRes,
+        content = content,
+    )
 }

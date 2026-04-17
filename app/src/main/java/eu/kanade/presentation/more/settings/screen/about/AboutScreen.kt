@@ -19,6 +19,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.material3.MaterialTheme
+import tachiyomi.presentation.core.components.SectionCard
+import tachiyomi.presentation.core.components.material.padding
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -32,9 +35,7 @@ import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
 import eu.kanade.tachiyomi.data.updater.RELEASE_URL
 import eu.kanade.tachiyomi.ui.more.NewUpdateScreen
-import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.lang.toDateTimestampString
-import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.updaterEnabled
 import kotlinx.coroutines.launch
@@ -84,141 +85,108 @@ object AboutScreen : Screen() {
                 contentPadding = contentPadding,
             ) {
                 item {
-                    LogoHeader()
-                }
-
-                item {
-                    TextPreferenceWidget(
-                        title = stringResource(MR.strings.version),
-                        subtitle = getVersionName(withBuildDate = true),
-                        onPreferenceClick = {
-                            val deviceInfo = CrashLogUtil(context).getDebugInfo()
-                            context.copyToClipboard("Debug information", deviceInfo)
-
-                            if (!isCheckingUpdates) {
-                                scope.launch {
-                                    isCheckingUpdates = true
-                                    context.toast(MR.strings.check_for_updates)
-                                    checkVersion(
-                                        context = context,
-                                        onAvailableUpdate = { result ->
-                                            val updateScreen = NewUpdateScreen(
-                                                versionName = result.release.version,
-                                                changelogInfo = result.release.info,
-                                                releaseLink = result.release.releaseLink,
-                                                downloadLink = result.release.downloadLink,
-                                            )
-                                            navigator.push(updateScreen)
-                                        },
-                                        onFinish = {
-                                            isCheckingUpdates = false
-                                        },
-                                    )
-                                }
-                            }
-                        },
+                    LogoHeader(
+                        versionName = getVersionName(withBuildDate = true),
                     )
                 }
 
-                if (updaterEnabled) {
-                    item {
-                        TextPreferenceWidget(
-                            title = stringResource(MR.strings.check_for_updates),
-                            widget = {
-                                AnimatedVisibility(visible = isCheckingUpdates) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(28.dp),
-                                        strokeWidth = 3.dp,
-                                    )
-                                }
-                            },
-                            onPreferenceClick = {
-                                if (!isCheckingUpdates) {
-                                    scope.launch {
-                                        isCheckingUpdates = true
-
-                                        checkVersion(
-                                            context = context,
-                                            onAvailableUpdate = { result ->
-                                                val updateScreen = NewUpdateScreen(
-                                                    versionName = result.release.version,
-                                                    changelogInfo = result.release.info,
-                                                    releaseLink = result.release.releaseLink,
-                                                    downloadLink = result.release.downloadLink,
-                                                )
-                                                navigator.push(updateScreen)
-                                            },
-                                            onFinish = {
-                                                isCheckingUpdates = false
-                                            },
+                item {
+                    SectionCard(titleRes = MR.strings.label_data) {
+                        if (updaterEnabled) {
+                            TextPreferenceWidget(
+                                title = stringResource(MR.strings.check_for_updates),
+                                widget = {
+                                    AnimatedVisibility(visible = isCheckingUpdates) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(28.dp),
+                                            strokeWidth = 3.dp,
                                         )
                                     }
-                                }
-                            },
-                        )
-                    }
-                }
+                                },
+                                onPreferenceClick = {
+                                    if (!isCheckingUpdates) {
+                                        scope.launch {
+                                            isCheckingUpdates = true
 
-                if (!BuildConfig.DEBUG) {
-                    item {
+                                            checkVersion(
+                                                context = context,
+                                                onAvailableUpdate = { result ->
+                                                    val updateScreen = NewUpdateScreen(
+                                                        versionName = result.release.version,
+                                                        changelogInfo = result.release.info,
+                                                        releaseLink = result.release.releaseLink,
+                                                        downloadLink = result.release.downloadLink,
+                                                    )
+                                                    navigator.push(updateScreen)
+                                                },
+                                                onFinish = {
+                                                    isCheckingUpdates = false
+                                                },
+                                            )
+                                        }
+                                    }
+                                },
+                            )
+                        }
+
+                        if (!BuildConfig.DEBUG) {
+                            TextPreferenceWidget(
+                                title = stringResource(MR.strings.whats_new),
+                                onPreferenceClick = { uriHandler.openUri(RELEASE_URL) },
+                            )
+                        }
+
                         TextPreferenceWidget(
-                            title = stringResource(MR.strings.whats_new),
-                            onPreferenceClick = { uriHandler.openUri(RELEASE_URL) },
+                            title = stringResource(MR.strings.licenses),
+                            onPreferenceClick = { navigator.push(OpenSourceLicensesScreen()) },
+                        )
+
+                        TextPreferenceWidget(
+                            title = stringResource(MR.strings.privacy_policy),
+                            onPreferenceClick = { uriHandler.openUri("https://mihon.app/privacy/") },
                         )
                     }
                 }
 
                 item {
-                    TextPreferenceWidget(
-                        title = stringResource(MR.strings.licenses),
-                        onPreferenceClick = { navigator.push(OpenSourceLicensesScreen()) },
-                    )
-                }
-
-                item {
-                    TextPreferenceWidget(
-                        title = stringResource(MR.strings.privacy_policy),
-                        onPreferenceClick = { uriHandler.openUri("https://mihon.app/privacy/") },
-                    )
-                }
-
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        LinkIcon(
-                            label = stringResource(MR.strings.website),
-                            icon = Icons.Outlined.Public,
-                            url = "https://mihon.app",
-                        )
-                        LinkIcon(
-                            label = "Discord",
-                            icon = CustomIcons.Discord,
-                            url = "https://discord.gg/mihon",
-                        )
-                        LinkIcon(
-                            label = "X",
-                            icon = CustomIcons.X,
-                            url = "https://x.com/mihonapp",
-                        )
-                        LinkIcon(
-                            label = "Facebook",
-                            icon = CustomIcons.Facebook,
-                            url = "https://facebook.com/mihonapp",
-                        )
-                        LinkIcon(
-                            label = "Reddit",
-                            icon = CustomIcons.Reddit,
-                            url = "https://www.reddit.com/r/mihonapp",
-                        )
-                        LinkIcon(
-                            label = "GitHub",
-                            icon = CustomIcons.Github,
-                            url = "https://github.com/mihonapp",
-                        )
+                    SectionCard(titleRes = MR.strings.label_more) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = MaterialTheme.padding.small),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                        ) {
+                            LinkIcon(
+                                label = stringResource(MR.strings.website),
+                                icon = Icons.Outlined.Public,
+                                url = "https://mihon.app",
+                            )
+                            LinkIcon(
+                                label = "Discord",
+                                icon = CustomIcons.Discord,
+                                url = "https://discord.gg/mihon",
+                            )
+                            LinkIcon(
+                                label = "X",
+                                icon = CustomIcons.X,
+                                url = "https://x.com/mihonapp",
+                            )
+                            LinkIcon(
+                                label = "Facebook",
+                                icon = CustomIcons.Facebook,
+                                url = "https://facebook.com/mihonapp",
+                            )
+                            LinkIcon(
+                                label = "Reddit",
+                                icon = CustomIcons.Reddit,
+                                url = "https://www.reddit.com/r/mihonapp",
+                            )
+                            LinkIcon(
+                                label = "GitHub",
+                                icon = CustomIcons.Github,
+                                url = "https://github.com/mihonapp",
+                            )
+                        }
                     }
                 }
             }
@@ -240,9 +208,11 @@ object AboutScreen : Screen() {
                     is GetApplicationRelease.Result.NewUpdate -> {
                         onAvailableUpdate(result)
                     }
+
                     is GetApplicationRelease.Result.NoNewUpdate -> {
                         context.toast(MR.strings.update_check_no_new_updates)
                     }
+
                     is GetApplicationRelease.Result.OsTooOld -> {
                         context.toast(MR.strings.update_check_eol)
                     }
@@ -267,6 +237,7 @@ object AboutScreen : Screen() {
                     }
                 }
             }
+
             else -> {
                 "Stable ${BuildConfig.VERSION_NAME}".let {
                     if (withBuildDate) {
@@ -290,7 +261,7 @@ object AboutScreen : Screen() {
                         Injekt.get<UiPreferences>().dateFormat.get(),
                     ),
                 )
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             BuildConfig.BUILD_TIME
         }
     }

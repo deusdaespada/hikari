@@ -7,6 +7,7 @@ import android.net.Uri
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -25,6 +26,9 @@ import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.Text
+import tachiyomi.presentation.core.components.SectionCard
+import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.util.secondaryItemAlpha
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ReadOnlyComposable
@@ -39,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.core.net.toUri
+import androidx.compose.material3.MaterialTheme
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.hippo.unifile.UniFile
@@ -227,44 +232,46 @@ object SettingsDataScreen : SearchableSettings {
                 Preference.PreferenceItem.CustomPreference(
                     title = stringResource(restorePreferenceKeyString),
                 ) {
-                    BasePreferenceWidget(
-                        subcomponent = {
-                            MultiChoiceSegmentedButtonRow(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(intrinsicSize = IntrinsicSize.Min)
-                                    .padding(horizontal = PrefsHorizontalPadding),
+                    val lastAutoBackupRelative = relativeTimeSpanString(lastAutoBackup)
+                    SectionCard {
+                        Column(
+                            modifier = Modifier.padding(vertical = MaterialTheme.padding.small),
+                            verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
+                        ) {
+                            Text(
+                                text = stringResource(MR.strings.last_auto_backup_info, lastAutoBackupRelative),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.secondaryItemAlpha(),
+                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                             ) {
-                                SegmentedButton(
-                                    modifier = Modifier.fillMaxHeight(),
-                                    checked = false,
-                                    onCheckedChange = { navigator.push(CreateBackupScreen()) },
-                                    shape = SegmentedButtonDefaults.itemShape(0, 2),
+                                TextButton(
+                                    modifier = Modifier.weight(1f),
+                                    onClick = { navigator.push(CreateBackupScreen()) },
                                 ) {
                                     Text(stringResource(MR.strings.pref_create_backup))
                                 }
-                                SegmentedButton(
-                                    modifier = Modifier.fillMaxHeight(),
-                                    checked = false,
-                                    onCheckedChange = {
+                                TextButton(
+                                    modifier = Modifier.weight(1f),
+                                    onClick = {
                                         if (!BackupRestoreJob.isRunning(context)) {
                                             if (DeviceUtil.isMiui && DeviceUtil.isMiuiOptimizationDisabled()) {
                                                 context.toast(MR.strings.restore_miui_warning)
                                             }
-
-                                            // no need to catch because it's wrapped with a chooser
                                             chooseBackup.launch("*/*")
                                         } else {
                                             context.toast(MR.strings.restore_in_progress)
                                         }
                                     },
-                                    shape = SegmentedButtonDefaults.itemShape(1, 2),
                                 ) {
                                     Text(stringResource(MR.strings.pref_restore_backup))
                                 }
                             }
-                        },
-                    )
+                        }
+                    }
                 },
 
                 // Automatic backups
@@ -286,8 +293,7 @@ object SettingsDataScreen : SearchableSettings {
                     },
                 ),
                 Preference.PreferenceItem.InfoPreference(
-                    stringResource(MR.strings.backup_info) + "\n\n" +
-                        stringResource(MR.strings.last_auto_backup_info, relativeTimeSpanString(lastAutoBackup)),
+                    stringResource(MR.strings.backup_info),
                 ),
             ),
         )

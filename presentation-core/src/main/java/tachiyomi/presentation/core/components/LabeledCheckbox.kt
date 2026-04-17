@@ -2,9 +2,11 @@ package tachiyomi.presentation.core.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -15,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 @Composable
 fun LabeledCheckbox(
@@ -23,7 +26,9 @@ fun LabeledCheckbox(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    subtitle: String? = null,
 ) {
+    val padding = MaterialTheme.padding
     Row(
         modifier = modifier
             .clip(MaterialTheme.shapes.small)
@@ -36,9 +41,10 @@ fun LabeledCheckbox(
                         onCheckedChange(!checked)
                     }
                 },
-            ),
+            )
+            .padding(vertical = padding.small),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+        horizontalArrangement = Arrangement.spacedBy(padding.small),
     ) {
         Checkbox(
             checked = checked,
@@ -46,6 +52,18 @@ fun LabeledCheckbox(
             enabled = enabled,
         )
 
-        Text(text = label)
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(text = label)
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.secondaryItemAlpha(),
+                )
+            }
+        }
     }
 }

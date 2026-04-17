@@ -19,6 +19,17 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.vector.ImageVector
+import tachiyomi.presentation.core.util.secondaryItemAlpha
 import androidx.core.net.toUri
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -77,6 +88,10 @@ class RestoreBackupScreen(
 
                 if (state.canRestore) {
                     item {
+                        BackupSummaryCard(state.results)
+                    }
+
+                    item {
                         SectionCard {
                             RestoreOptions.options.forEach { option ->
                                 LabeledCheckbox(
@@ -98,6 +113,74 @@ class RestoreBackupScreen(
         }
     }
 
+    @Composable
+    private fun BackupSummaryCard(results: BackupFileValidator.Results?) {
+        if (results == null) return
+        SectionCard {
+            Column(
+                modifier = Modifier.padding(vertical = MaterialTheme.padding.small),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
+            ) {
+                Text(
+                    text = stringResource(MR.strings.label_overview_section),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+
+                Column(verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small)) {
+                    SummaryItem(
+                        icon = Icons.AutoMirrored.Outlined.LibraryBooks,
+                        label = stringResource(MR.strings.label_library),
+                        value = results.mangaCount.toString(),
+                    )
+                    SummaryItem(
+                        icon = Icons.Outlined.History,
+                        label = stringResource(MR.strings.label_recent_manga),
+                        value = results.categoryCount.toString(),
+                    )
+                    SummaryItem(
+                        icon = Icons.Outlined.Public,
+                        label = stringResource(MR.strings.label_sources),
+                        value = results.sourceCount.toString(),
+                    )
+                    SummaryItem(
+                        icon = Icons.Outlined.Settings,
+                        label = stringResource(MR.strings.label_settings),
+                        value = results.preferenceCount.toString(),
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun SummaryItem(
+        icon: ImageVector,
+        label: String,
+        value: String,
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.secondaryItemAlpha(),
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+    }
+
     private fun LazyListScope.errorMessageItem(
         error: Any?,
     ) {
@@ -107,6 +190,11 @@ class RestoreBackupScreen(
                     modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
                     verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                 ) {
+                    Text(
+                        text = stringResource(MR.strings.label_warning),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
                     val msg = buildAnnotatedString {
                         when (error) {
                             is MissingRestoreComponents -> {
@@ -156,7 +244,10 @@ class RestoreBackupScreen(
                     }
 
                     SelectionContainer {
-                        Text(text = msg)
+                        Text(
+                            text = msg,
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
                     }
                 }
             }
@@ -204,18 +295,20 @@ private class RestoreBackupScreenModel(
             setError(
                 error = MissingRestoreComponents(uri, results.missingSources, results.missingTrackers),
                 canRestore = true,
+                results = results,
             )
             return
         }
 
-        setError(error = null, canRestore = true)
+        setError(error = null, canRestore = true, results = results)
     }
 
-    private fun setError(error: Any?, canRestore: Boolean) {
+    private fun setError(error: Any?, canRestore: Boolean, results: BackupFileValidator.Results? = null) {
         mutableState.update {
             it.copy(
                 error = error,
                 canRestore = canRestore,
+                results = results,
             )
         }
     }
@@ -225,6 +318,7 @@ private class RestoreBackupScreenModel(
         val error: Any? = null,
         val canRestore: Boolean = false,
         val options: RestoreOptions = RestoreOptions(),
+        val results: BackupFileValidator.Results? = null,
     )
 }
 
