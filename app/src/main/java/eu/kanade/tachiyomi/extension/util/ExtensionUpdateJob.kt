@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.workManager
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
 import logcat.LogPriority
 import tachiyomi.core.common.util.lang.withIOContext
@@ -36,6 +37,10 @@ class ExtensionUpdateJob(private val context: Context, workerParams: WorkerParam
 
         try {
             setForegroundSafely()
+
+            if (!extensionManager.isInitialized.value) {
+                extensionManager.isInitialized.first { it }
+            }
 
             extensionManager.findAvailableExtensions()
 
@@ -66,8 +71,7 @@ class ExtensionUpdateJob(private val context: Context, workerParams: WorkerParam
 
             if (enabled || force) {
                 val constraints = Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.UNMETERED)
-                    .setRequiresCharging(true)
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
                     .setRequiresBatteryNotLow(true)
                     .build()
 

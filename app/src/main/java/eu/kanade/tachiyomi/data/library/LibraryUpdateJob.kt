@@ -101,7 +101,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private var mangaToUpdate: List<LibraryManga> = mutableListOf()
 
     override suspend fun doWork(): Result {
-        if (tags.contains(WORK_NAME_AUTO)) {
+        if (tags.contains(WORK_NAME_AUTO) || tags.any { it.startsWith(WORK_NAME_AUTO_PREFIX) }) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
                 val preferences = Injekt.get<LibraryPreferences>()
                 val restrictions = preferences.autoUpdateDeviceRestrictions.get()
@@ -485,6 +485,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                         TimeUnit.MINUTES,
                     )
                         .addTag(TAG)
+                        .addTag(WORK_NAME_AUTO)
                         .addTag("$WORK_NAME_AUTO_PREFIX$hour")
                         .setConstraints(constraints)
                         .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
