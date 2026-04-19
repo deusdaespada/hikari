@@ -54,7 +54,7 @@ fun LibrarySettingsDialog(
     ) { page ->
         Column(
             modifier = Modifier
-                .padding(vertical = TabbedDialogPaddings.Vertical)
+                .padding(bottom = TabbedDialogPaddings.Vertical)
                 .verticalScroll(rememberScrollState()),
         ) {
             when (page) {

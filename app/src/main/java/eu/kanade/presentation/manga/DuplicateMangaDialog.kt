@@ -94,27 +94,35 @@ fun DuplicateMangaDialog(
     AdaptiveSheet(
         modifier = modifier,
         onDismissRequest = onDismissRequest,
+        header = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = TabbedDialogPaddings.Vertical),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
+            ) {
+                Text(
+                    text = stringResource(MR.strings.possible_duplicates_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier
+                        .then(horizontalPaddingModifier)
+                        .padding(top = MaterialTheme.padding.small),
+                )
+
+                Text(
+                    text = stringResource(MR.strings.possible_duplicates_summary),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.then(horizontalPaddingModifier),
+                )
+            }
+        },
     ) {
         Column(
             modifier = Modifier
-                .padding(vertical = TabbedDialogPaddings.Vertical)
                 .verticalScroll(rememberScrollState())
                 .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
         ) {
-            Text(
-                text = stringResource(MR.strings.possible_duplicates_title),
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier
-                    .then(horizontalPaddingModifier)
-                    .padding(top = MaterialTheme.padding.small),
-            )
-
-            Text(
-                text = stringResource(MR.strings.possible_duplicates_summary),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.then(horizontalPaddingModifier),
-            )
 
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),

@@ -3,6 +3,7 @@ package tachiyomi.presentation.core.components
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
 import androidx.compose.foundation.gestures.AnchoredDraggableState
@@ -11,14 +12,19 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidthIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -55,6 +61,7 @@ fun AdaptiveSheet(
     enableSwipeDismiss: Boolean,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    header: @Composable (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     val density = LocalDensity.current
@@ -94,8 +101,10 @@ fun AdaptiveSheet(
                     .systemBarsPadding()
                     .padding(vertical = 16.dp)
                     .then(modifier),
-                shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.95f),
+                tonalElevation = 4.dp,
+                shadowElevation = 4.dp,
                 content = {
                     BackHandler(
                         enabled = remember { derivedStateOf { alpha > 0f } }.value,
@@ -177,19 +186,40 @@ fun AdaptiveSheet(
                         enabled = enableSwipeDismiss,
                         flingBehavior = flingBehavior,
                     ),
-                shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.95f),
+                tonalElevation = 4.dp,
+                shadowElevation = 4.dp,
                 content = {
                     BackHandler(
                         enabled = anchoredDraggableState.targetValue == 0,
                         onBack = internalOnDismissRequest,
                     )
-                    Box(
-                        modifier = Modifier
-                            .navigationBarsPadding()
-                            .statusBarsPadding(),
-                    ) {
-                        content()
+                    Box(contentAlignment = Alignment.TopCenter) {
+                        Column {
+                            if (header != null) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                                        .padding(top = 16.dp),
+                                ) {
+                                    header()
+                                }
+                            }
+                            Box(
+                                modifier = Modifier,
+                            ) {
+                                content()
+                            }
+                        }
+                        Surface(
+                            modifier = Modifier
+                                .padding(vertical = 10.dp)
+                                .size(width = 32.dp, height = 4.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                            shape = CircleShape,
+                        ) {}
                     }
                 },
             )
@@ -235,7 +265,6 @@ private fun <T> AnchoredDraggableState<T>.preUpPostDownNestedScrollConnection(
         val toFling = available.toFloat()
         return if (toFling < 0 && offset > anchors.minPosition()) {
             onFling(toFling)
-            // since we go to the anchor with tween settling, consume all for the best UX
             available
         } else {
             Velocity.Zero

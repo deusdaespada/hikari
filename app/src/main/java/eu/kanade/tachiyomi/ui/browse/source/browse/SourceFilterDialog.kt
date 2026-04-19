@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -40,35 +41,35 @@ fun SourceFilterDialog(
 ) {
     val updateFilters = { onUpdate(filters) }
 
-    AdaptiveSheet(onDismissRequest = onDismissRequest) {
-        LazyColumn {
-            stickyHeader {
-                Row(
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.background)
-                        .padding(8.dp),
-                ) {
-                    TextButton(onClick = onReset) {
-                        Text(
-                            text = stringResource(MR.strings.action_reset),
-                            style = LocalTextStyle.current.copy(
-                                color = MaterialTheme.colorScheme.primary,
-                            ),
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    Button(onClick = {
-                        onFilter()
-                        onDismissRequest()
-                    }) {
-                        Text(stringResource(MR.strings.action_filter))
-                    }
+    AdaptiveSheet(
+        onDismissRequest = onDismissRequest,
+        header = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+            ) {
+                TextButton(onClick = onReset) {
+                    Text(
+                        text = stringResource(MR.strings.action_reset),
+                        style = LocalTextStyle.current.copy(
+                            color = MaterialTheme.colorScheme.primary,
+                        ),
+                    )
                 }
-                HorizontalDivider()
-            }
 
+                Spacer(modifier = Modifier.weight(1f))
+
+                Button(onClick = {
+                    onFilter()
+                    onDismissRequest()
+                }) {
+                    Text(stringResource(MR.strings.action_filter))
+                }
+            }
+        },
+    ) {
+        LazyColumn {
             items(filters) {
                 FilterItem(it, updateFilters)
             }

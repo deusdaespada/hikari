@@ -22,6 +22,7 @@ fun NavigatorAdaptiveSheet(
     screen: Screen,
     enableSwipeDismiss: (Navigator) -> Boolean = { true },
     onDismissRequest: () -> Unit,
+    header: @Composable (() -> Unit)? = null,
 ) {
     Navigator(
         screen = screen,
@@ -29,6 +30,7 @@ fun NavigatorAdaptiveSheet(
             AdaptiveSheet(
                 onDismissRequest = onDismissRequest,
                 enableSwipeDismiss = enableSwipeDismiss(sheetNavigator),
+                header = header,
             ) {
                 ScreenTransition(
                     navigator = sheetNavigator,
@@ -64,6 +66,7 @@ fun AdaptiveSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     enableSwipeDismiss: Boolean = true,
+    header: @Composable (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     val isTabletUi = isTabletUi()
@@ -77,6 +80,7 @@ fun AdaptiveSheet(
             enableSwipeDismiss = enableSwipeDismiss,
             onDismissRequest = onDismissRequest,
             modifier = modifier,
+            header = header,
         ) {
             content()
         }
