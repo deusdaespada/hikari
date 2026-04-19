@@ -3,6 +3,8 @@ package tachiyomi.presentation.core.components.material
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
@@ -17,6 +19,7 @@ import androidx.compose.ui.unit.dp
  * @param indicatorPadding Content padding for the indicator, to inset the indicator in if required.
  * @param content The content containing a vertically scrollable composable.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PullRefresh(
     refreshing: Boolean,
@@ -28,22 +31,21 @@ fun PullRefresh(
 ) {
     val state = rememberPullToRefreshState()
     Box(
-        modifier = modifier
-            .pullToRefresh(
-                isRefreshing = refreshing,
-                state = state,
-                enabled = enabled,
-                onRefresh = onRefresh,
-            ),
+        modifier = modifier.pullToRefresh(
+            state = state,
+            isRefreshing = refreshing,
+            onRefresh = onRefresh,
+            enabled = enabled,
+        ),
     ) {
         content()
 
-        LiquidPullRefreshIndicator(
+        PullToRefreshDefaults.Indicator(
+            state = state,
+            isRefreshing = refreshing,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(indicatorPadding),
-            isRefreshing = refreshing,
-            state = state,
         )
     }
 }

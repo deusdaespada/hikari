@@ -10,22 +10,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.material3.MaterialTheme
-import tachiyomi.presentation.core.components.SectionCard
-import tachiyomi.presentation.core.components.material.padding
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.HorizontalDivider
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.ui.UiPreferences
@@ -50,7 +48,9 @@ import tachiyomi.domain.release.interactor.GetApplicationRelease
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.LinkIcon
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
+import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.icons.CustomIcons
 import tachiyomi.presentation.core.icons.Discord
@@ -111,7 +111,7 @@ object AboutScreen : Screen() {
                                 if (!isCheckingUpdates) {
                                     scope.launch {
                                         isCheckingUpdates = true
- 
+
                                         checkVersion(
                                             context = context,
                                             onAvailableUpdate = { result ->
@@ -143,7 +143,7 @@ object AboutScreen : Screen() {
                                 }
                             },
                         )
- 
+
                         HorizontalDivider()
 
                         if (!BuildConfig.DEBUG) {

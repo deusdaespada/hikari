@@ -9,15 +9,15 @@ import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.parseAs
+import hikari.domain.extensionrepo.interactor.CreateExtensionRepo
+import hikari.domain.extensionrepo.interactor.GetExtensionRepo
+import hikari.domain.extensionrepo.interactor.UpdateExtensionRepo
+import hikari.domain.extensionrepo.model.ExtensionRepo
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
-import hikari.domain.extensionrepo.interactor.CreateExtensionRepo
-import hikari.domain.extensionrepo.interactor.GetExtensionRepo
-import hikari.domain.extensionrepo.interactor.UpdateExtensionRepo
-import hikari.domain.extensionrepo.model.ExtensionRepo
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.lang.withIOContext
@@ -44,7 +44,9 @@ internal class ExtensionApi {
         return withIOContext {
             var repos = getExtensionRepo.getAll()
             if (repos.isEmpty()) {
-                createExtensionRepo.await("https://raw.githubusercontent.com/LeverTeam/hikari-extensions/repo/index.min.json")
+                createExtensionRepo.await(
+                    "https://raw.githubusercontent.com/LeverTeam/hikari-extensions/repo/index.min.json",
+                )
                 repos = getExtensionRepo.getAll()
             }
             repos

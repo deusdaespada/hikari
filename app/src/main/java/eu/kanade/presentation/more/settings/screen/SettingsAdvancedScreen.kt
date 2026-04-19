@@ -56,7 +56,6 @@ import eu.kanade.tachiyomi.util.system.isShizukuInstalled
 import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import eu.kanade.tachiyomi.util.system.toast
-import tachiyomi.presentation.core.components.SectionCard
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
@@ -70,6 +69,7 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.ResetViewerFlags
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
@@ -168,7 +168,9 @@ object SettingsAdvancedScreen : SearchableSettings {
                                                 clearSslPreferences()
                                             }
                                             WebStorage.getInstance().deleteAllData()
-                                            context.applicationInfo?.dataDir?.let { File("$it/app_webview/").deleteRecursively() }
+                                            context.applicationInfo?.dataDir?.let {
+                                                File("$it/app_webview/").deleteRecursively()
+                                            }
                                             context.toast(MR.strings.webview_data_deleted)
                                         } catch (e: Throwable) {
                                             logcat(LogPriority.ERROR, e)
@@ -298,7 +300,9 @@ object SettingsAdvancedScreen : SearchableSettings {
                                                 }
                                                 context.startActivity(intent)
                                             } catch (_: ActivityNotFoundException) {
-                                                context.toast(MR.strings.battery_optimization_setting_activity_not_found)
+                                                context.toast(
+                                                    MR.strings.battery_optimization_setting_activity_not_found,
+                                                )
                                             }
                                         } else {
                                             context.toast(MR.strings.battery_optimization_disabled)
@@ -546,7 +550,9 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 item = Preference.PreferenceItem.SwitchPreference(
                                     preference = basePreferences.alwaysDecodeLongStripWithSSIV,
                                     title = stringResource(MR.strings.pref_always_decode_long_strip_with_ssiv_2),
-                                    subtitle = stringResource(MR.strings.pref_always_decode_long_strip_with_ssiv_summary),
+                                    subtitle = stringResource(
+                                        MR.strings.pref_always_decode_long_strip_with_ssiv_summary,
+                                    ),
                                 ),
                                 highlightKey = null,
                             )

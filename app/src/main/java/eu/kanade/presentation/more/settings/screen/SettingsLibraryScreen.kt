@@ -40,12 +40,12 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_NON_R
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MARK_DUPLICATE_CHAPTER_READ_EXISTING
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MARK_DUPLICATE_CHAPTER_READ_NEW
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import tachiyomi.presentation.core.components.SectionCard
 import java.text.DateFormat
 import java.util.Calendar
 
@@ -268,7 +268,9 @@ object SettingsLibraryScreen : SearchableSettings {
                                     entries = persistentMapOf(
                                         MANGA_HAS_UNREAD to stringResource(MR.strings.pref_update_only_completely_read),
                                         MANGA_NON_READ to stringResource(MR.strings.pref_update_only_started),
-                                        MANGA_NON_COMPLETED to stringResource(MR.strings.pref_update_only_non_completed),
+                                        MANGA_NON_COMPLETED to stringResource(
+                                            MR.strings.pref_update_only_non_completed,
+                                        ),
                                     ),
                                     title = stringResource(MR.strings.pref_library_update_smart_update),
                                 ),

@@ -16,7 +16,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 private enum class InteractionState {
-    Pressed, Idle
+    Pressed,
+    Idle,
 }
 
 fun Modifier.bounceClick(

@@ -1,7 +1,7 @@
 package hikari.domain.extensionrepo.repository
 
-import kotlinx.coroutines.flow.Flow
 import hikari.domain.extensionrepo.model.ExtensionRepo
+import kotlinx.coroutines.flow.Flow
 
 interface ExtensionRepoRepository {
 

@@ -65,7 +65,6 @@ fun SetIntervalDialog(
 ) {
     var selectedInterval by rememberSaveable { mutableIntStateOf(if (interval < 0) -interval else 0) }
 
-
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = { Text(stringResource(MR.strings.pref_library_update_smart_update)) },

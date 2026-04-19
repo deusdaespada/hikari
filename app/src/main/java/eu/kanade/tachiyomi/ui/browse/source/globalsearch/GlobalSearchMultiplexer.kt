@@ -1,15 +1,15 @@
 package eu.kanade.tachiyomi.ui.browse.source.globalsearch
 
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.util.lang.extractDeduplicationIds
+import eu.kanade.tachiyomi.util.lang.normalizeTitle
+import hikari.domain.manga.model.toDomainManga
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.Dispatchers
-import eu.kanade.tachiyomi.util.lang.normalizeTitle
-import eu.kanade.tachiyomi.util.lang.extractDeduplicationIds
-import hikari.domain.manga.model.toDomainManga
 import tachiyomi.domain.manga.model.Manga
 
 /**

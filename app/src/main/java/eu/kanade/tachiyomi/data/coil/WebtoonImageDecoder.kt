@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.data.coil
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
+import androidx.core.graphics.createBitmap
 import coil3.ImageLoader
 import coil3.asImage
 import coil3.decode.DecodeResult
@@ -14,7 +15,6 @@ import okio.BufferedSource
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.NativeImageDecoder
 import tachiyomi.core.common.util.system.logcat
-import androidx.core.graphics.createBitmap
 
 /**
  * A Coil [Decoder] specifically tuned for very tall webtoon-style images.
@@ -38,7 +38,7 @@ class WebtoonImageDecoder(private val source: BufferedSource, private val option
 
         if (!isExtremelyTall && !exceedsTextureLimit) return null
 
-        logcat { "Tuning Webtoon image: ${srcWidth}x${srcHeight}" }
+        logcat { "Tuning Webtoon image: ${srcWidth}x$srcHeight" }
 
         var inSampleSize = 1
         val maxDimension = maxOf(srcWidth, srcHeight)
@@ -74,7 +74,9 @@ class WebtoonImageDecoder(private val source: BufferedSource, private val option
                 canvas.drawBitmap(b, 0f, 0f, null)
                 b.recycle()
                 true
-            } else false
+            } else {
+                false
+            }
         }
 
         if (!success) {

@@ -13,6 +13,7 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -33,8 +34,8 @@ import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.isTabletUi
 import tachiyomi.i18n.MR
-import tachiyomi.presentation.core.components.material.LiquidSlider
 import tachiyomi.presentation.core.i18n.stringResource
+import kotlin.math.roundToInt
 
 @Composable
 fun ChapterNavigator(
@@ -100,15 +101,17 @@ fun ChapterNavigator(
                                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             }
                         }
-                        LiquidSlider(
+                        Slider(
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(horizontal = 12.dp),
-                            value = currentPage,
-                            valueRange = 1..totalPages,
+                            value = currentPage.toFloat(),
+                            valueRange = 1f..totalPages.toFloat(),
+                            steps = if (totalPages > 2) totalPages - 2 else 0,
                             onValueChange = f@{
-                                if (it == currentPage) return@f
-                                onPageIndexChange(it - 1)
+                                val itInt = it.roundToInt()
+                                if (itInt == currentPage) return@f
+                                onPageIndexChange(itInt - 1)
                             },
                             interactionSource = interactionSource,
                         )

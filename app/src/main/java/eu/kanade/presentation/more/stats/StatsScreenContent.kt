@@ -279,7 +279,11 @@ private fun LazyItemScope.HeatmapSection(
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 )
                                                 Text(
-                                                    text = pluralStringResource(MR.plurals.manga_num_chapters, count, count),
+                                                    text = pluralStringResource(
+                                                        MR.plurals.manga_num_chapters,
+                                                        count,
+                                                        count,
+                                                    ),
                                                     style = MaterialTheme.typography.labelMedium,
                                                     fontWeight = FontWeight.Bold,
                                                     color = MaterialTheme.colorScheme.primary,
@@ -296,4 +300,3 @@ private fun LazyItemScope.HeatmapSection(
         }
     }
 }
-

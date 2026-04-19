@@ -25,10 +25,10 @@ import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
-import kotlinx.coroutines.flow.update
 import hikari.domain.migration.models.MigrationFlag
 import hikari.domain.migration.usecases.MigrateMangaUseCase
 import hikari.feature.common.utils.getLabel
+import kotlinx.coroutines.flow.update
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.domain.manga.model.Manga

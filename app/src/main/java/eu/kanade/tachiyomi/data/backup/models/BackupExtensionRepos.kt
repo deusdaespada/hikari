@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.data.backup.models
 
+import hikari.domain.extensionrepo.model.ExtensionRepo
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import hikari.domain.extensionrepo.model.ExtensionRepo
 
 @Serializable
 class BackupExtensionRepos(

@@ -17,12 +17,12 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableMap
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import tachiyomi.presentation.core.components.SectionCard
 
 object SettingsSecurityScreen : SearchableSettings {
 
@@ -118,7 +118,9 @@ object SettingsSecurityScreen : SearchableSettings {
                             )
 
                             PreferenceItem(
-                                item = Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.secure_screen_summary)),
+                                item = Preference.PreferenceItem.InfoPreference(
+                                    stringResource(MR.strings.secure_screen_summary),
+                                ),
                                 highlightKey = null,
                             )
                         }

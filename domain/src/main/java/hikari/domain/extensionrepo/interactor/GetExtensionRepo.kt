@@ -1,8 +1,8 @@
 package hikari.domain.extensionrepo.interactor
 
-import kotlinx.coroutines.flow.Flow
 import hikari.domain.extensionrepo.model.ExtensionRepo
 import hikari.domain.extensionrepo.repository.ExtensionRepoRepository
+import kotlinx.coroutines.flow.Flow
 
 class GetExtensionRepo(
     private val repository: ExtensionRepoRepository,

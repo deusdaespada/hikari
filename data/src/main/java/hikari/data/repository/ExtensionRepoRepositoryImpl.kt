@@ -1,11 +1,11 @@
 package hikari.data.repository
 
 import android.database.SQLException
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import hikari.domain.extensionrepo.exception.SaveExtensionRepoException
 import hikari.domain.extensionrepo.model.ExtensionRepo
 import hikari.domain.extensionrepo.repository.ExtensionRepoRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import tachiyomi.data.DatabaseHandler
 
 class ExtensionRepoRepositoryImpl(

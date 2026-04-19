@@ -17,12 +17,12 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import tachiyomi.presentation.core.components.SectionCard
 import java.text.NumberFormat
 
 object SettingsReaderScreen : SearchableSettings {
@@ -273,8 +273,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 item = Preference.PreferenceItem.ListPreference(
                                     preference = flashColorPref,
                                     entries = persistentMapOf(
-                                        ReaderPreferences.FlashColor.BLACK to stringResource(MR.strings.pref_flash_style_black),
-                                        ReaderPreferences.FlashColor.WHITE to stringResource(MR.strings.pref_flash_style_white),
+                                        ReaderPreferences.FlashColor.BLACK to
+                                            stringResource(MR.strings.pref_flash_style_black),
+                                        ReaderPreferences.FlashColor.WHITE to
+                                            stringResource(MR.strings.pref_flash_style_white),
                                         ReaderPreferences.FlashColor.WHITE_BLACK
                                             to stringResource(MR.strings.pref_flash_style_white_black),
                                     ),
@@ -596,10 +598,15 @@ object SettingsReaderScreen : SearchableSettings {
                                 item = Preference.PreferenceItem.ListPreference(
                                     preference = readerPreferences.readerHideThreshold,
                                     entries = persistentMapOf(
-                                        ReaderPreferences.ReaderHideThreshold.HIGHEST to stringResource(MR.strings.pref_highest),
-                                        ReaderPreferences.ReaderHideThreshold.HIGH to stringResource(MR.strings.pref_high),
-                                        ReaderPreferences.ReaderHideThreshold.LOW to stringResource(MR.strings.pref_low),
-                                        ReaderPreferences.ReaderHideThreshold.LOWEST to stringResource(MR.strings.pref_lowest),
+                                        ReaderPreferences.ReaderHideThreshold.HIGHEST to
+                                            stringResource(MR.strings.pref_highest),
+                                        ReaderPreferences.ReaderHideThreshold.HIGH to
+                                            stringResource(MR.strings.pref_high),
+                                        ReaderPreferences.ReaderHideThreshold.LOW to stringResource(
+                                            MR.strings.pref_low,
+                                        ),
+                                        ReaderPreferences.ReaderHideThreshold.LOWEST to
+                                            stringResource(MR.strings.pref_lowest),
                                     ),
                                     title = stringResource(MR.strings.pref_hide_threshold),
                                 ),

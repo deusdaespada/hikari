@@ -1,7 +1,7 @@
 package hikari.domain.extensionrepo.service
 
-import kotlinx.serialization.Serializable
 import hikari.domain.extensionrepo.model.ExtensionRepo
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class ExtensionRepoMetaDto(

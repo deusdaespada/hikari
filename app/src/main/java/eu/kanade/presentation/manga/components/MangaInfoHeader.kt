@@ -89,6 +89,7 @@ import com.mikepenz.markdown.model.markdownAnnotatorConfig
 import com.mikepenz.markdown.utils.getUnescapedTextInNode
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.DropdownMenu
+import eu.kanade.presentation.util.mangaSharedElement
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.system.copyToClipboard
@@ -102,8 +103,6 @@ import tachiyomi.presentation.core.components.material.TextButton
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
-import eu.kanade.presentation.util.mangaSharedElement
-import tachiyomi.presentation.core.util.liquidEntrance
 import tachiyomi.presentation.core.util.clickableNoIndication
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 import uy.kohesive.injekt.Injekt
@@ -427,7 +426,6 @@ private fun ColumnScope.MangaContentInfo(
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier
                 .mangaSharedElement("title", mangaId)
-                .liquidEntrance(visible = true, durationMillis = 1000)
                 .clickableNoIndication(
                     onLongClick = {
                         if (title.isNotBlank()) {
@@ -454,8 +452,7 @@ private fun ColumnScope.MangaContentInfo(
     ) {
         Row(
             modifier = Modifier
-                .secondaryItemAlpha()
-                .liquidEntrance(visible = true, durationMillis = 1200),
+                .secondaryItemAlpha(),
             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -517,8 +514,7 @@ private fun ColumnScope.MangaContentInfo(
     ) {
         Row(
             modifier = Modifier
-                .secondaryItemAlpha()
-                .liquidEntrance(visible = true, durationMillis = 1400),
+                .secondaryItemAlpha(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(

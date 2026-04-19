@@ -1,6 +1,6 @@
 # Hikari
 
-Manga reader for Android based on Mihon featuring a native image pipeline and sectional UI.
+Manga reader for Android based on Mihon with NDK image decoding and sectional UI.
 
 ![License](https://img.shields.io/badge/license-Apache_2.0-blue?style=flat-square)
 ![Version](https://img.shields.io/badge/version-0.3.7-blue?style=flat-square)
@@ -9,14 +9,14 @@ Manga reader for Android based on Mihon featuring a native image pipeline and se
 
 ## Features
 
-- Extension management with automatic sync across multiple repositories
-- Sectional dashboard layout for advanced, library, and reader settings
-- Native NDK-based image decoding system using AImageDecoder
-- High-performance EASU upscaling integrated into the reader pipeline
-- Global search deduplication engine for grouping manga across sources
-- Material You UI with AGSL shader-based dynamic skinning
-- Biometric security dashboard with idle application locking
-- Automated library organization and background backup management
+- Extension management with automatic repository synchronization
+- Sectional dashboard for library and reader configuration
+- NDK-based image decoding using AImageDecoder
+- EASU upscaling integration in the reader pipeline
+- Global search deduplication for cross-source manga grouping
+- Material 3 user interface with Material You support
+- Biometric security with idle application locking
+- Background library organization and backup management
 
 ## Prerequisites
 
@@ -28,17 +28,15 @@ Manga reader for Android based on Mihon featuring a native image pipeline and se
 
 ## Installation
 
-### Downloads
-
-Official APK releases are available on the [GitHub Releases](https://github.com/LeverTeam/hikari/releases) page.
-
-### Build
+Build from source:
 
 ```bash
 git clone https://github.com/LeverTeam/hikari.git
 cd hikari
 ./gradlew assembleDebug
 ```
+
+Official APK releases are available on the [GitHub Releases](https://github.com/LeverTeam/hikari/releases) page.
 
 ## Usage
 

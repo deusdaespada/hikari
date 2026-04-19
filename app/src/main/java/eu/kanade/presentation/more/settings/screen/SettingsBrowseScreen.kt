@@ -17,15 +17,15 @@ import eu.kanade.presentation.more.settings.PreferenceItem
 import eu.kanade.presentation.more.settings.screen.browse.ExtensionReposScreen
 import eu.kanade.presentation.more.settings.screen.browse.HiddenMangaSourcesScreen
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.authenticate
-import kotlinx.collections.immutable.persistentListOf
 import hikari.domain.extensionrepo.interactor.GetExtensionRepoCount
+import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import tachiyomi.presentation.core.components.SectionCard
 
 object SettingsBrowseScreen : SearchableSettings {
 
@@ -140,7 +140,9 @@ object SettingsBrowseScreen : SearchableSettings {
                             )
 
                             PreferenceItem(
-                                item = Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.parental_controls_info)),
+                                item = Preference.PreferenceItem.InfoPreference(
+                                    stringResource(MR.strings.parental_controls_info),
+                                ),
                                 highlightKey = null,
                             )
                         }

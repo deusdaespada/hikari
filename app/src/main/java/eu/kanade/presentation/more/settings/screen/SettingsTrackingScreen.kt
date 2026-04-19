@@ -3,7 +3,6 @@ package eu.kanade.presentation.more.settings.screen
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +15,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -64,11 +64,11 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import tachiyomi.presentation.core.components.SectionCard
 
 object SettingsTrackingScreen : SearchableSettings {
 
@@ -135,7 +135,7 @@ object SettingsTrackingScreen : SearchableSettings {
             getEnhancedGroup(enhancedTrackers.first, enhancedTrackerInfo),
         )
     }
- 
+
     @Composable
     private fun getAutomationGroup(trackPreferences: TrackPreferences): Preference.PreferenceGroup {
         return Preference.PreferenceGroup(
@@ -153,9 +153,9 @@ object SettingsTrackingScreen : SearchableSettings {
                                 ),
                                 highlightKey = null,
                             )
- 
+
                             HorizontalDivider()
- 
+
                             PreferenceItem(
                                 item = Preference.PreferenceItem.ListPreference(
                                     preference = trackPreferences.autoUpdateTrackOnMarkRead,
@@ -172,7 +172,7 @@ object SettingsTrackingScreen : SearchableSettings {
             ),
         )
     }
- 
+
     @Composable
     private fun getServicesGroup(
         context: android.content.Context,
@@ -189,15 +189,21 @@ object SettingsTrackingScreen : SearchableSettings {
                         Column {
                             val trackers = remember {
                                 listOf(
-                                    trackerManager.myAnimeList to { context.openInBrowser(MyAnimeListApi.authUrl(), forceDefaultBrowser = true) },
-                                    trackerManager.aniList to { context.openInBrowser(AnilistApi.authUrl(), forceDefaultBrowser = true) },
-                                    trackerManager.kitsu to { setDialog(LoginDialog(trackerManager.kitsu, MR.strings.email)) },
-                                    trackerManager.mangaUpdates to { setDialog(LoginDialog(trackerManager.mangaUpdates, MR.strings.username)) },
-                                    trackerManager.shikimori to { context.openInBrowser(ShikimoriApi.authUrl(), forceDefaultBrowser = true) },
-                                    trackerManager.bangumi to { context.openInBrowser(BangumiApi.authUrl(), forceDefaultBrowser = true) },
+                                    trackerManager.myAnimeList to
+                                        { context.openInBrowser(MyAnimeListApi.authUrl(), forceDefaultBrowser = true) },
+                                    trackerManager.aniList to
+                                        { context.openInBrowser(AnilistApi.authUrl(), forceDefaultBrowser = true) },
+                                    trackerManager.kitsu to
+                                        { setDialog(LoginDialog(trackerManager.kitsu, MR.strings.email)) },
+                                    trackerManager.mangaUpdates to
+                                        { setDialog(LoginDialog(trackerManager.mangaUpdates, MR.strings.username)) },
+                                    trackerManager.shikimori to
+                                        { context.openInBrowser(ShikimoriApi.authUrl(), forceDefaultBrowser = true) },
+                                    trackerManager.bangumi to
+                                        { context.openInBrowser(BangumiApi.authUrl(), forceDefaultBrowser = true) },
                                 )
                             }
- 
+
                             trackers.forEachIndexed { index, (tracker, login) ->
                                 PreferenceItem(
                                     item = Preference.PreferenceItem.TrackerPreference(
@@ -218,7 +224,7 @@ object SettingsTrackingScreen : SearchableSettings {
             ),
         )
     }
- 
+
     @Composable
     private fun getEnhancedGroup(
         enhancedTrackers: List<Tracker>,

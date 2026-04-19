@@ -1,6 +1,8 @@
 package eu.kanade.tachiyomi.ui.manga
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -23,6 +25,12 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import coil3.asDrawable
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.request.allowHardware
+import coil3.size.Size
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
@@ -54,23 +62,12 @@ import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
-import kotlinx.coroutines.launch
 import hikari.feature.migration.config.MigrationConfigScreen
 import hikari.feature.migration.dialog.MigrateMangaDialog
+import kotlinx.coroutines.launch
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.screens.LoadingScreen
-import tachiyomi.presentation.core.util.ProvideSkin
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import androidx.compose.foundation.isSystemInDarkTheme
-import coil3.asDrawable
-import coil3.imageLoader
-import coil3.request.ImageRequest
-import coil3.request.SuccessResult
-import coil3.request.allowHardware
-import coil3.size.Size
-import eu.kanade.tachiyomi.ui.manga.util.rememberSkinColors
 
 class MangaScreen(
     private val mangaId: Long,
@@ -120,73 +117,70 @@ class MangaScreen(
             }
         }
 
-        val skinColors = rememberSkinColors(coverBitmap, isSystemInDarkTheme())
-
-        ProvideSkin(
-            skin = tachiyomi.presentation.core.util.currentSkin(),
-            colors = skinColors,
-        ) {
-            MangaScreen(
-                state = successState,
-                snackbarHostState = screenModel.snackbarHostState,
-                isTabletUi = isTabletUi(),
-                chapterSwipeStartAction = screenModel.chapterSwipeStartAction,
-                chapterSwipeEndAction = screenModel.chapterSwipeEndAction,
-                navigateUp = navigator::pop,
-                onChapterClicked = { openChapter(context, it) },
-                onDownloadChapter = screenModel::runChapterDownloadActions.takeIf { !successState.source.isLocalOrStub() },
-                onAddToLibraryClicked = {
-                    screenModel.toggleFavorite()
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                },
-                onWebViewClicked = {
-                    openMangaInWebView(
-                        navigator,
-                        screenModel.manga,
-                        screenModel.source,
-                    )
-                }.takeIf { isHttpSource },
-                onWebViewLongClicked = {
-                    copyMangaUrl(
-                        context,
-                        screenModel.manga,
-                        screenModel.source,
-                    )
-                }.takeIf { isHttpSource },
-                onTrackingClicked = {
-                    if (!successState.hasLoggedInTrackers) {
-                        navigator.push(SettingsScreen(SettingsScreen.Destination.Tracking))
-                    } else {
-                        screenModel.showTrackDialog()
-                    }
-                },
-                onTagSearch = { scope.launch { performGenreSearch(navigator, it, screenModel.source!!) } },
-                onFilterButtonClicked = screenModel::showSettingsDialog,
-                onRefresh = screenModel::fetchAllFromSource,
-                onContinueReading = { continueReading(context, screenModel.getNextUnreadChapter()) },
-                onSearch = { query, global -> scope.launch { performSearch(navigator, query, global) } },
-                onCoverClicked = screenModel::showCoverDialog,
-                onShareClicked = { shareManga(context, screenModel.manga, screenModel.source) }.takeIf { isHttpSource },
-                onDownloadActionClicked = screenModel::runDownloadAction.takeIf { !successState.source.isLocalOrStub() },
-                onEditCategoryClicked = screenModel::showChangeCategoryDialog.takeIf { successState.manga.favorite },
-                onEditFetchIntervalClicked = screenModel::showSetFetchIntervalDialog.takeIf {
-                    successState.manga.favorite
-                },
-                onMigrateClicked = {
-                    navigator.push(MigrationConfigScreen(successState.manga.id))
-                }.takeIf { successState.manga.favorite },
-                onEditNotesClicked = { navigator.push(MangaNotesScreen(manga = successState.manga)) },
-                onMultiBookmarkClicked = screenModel::bookmarkChapters,
-                onMultiMarkAsReadClicked = screenModel::markChaptersRead,
-                onMarkPreviousAsReadClicked = screenModel::markPreviousChapterRead,
-                onMultiDeleteClicked = screenModel::showDeleteChapterDialog,
-                onChapterSwipe = screenModel::chapterSwipe,
-                onChapterSelected = screenModel::toggleSelection,
-                onAllChapterSelected = screenModel::toggleAllSelection,
-                onInvertSelection = screenModel::invertSelection,
-                onGroupClicked = screenModel::toggleGroupExpanded,
-            )
-        }
+        MangaScreen(
+            state = successState,
+            snackbarHostState = screenModel.snackbarHostState,
+            isTabletUi = isTabletUi(),
+            chapterSwipeStartAction = screenModel.chapterSwipeStartAction,
+            chapterSwipeEndAction = screenModel.chapterSwipeEndAction,
+            navigateUp = navigator::pop,
+            onChapterClicked = { openChapter(context, it) },
+            onDownloadChapter = screenModel::runChapterDownloadActions.takeIf {
+                !successState.source.isLocalOrStub()
+            },
+            onAddToLibraryClicked = {
+                screenModel.toggleFavorite()
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            },
+            onWebViewClicked = {
+                openMangaInWebView(
+                    navigator,
+                    screenModel.manga,
+                    screenModel.source,
+                )
+            }.takeIf { isHttpSource },
+            onWebViewLongClicked = {
+                copyMangaUrl(
+                    context,
+                    screenModel.manga,
+                    screenModel.source,
+                )
+            }.takeIf { isHttpSource },
+            onTrackingClicked = {
+                if (!successState.hasLoggedInTrackers) {
+                    navigator.push(SettingsScreen(SettingsScreen.Destination.Tracking))
+                } else {
+                    screenModel.showTrackDialog()
+                }
+            },
+            onTagSearch = { scope.launch { performGenreSearch(navigator, it, screenModel.source!!) } },
+            onFilterButtonClicked = screenModel::showSettingsDialog,
+            onRefresh = screenModel::fetchAllFromSource,
+            onContinueReading = { continueReading(context, screenModel.getNextUnreadChapter()) },
+            onSearch = { query, global -> scope.launch { performSearch(navigator, query, global) } },
+            onCoverClicked = screenModel::showCoverDialog,
+            onShareClicked = { shareManga(context, screenModel.manga, screenModel.source) }.takeIf { isHttpSource },
+            onDownloadActionClicked = screenModel::runDownloadAction.takeIf {
+                !successState.source.isLocalOrStub()
+            },
+            onEditCategoryClicked = screenModel::showChangeCategoryDialog.takeIf { successState.manga.favorite },
+            onEditFetchIntervalClicked = screenModel::showSetFetchIntervalDialog.takeIf {
+                successState.manga.favorite
+            },
+            onMigrateClicked = {
+                navigator.push(MigrationConfigScreen(successState.manga.id))
+            }.takeIf { successState.manga.favorite },
+            onEditNotesClicked = { navigator.push(MangaNotesScreen(manga = successState.manga)) },
+            onMultiBookmarkClicked = screenModel::bookmarkChapters,
+            onMultiMarkAsReadClicked = screenModel::markChaptersRead,
+            onMarkPreviousAsReadClicked = screenModel::markPreviousChapterRead,
+            onMultiDeleteClicked = screenModel::showDeleteChapterDialog,
+            onChapterSwipe = screenModel::chapterSwipe,
+            onChapterSelected = screenModel::toggleSelection,
+            onAllChapterSelected = screenModel::toggleAllSelection,
+            onInvertSelection = screenModel::invertSelection,
+            onGroupClicked = screenModel::toggleGroupExpanded,
+        )
 
         var showScanlatorsDialog by remember { mutableStateOf(false) }
 

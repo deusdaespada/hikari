@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.ui.reader.viewer.webtoon
 
-import android.graphics.Rect
 import android.graphics.PointF
+import android.graphics.Rect
 import android.view.GestureDetector
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -396,12 +396,12 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
             KeyEvent.KEYCODE_DPAD_LEFT,
             KeyEvent.KEYCODE_DPAD_UP,
             KeyEvent.KEYCODE_PAGE_UP,
-                -> if (isUp) scrollUp()
+            -> if (isUp) scrollUp()
 
             KeyEvent.KEYCODE_DPAD_RIGHT,
             KeyEvent.KEYCODE_DPAD_DOWN,
             KeyEvent.KEYCODE_PAGE_DOWN,
-                -> if (isUp) scrollDown()
+            -> if (isUp) scrollDown()
 
             else -> return false
         }

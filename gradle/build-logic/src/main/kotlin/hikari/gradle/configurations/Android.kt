@@ -3,8 +3,8 @@ package hikari.gradle.configurations
 import com.android.build.api.dsl.ApplicationDefaultConfig
 import hikari.gradle.extensions.android
 import hikari.gradle.extensions.coreLibraryDesugaring
-import hikari.gradle.extensions.libs
 import hikari.gradle.extensions.hikarix
+import hikari.gradle.extensions.libs
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
 

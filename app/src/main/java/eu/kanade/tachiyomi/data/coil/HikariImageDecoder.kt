@@ -14,6 +14,9 @@ import coil3.request.allowRgb565
 import okio.BufferedSource
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.NativeImageDecoder
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
 
 /**
  * A Coil [Decoder] that leverages the custom native C++ [NativeImageDecoder] pipeline.
@@ -37,8 +40,19 @@ class HikariImageDecoder(
         val srcWidth = dimenOptions.outWidth
         val srcHeight = dimenOptions.outHeight
 
-        val dstWidth = options.size.widthPx(options.scale) { srcWidth }
-        val dstHeight = options.size.heightPx(options.scale) { srcHeight }
+        val reqWidth = options.size.widthPx(options.scale) { srcWidth }
+        val reqHeight = options.size.heightPx(options.scale) { srcHeight }
+
+        val widthPercent = reqWidth.toDouble() / srcWidth
+        val heightPercent = reqHeight.toDouble() / srcHeight
+        val multiplier = if (options.scale == coil3.size.Scale.FILL) {
+            max(widthPercent, heightPercent)
+        } else {
+            min(widthPercent, heightPercent)
+        }
+
+        val dstWidth = (srcWidth * multiplier).roundToInt().coerceAtLeast(1)
+        val dstHeight = (srcHeight * multiplier).roundToInt().coerceAtLeast(1)
 
         val sampleSize = DecodeUtils.calculateInSampleSize(
             srcWidth = srcWidth,

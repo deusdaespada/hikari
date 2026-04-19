@@ -1,11 +1,11 @@
 package hikari.domain.extensionrepo.interactor
 
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import hikari.domain.extensionrepo.model.ExtensionRepo
 import hikari.domain.extensionrepo.repository.ExtensionRepoRepository
 import hikari.domain.extensionrepo.service.ExtensionRepoService
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 class UpdateExtensionRepo(
     private val repository: ExtensionRepoRepository,

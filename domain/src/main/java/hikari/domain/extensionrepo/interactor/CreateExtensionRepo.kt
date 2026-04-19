@@ -1,10 +1,10 @@
 package hikari.domain.extensionrepo.interactor
 
-import logcat.LogPriority
 import hikari.domain.extensionrepo.exception.SaveExtensionRepoException
 import hikari.domain.extensionrepo.model.ExtensionRepo
 import hikari.domain.extensionrepo.repository.ExtensionRepoRepository
 import hikari.domain.extensionrepo.service.ExtensionRepoService
+import logcat.LogPriority
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import tachiyomi.core.common.util.system.logcat
 

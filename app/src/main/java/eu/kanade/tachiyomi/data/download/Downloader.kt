@@ -14,8 +14,10 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.DiskUtil.NOMEDIA_FILE
 import eu.kanade.tachiyomi.util.storage.saveTo
+import hikari.core.archive.ZipWriter
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -37,7 +39,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import logcat.LogPriority
-import hikari.core.archive.ZipWriter
 import nl.adaptivity.xmlutil.serialization.XML
 import okhttp3.Response
 import tachiyomi.core.common.i18n.stringResource
@@ -60,7 +61,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
 import java.util.Locale
-import kotlinx.coroutines.DelicateCoroutinesApi
 
 /**
  * This class is the one in charge of downloading chapters.
@@ -111,7 +111,8 @@ class Downloader(
     var isPaused: Boolean = false
 
     init {
-        @OptIn(DelicateCoroutinesApi::class) launchNow {
+        @OptIn(DelicateCoroutinesApi::class)
+        launchNow {
             addAllToQueue(store.restore())
         }
     }
@@ -284,7 +285,9 @@ class Downloader(
                 val maxDownloadsFromSource =
                     queueState.value.groupBy { it.source }.filterKeys { it !is UnmeteredSource }
                         .maxOfOrNull { it.value.size } ?: 0
-                if (queuedDownloads > DOWNLOADS_QUEUED_WARNING_THRESHOLD || maxDownloadsFromSource > CHAPTERS_PER_SOURCE_QUEUE_WARNING_THRESHOLD) {
+                if (queuedDownloads > DOWNLOADS_QUEUED_WARNING_THRESHOLD ||
+                    maxDownloadsFromSource > CHAPTERS_PER_SOURCE_QUEUE_WARNING_THRESHOLD
+                ) {
                     notifier.onWarning(
                         context.stringResource(
                             MR.strings.download_queue_size_warning,
@@ -367,9 +370,9 @@ class Downloader(
                     emit(page)
                 }.flowOn(Dispatchers.IO)
             }.collect {
-                    // Do when page is downloaded.
-                    notifier.onProgressChange(download)
-                }
+                // Do when page is downloaded.
+                notifier.onProgressChange(download)
+            }
 
             // Do after download completes
 
@@ -603,8 +606,8 @@ class Downloader(
     ) {
         val categories = getCategories.await(manga.id).map { it.name.trim() }.takeUnless { it.isEmpty() }
         val urls = getTracks.await(manga.id).mapNotNull { track ->
-                track.remoteUrl.takeUnless { url -> url.isBlank() }?.trim()
-            }.plus(source.getChapterUrl(chapter.toSChapter()).trim()).distinct()
+            track.remoteUrl.takeUnless { url -> url.isBlank() }?.trim()
+        }.plus(source.getChapterUrl(chapter.toSChapter()).trim()).distinct()
 
         val comicInfo = getComicInfo(
             manga,

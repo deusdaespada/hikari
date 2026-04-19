@@ -1,11 +1,11 @@
 package hikari.core.migration.migrations
 
 import eu.kanade.domain.source.service.SourcePreferences
-import logcat.LogPriority
 import hikari.core.migration.Migration
 import hikari.core.migration.MigrationContext
 import hikari.domain.extensionrepo.exception.SaveExtensionRepoException
 import hikari.domain.extensionrepo.repository.ExtensionRepoRepository
+import logcat.LogPriority
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
 

@@ -22,12 +22,12 @@ import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import tachiyomi.presentation.core.components.SectionCard
 
 object SettingsDownloadScreen : SearchableSettings {
 
@@ -336,7 +336,9 @@ object SettingsDownloadScreen : SearchableSettings {
                             )
 
                             PreferenceItem(
-                                item = Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.download_ahead_info)),
+                                item = Preference.PreferenceItem.InfoPreference(
+                                    stringResource(MR.strings.download_ahead_info),
+                                ),
                                 highlightKey = null,
                             )
                         }

@@ -2,6 +2,7 @@ package eu.kanade.presentation.more.settings.screen
 
 import android.app.Activity
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
@@ -14,7 +15,6 @@ import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.domain.ui.model.TabletUiMode
 import eu.kanade.domain.ui.model.ThemeMode
 import eu.kanade.domain.ui.model.setAppCompatDelegateThemeMode
-import androidx.compose.material3.HorizontalDivider
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.PreferenceItem
 import eu.kanade.presentation.more.settings.screen.appearance.AppLanguageScreen
@@ -24,12 +24,12 @@ import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableMap
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.time.LocalDate
-import tachiyomi.presentation.core.components.SectionCard
 
 object SettingsAppearanceScreen : SearchableSettings {
 
@@ -182,7 +182,9 @@ object SettingsAppearanceScreen : SearchableSettings {
                                     entries = DateFormats
                                         .associateWith {
                                             val formattedDate = UiPreferences.dateFormat(it).format(now)
-                                            "${it.ifEmpty { stringResource(MR.strings.label_default) }} ($formattedDate)"
+                                            "${it.ifEmpty {
+                                                stringResource(MR.strings.label_default)
+                                            }} ($formattedDate)"
                                         }
                                         .toImmutableMap(),
                                     title = stringResource(MR.strings.pref_date_format),

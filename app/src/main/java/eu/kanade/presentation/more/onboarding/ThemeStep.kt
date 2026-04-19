@@ -1,21 +1,21 @@
 package eu.kanade.presentation.more.onboarding
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.domain.ui.model.setAppCompatDelegateThemeMode
 import eu.kanade.presentation.more.settings.widget.AppThemeModePreferenceWidget
 import eu.kanade.presentation.more.settings.widget.AppThemePreferenceWidget
-import tachiyomi.presentation.core.util.collectAsState
-import uy.kohesive.injekt.api.get
 import tachiyomi.presentation.core.components.SectionCard
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.HorizontalDivider
 import tachiyomi.presentation.core.components.material.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.Modifier
+import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 internal class ThemeStep : OnboardingStep {
 
