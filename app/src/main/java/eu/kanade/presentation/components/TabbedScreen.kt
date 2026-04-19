@@ -1,18 +1,25 @@
 package eu.kanade.presentation.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.SnackbarHostState
-import tachiyomi.presentation.core.components.HikariSnackbarHost
 import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -20,11 +27,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.zIndex
 import dev.icerock.moko.resources.StringResource
+import kotlin.math.absoluteValue
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
+import tachiyomi.presentation.core.components.HikariSnackbarHost
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.TabText
 import tachiyomi.presentation.core.i18n.stringResource
@@ -62,15 +73,50 @@ fun TabbedScreen(
                 end = contentPadding.calculateEndPadding(LocalLayoutDirection.current),
             ),
         ) {
-            PrimaryTabRow(
+            TabRow(
                 selectedTabIndex = state.currentPage,
                 modifier = Modifier.zIndex(1f),
+                containerColor = MaterialTheme.colorScheme.surface,
+                divider = {},
+                indicator = { tabPositions ->
+                    if (state.currentPage < tabPositions.size) {
+                        val fraction = state.currentPageOffsetFraction
+                        val currentTab = tabPositions[state.currentPage]
+                        val targetTab =
+                            tabPositions.getOrNull(if (fraction > 0) state.currentPage + 1 else state.currentPage - 1)
+                                ?: currentTab
+
+                        val indicatorWidth = lerp(currentTab.width, targetTab.width, fraction.absoluteValue)
+                        val indicatorOffset = lerp(currentTab.left, targetTab.left, fraction.absoluteValue)
+
+                        val stretch = (targetTab.left - currentTab.left).value.absoluteValue.dp * fraction.absoluteValue * 0.4f
+
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .wrapContentSize(Alignment.BottomStart)
+                                .offset(x = indicatorOffset - (stretch / 2))
+                                .width(indicatorWidth + stretch)
+                                .height(3.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
+                                ),
+                        )
+                    }
+                },
             ) {
                 tabs.forEachIndexed { index, tab ->
                     Tab(
                         selected = state.currentPage == index,
                         onClick = { scope.launch { state.animateScrollToPage(index) } },
-                        text = { TabText(text = stringResource(tab.titleRes), badgeCount = tab.badgeNumber) },
+                        text = {
+                            TabText(
+                                text = stringResource(tab.titleRes),
+                                badgeCount = tab.badgeNumber,
+                                selected = state.currentPage == index,
+                            )
+                        },
                         unselectedContentColor = MaterialTheme.colorScheme.onSurface,
                     )
                 }

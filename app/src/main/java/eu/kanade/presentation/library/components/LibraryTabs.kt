@@ -38,6 +38,7 @@ internal fun LibraryTabs(
                         TabText(
                             text = category.visualName,
                             badgeCount = getItemCountForCategory(category),
+                            selected = currentPageIndex == index,
                         )
                     },
                     unselectedContentColor = MaterialTheme.colorScheme.onSurface,
