@@ -18,7 +18,6 @@ import androidx.core.graphics.alpha
 import androidx.core.graphics.applyCanvas
 import androidx.core.graphics.blue
 import androidx.core.graphics.createBitmap
-import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.get
 import androidx.core.graphics.green
 import androidx.core.graphics.red
@@ -60,7 +59,7 @@ object ImageUtil {
                 Format.Webp -> ImageType.WEBP
                 else -> null
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             null
         }
     }
@@ -82,7 +81,7 @@ object ImageUtil {
                 Format.Heif -> type.isAnimated && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
                 else -> false
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             false
         }
     }
@@ -204,18 +203,13 @@ object ImageUtil {
      *
      * @return true if the height:width ratio is greater than 3.
      */
-    fun isTallImage(imageSource: BufferedSource): Boolean {
+    private fun isTallImage(imageSource: BufferedSource): Boolean {
         val options = extractImageOptions(imageSource)
-        if (options.outHeight <= 0 || options.outWidth <= 0) return false
-        return options.outHeight > options.outWidth * 1.5
-    }
-
-    /**
-     * Check whether the image exceeds the hardware texture limit.
-     */
-    fun isLargeImage(imageSource: BufferedSource): Boolean {
-        val options = extractImageOptions(imageSource)
-        return options.outHeight > hardwareBitmapThreshold || options.outWidth > hardwareBitmapThreshold
+        return TallImageSplitCalculator.shouldSplit(
+            imageWidth = options.outWidth,
+            imageHeight = options.outHeight,
+            optimalImageHeight = optimalImageHeight,
+        )
     }
 
     /**
@@ -236,7 +230,6 @@ object ImageUtil {
         val options = extractImageOptions(imageSource).apply {
             inJustDecodeBounds = false
         }
-
         val splitDataList = options.splitData
 
         return try {
@@ -273,20 +266,17 @@ object ImageUtil {
         }
     }
 
-    private fun splitImageName(filenamePrefix: String, index: Int) = "${filenamePrefix}__${
-        "%03d".format(
-            Locale.ENGLISH,
-            index + 1,
-        )
-    }.jpg"
+    private fun splitImageName(filenamePrefix: String, index: Int) = "${filenamePrefix}__${"%03d".format(
+        Locale.ENGLISH,
+        index + 1,
+    )}.jpg"
 
     private val BitmapFactory.Options.splitData
         get(): List<SplitData> {
             val imageHeight = outHeight
             val imageWidth = outWidth
 
-            // -1 so it doesn't try to split when imageHeight = optimalImageHeight
-            val partCount = (imageHeight - 1) / optimalImageHeight + 1
+            val partCount = TallImageSplitCalculator.calculatePartCount(imageHeight, optimalImageHeight)
             val optimalSplitHeight = imageHeight / partCount
 
             logcat {
@@ -348,9 +338,9 @@ object ImageUtil {
         decoder?.recycle()
 
         val whiteColor = Color.WHITE
-        if (image == null) return whiteColor.toDrawable()
+        if (image == null) return ColorDrawable(whiteColor)
         if (image.width < 50 || image.height < 50) {
-            return whiteColor.toDrawable()
+            return ColorDrawable(whiteColor)
         }
 
         val top = 5
@@ -372,17 +362,17 @@ object ImageUtil {
         val bottomCenterPixel = image[midX, bot]
         val botRightPixel = image[right, bot]
 
-        val topLeftIsDark = topLeftPixel.isDark()
-        val topRightIsDark = topRightPixel.isDark()
-        val midLeftIsDark = midLeftPixel.isDark()
-        val midRightIsDark = midRightPixel.isDark()
-        val topMidIsDark = topCenterPixel.isDark()
-        val botLeftIsDark = botLeftPixel.isDark()
-        val botRightIsDark = botRightPixel.isDark()
+        val topLeftPixelDark = topLeftPixel.isDark()
+        val topRightPixelDark = topRightPixel.isDark()
+        val midLeftPixelDark = midLeftPixel.isDark()
+        val midRightPixelDark = midRightPixel.isDark()
+        val topMidPixelDark = topCenterPixel.isDark()
+        val botLeftPixelDark = botLeftPixel.isDark()
+        val botRightPixelDark = botRightPixel.isDark()
 
         var darkBG =
-            (topLeftIsDark && (botLeftIsDark || botRightIsDark || topRightIsDark || midLeftIsDark || topMidIsDark)) ||
-                (topRightIsDark && (botRightIsDark || botLeftIsDark || midRightIsDark || topMidIsDark))
+            (topLeftPixelDark && (botLeftPixelDark || botRightPixelDark || topRightPixelDark || midLeftPixelDark || topMidPixelDark)) ||
+                (topRightPixelDark && (botRightPixelDark || botLeftPixelDark || midRightPixelDark || topMidPixelDark))
 
         val topAndBotPixels =
             listOf(topLeftPixel, topCenterPixel, topRightPixel, botRightPixel, bottomCenterPixel, botLeftPixel)
@@ -391,7 +381,7 @@ object ImageUtil {
             !color.isWhite() && color.isCloseTo(other)
         }
         if (isNotWhiteAndCloseTo.all { it }) {
-            return topLeftPixel.toDrawable()
+            return ColorDrawable(topLeftPixel)
         }
 
         val cornerPixels = listOf(topLeftPixel, topRightPixel, botLeftPixel, botRightPixel)
@@ -403,10 +393,10 @@ object ImageUtil {
         }
 
         var blackColor = when {
-            topLeftIsDark -> topLeftPixel
-            topRightIsDark -> topRightPixel
-            botLeftIsDark -> botLeftPixel
-            botRightIsDark -> botRightPixel
+            topLeftPixelDark -> topLeftPixel
+            topRightPixelDark -> topRightPixel
+            botLeftPixelDark -> botLeftPixel
+            botRightPixelDark -> botRightPixel
             else -> whiteColor
         }
 
@@ -467,8 +457,8 @@ object ImageUtil {
                 blackPixels > 22 -> {
                     if (x == right || x == rightOffsetX) {
                         blackColor = when {
-                            topRightIsDark -> topRightPixel
-                            botRightIsDark -> botRightPixel
+                            topRightPixelDark -> topRightPixel
+                            botRightPixelDark -> botRightPixel
                             else -> blackColor
                         }
                     }
@@ -476,13 +466,12 @@ object ImageUtil {
                     overallWhitePixels = 0
                     break@outer
                 }
-
                 blackStreak -> {
                     darkBG = true
                     if (x == right || x == rightOffsetX) {
                         blackColor = when {
-                            topRightIsDark -> topRightPixel
-                            botRightIsDark -> botRightPixel
+                            topRightPixelDark -> topRightPixel
+                            botRightPixelDark -> botRightPixel
                             else -> blackColor
                         }
                     }
@@ -491,7 +480,6 @@ object ImageUtil {
                         break@outer
                     }
                 }
-
                 whiteStreak || whitePixels > 22 -> darkBG = false
             }
         }
@@ -508,16 +496,16 @@ object ImageUtil {
         val isLandscape = context.resources.configuration?.orientation == Configuration.ORIENTATION_LANDSCAPE
         if (isLandscape) {
             return when {
-                darkBG -> blackColor.toDrawable()
-                else -> whiteColor.toDrawable()
+                darkBG -> ColorDrawable(blackColor)
+                else -> ColorDrawable(whiteColor)
             }
         }
 
         val botCornersIsWhite = botLeftPixel.isWhite() && botRightPixel.isWhite()
         val topCornersIsWhite = topLeftPixel.isWhite() && topRightPixel.isWhite()
 
-        val topCornersIsDark = topLeftIsDark && topRightIsDark
-        val botCornersIsDark = botLeftIsDark && botRightIsDark
+        val topCornersIsDark = topLeftPixelDark && topRightPixelDark
+        val botCornersIsDark = botLeftPixelDark && botRightPixelDark
 
         val topOffsetCornersIsDark = image[leftOffsetX, top].isDark() && image[rightOffsetX, top].isDark()
         val botOffsetCornersIsDark = image[leftOffsetX, bot].isDark() && image[rightOffsetX, bot].isDark()
@@ -526,24 +514,20 @@ object ImageUtil {
             darkBG && botCornersIsWhite -> {
                 intArrayOf(blackColor, blackColor, whiteColor, whiteColor)
             }
-
             darkBG && topCornersIsWhite -> {
                 intArrayOf(whiteColor, whiteColor, blackColor, blackColor)
             }
-
             darkBG -> {
-                return blackColor.toDrawable()
+                return ColorDrawable(blackColor)
             }
-
             topIsBlackStreak ||
                 (
                     topCornersIsDark &&
                         topOffsetCornersIsDark &&
-                        (topMidIsDark || overallBlackPixels > 9)
+                        (topMidPixelDark || overallBlackPixels > 9)
                     ) -> {
                 intArrayOf(blackColor, blackColor, whiteColor, whiteColor)
             }
-
             bottomIsBlackStreak ||
                 (
                     botCornersIsDark &&
@@ -552,9 +536,8 @@ object ImageUtil {
                     ) -> {
                 intArrayOf(whiteColor, whiteColor, blackColor, blackColor)
             }
-
             else -> {
-                return whiteColor.toDrawable()
+                return ColorDrawable(whiteColor)
             }
         }
 
