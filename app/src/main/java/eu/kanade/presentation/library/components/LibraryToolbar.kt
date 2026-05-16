@@ -94,6 +94,11 @@ private fun LibraryRegularToolbar(
                         )
                     }
                 }
+                Text(
+                    text = stringResource(MR.strings.library_continue_reading_subtitle),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         },
         searchQuery = searchQuery,

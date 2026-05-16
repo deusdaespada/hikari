@@ -60,7 +60,7 @@ fun LibraryDashboard(
                         mangaId = libraryItem.libraryManga.manga.id,
                         coverData = libraryItem.libraryManga.manga.asMangaCover(),
                         title = libraryItem.libraryManga.manga.title,
-                        subtitle = continueReadingManga.title,
+                        subtitle = "",
                         footer = "",
                         progress = libraryItem.libraryManga.readCount.toFloat() / libraryItem.libraryManga.totalChapters.coerceAtLeast(
                             1,
