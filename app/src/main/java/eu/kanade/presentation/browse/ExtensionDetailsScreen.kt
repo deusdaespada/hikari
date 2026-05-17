@@ -4,22 +4,32 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.util.DisplayMetrics
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Launch
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +37,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,7 +49,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -47,8 +57,6 @@ import eu.kanade.presentation.browse.components.ExtensionIcon
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.WarningBanner
-import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
-import eu.kanade.presentation.more.settings.widget.TrailingWidgetBuffer
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.source.ConfigurableSource
@@ -64,6 +72,7 @@ import tachiyomi.presentation.core.components.material.Switch
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
+import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 @Composable
 fun ExtensionDetailsScreen(
@@ -169,6 +178,8 @@ private fun ExtensionDetails(
 
     ScrollbarLazyColumn(
         contentPadding = contentPadding,
+        verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
+        modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
     ) {
         if (extension.isObsolete) {
             item {
@@ -179,7 +190,6 @@ private fun ExtensionDetails(
         item {
             DetailsHeader(
                 extension = extension,
-                extIncognitoMode = incognitoMode,
                 onClickUninstall = onClickUninstall,
                 onClickAppInfo = {
                     Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -191,22 +201,25 @@ private fun ExtensionDetails(
                 onClickAgeRating = {
                     showNsfwWarning = true
                 },
-                onExtIncognitoChange = onClickIncognito,
             )
         }
 
-        items(
-            items = sources,
-            key = { it.source.id },
-        ) { source ->
-            SourceSwitchPreference(
-                modifier = Modifier.animateItem(),
-                source = source,
+        item {
+            IncognitoCard(
+                incognitoMode = incognitoMode,
+                onIncognitoChange = onClickIncognito,
+            )
+        }
+
+        item {
+            LanguagesCard(
+                sources = sources,
                 onClickSourcePreferences = onClickSourcePreferences,
                 onClickSource = onClickSource,
             )
         }
     }
+
     if (showNsfwWarning) {
         NsfwWarningDialog(
             onClickConfirm = {
@@ -219,168 +232,167 @@ private fun ExtensionDetails(
 @Composable
 private fun DetailsHeader(
     extension: Extension,
-    extIncognitoMode: Boolean,
     onClickAgeRating: () -> Unit,
     onClickUninstall: () -> Unit,
     onClickAppInfo: (() -> Unit)?,
-    onExtIncognitoChange: (Boolean) -> Unit,
 ) {
     val context = LocalContext.current
-
-    Column {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+        ),
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = MaterialTheme.padding.medium)
-                .padding(
-                    top = MaterialTheme.padding.medium,
-                    bottom = MaterialTheme.padding.small,
-                )
-                .clickable {
-                    val extDebugInfo = buildString {
-                        append(
-                            """
-                            Extension name: ${extension.name} (lang: ${extension.lang}; package: ${extension.pkgName})
-                            Extension version: ${extension.versionName} (lib: ${extension.libVersion}; version code: ${extension.versionCode})
-                            NSFW: ${extension.isNsfw}
-                            """.trimIndent(),
-                        )
-
-                        if (extension is Extension.Installed) {
-                            append("\n\n")
-                            append(
-                                """
-                                Update available: ${extension.hasUpdate}
-                                Obsolete: ${extension.isObsolete}
-                                Shared: ${extension.isShared}
-                                Repository: ${extension.repoUrl}
-                                """.trimIndent(),
-                            )
-                        }
-                    }
-                    context.copyToClipboard("Extension Debug information", extDebugInfo)
-                },
+                .padding(vertical = 24.dp, horizontal = MaterialTheme.padding.large),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            ExtensionIcon(
+            Column(
                 modifier = Modifier
-                    .size(112.dp),
-                extension = extension,
-                density = DisplayMetrics.DENSITY_XXXHIGH,
-            )
+                    .fillMaxWidth()
+                    .clickable {
+                        val extDebugInfo = buildString {
+                            append(
+                                """
+                                Extension name: ${extension.name} (lang: ${extension.lang}; package: ${extension.pkgName})
+                                Extension version: ${extension.versionName} (lib: ${extension.libVersion}; version code: ${extension.versionCode})
+                                NSFW: ${extension.isNsfw}
+                                """.trimIndent(),
+                            )
 
-            Text(
-                text = extension.name,
-                style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center,
-            )
+                            if (extension is Extension.Installed) {
+                                append("\n\n")
+                                append(
+                                    """
+                                    Update available: ${extension.hasUpdate}
+                                    Obsolete: ${extension.isObsolete}
+                                    Shared: ${extension.isShared}
+                                    Repository: ${extension.repoUrl}
+                                    """.trimIndent(),
+                                )
+                            }
+                        }
+                        context.copyToClipboard("Extension Debug information", extDebugInfo)
+                    },
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                ExtensionIcon(
+                    modifier = Modifier.size(96.dp),
+                    extension = extension,
+                    density = DisplayMetrics.DENSITY_XXXHIGH,
+                )
 
-            val strippedPkgName = extension.pkgName.substringAfter("eu.kanade.tachiyomi.extension.")
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = strippedPkgName,
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
+                Text(
+                    text = extension.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = MaterialTheme.padding.extraLarge,
-                    vertical = MaterialTheme.padding.small,
-                ),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            InfoText(
-                modifier = Modifier.weight(1f),
-                primaryText = extension.versionName,
-                secondaryText = stringResource(MR.strings.ext_info_version),
-            )
+                Spacer(modifier = Modifier.height(4.dp))
 
-            InfoDivider()
+                val strippedPkgName = extension.pkgName.substringAfter("eu.kanade.tachiyomi.extension.")
+                Text(
+                    text = strippedPkgName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.secondaryItemAlpha(),
+                )
+            }
 
-            InfoText(
-                modifier = Modifier.weight(if (extension.isNsfw) 1.5f else 1f),
-                primaryText = LocaleHelper.getSourceDisplayName(extension.lang, context),
-                secondaryText = stringResource(MR.strings.ext_info_language),
-            )
+            Spacer(modifier = Modifier.height(24.dp))
 
-            if (extension.isNsfw) {
-                InfoDivider()
-
-                InfoText(
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = MaterialTheme.padding.small),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                StatsColumn(
                     modifier = Modifier.weight(1f),
-                    primaryText = stringResource(MR.strings.ext_nsfw_short),
-                    primaryTextStyle = MaterialTheme.typography.bodyLarge.copy(
-                        color = MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.Medium,
-                    ),
-                    secondaryText = stringResource(MR.strings.ext_info_age_rating),
+                    icon = Icons.Outlined.Sell,
+                    value = extension.versionName,
+                    label = stringResource(MR.strings.ext_info_version),
+                )
+
+                VerticalDivider(modifier = Modifier.height(32.dp))
+
+                StatsColumn(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Outlined.Language,
+                    value = LocaleHelper.getSourceDisplayName(extension.lang, context),
+                    label = stringResource(MR.strings.ext_info_language),
+                )
+
+                VerticalDivider(modifier = Modifier.height(32.dp))
+
+                val ageRatingText = if (extension.isNsfw) "18+" else "Safe"
+                StatsColumn(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Outlined.Shield,
+                    value = ageRatingText,
+                    label = stringResource(MR.strings.ext_info_age_rating),
                     onClick = onClickAgeRating,
                 )
             }
-        }
 
-        Row(
-            modifier = Modifier
-                .padding(horizontal = MaterialTheme.padding.medium)
-                .padding(top = MaterialTheme.padding.small),
-            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
-        ) {
-            OutlinedButton(
-                modifier = Modifier.weight(1f),
-                onClick = onClickUninstall,
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
             ) {
-                Text(stringResource(MR.strings.ext_uninstall))
-            }
-
-            if (onClickAppInfo != null) {
-                Button(
+                OutlinedButton(
                     modifier = Modifier.weight(1f),
-                    onClick = onClickAppInfo,
+                    onClick = onClickUninstall,
                 ) {
-                    Text(
-                        text = stringResource(MR.strings.ext_app_info),
-                        color = MaterialTheme.colorScheme.onPrimary,
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(MR.strings.ext_uninstall))
+                }
+
+                if (onClickAppInfo != null) {
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = onClickAppInfo,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(MR.strings.ext_app_info),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    }
                 }
             }
         }
-
-        TextPreferenceWidget(
-            modifier = Modifier.padding(horizontal = MaterialTheme.padding.small),
-            title = stringResource(MR.strings.pref_incognito_mode),
-            subtitle = stringResource(MR.strings.pref_incognito_mode_extension_summary),
-            icon = ImageVector.vectorResource(R.drawable.ic_glasses_24dp),
-            widget = {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Switch(
-                        checked = extIncognitoMode,
-                        onCheckedChange = onExtIncognitoChange,
-                        modifier = Modifier.padding(start = TrailingWidgetBuffer),
-                    )
-                }
-            },
-        )
-
-        HorizontalDivider()
     }
 }
 
 @Composable
-private fun InfoText(
-    primaryText: String,
-    secondaryText: String,
+private fun StatsColumn(
+    icon: ImageVector,
+    value: String,
+    label: String,
     modifier: Modifier = Modifier,
-    primaryTextStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     onClick: (() -> Unit)? = null,
 ) {
     val clickableModifier = if (onClick != null) {
-        Modifier.clickable(interactionSource = null, indication = null, onClick = onClick)
+        Modifier.clickable(onClick = onClick)
     } else {
         Modifier
     }
@@ -390,67 +402,221 @@ private fun InfoText(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text(
-            text = primaryText,
-            textAlign = TextAlign.Center,
-            style = primaryTextStyle,
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp),
         )
-
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = secondaryText + if (onClick != null) " ⓘ" else "",
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+            modifier = Modifier.secondaryItemAlpha(),
+            textAlign = TextAlign.Center,
         )
     }
 }
 
 @Composable
-private fun InfoDivider() {
-    VerticalDivider(
-        modifier = Modifier.height(20.dp),
-    )
+private fun IncognitoCard(
+    incognitoMode: Boolean,
+    onIncognitoChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ElevatedCard(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+        ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                        shape = CircleShape,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.ic_glasses_24dp),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(MR.strings.pref_incognito_mode),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = stringResource(MR.strings.pref_incognito_mode_extension_summary),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.secondaryItemAlpha(),
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Switch(
+                checked = incognitoMode,
+                onCheckedChange = onIncognitoChange,
+            )
+        }
+    }
 }
 
 @Composable
-private fun SourceSwitchPreference(
-    source: ExtensionSourceItem,
+private fun LanguagesCard(
+    sources: ImmutableList<ExtensionSourceItem>,
     onClickSourcePreferences: (sourceId: Long) -> Unit,
     onClickSource: (sourceId: Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
+    val configurableSource = remember(sources) {
+        sources.find { it.source is ConfigurableSource }
+    }
 
-    TextPreferenceWidget(
-        modifier = modifier,
-        title = if (source.labelAsName) {
-            source.source.toString()
-        } else {
-            LocaleHelper.getSourceDisplayName(source.source.lang, context)
-        },
-        widget = {
+    ElevatedCard(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+        ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+        ) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (source.source is ConfigurableSource) {
-                    IconButton(onClick = { onClickSourcePreferences(source.source.id) }) {
+                Text(
+                    text = "Languages",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if (configurableSource != null) {
+                    IconButton(
+                        onClick = { onClickSourcePreferences(configurableSource.source.id) },
+                        modifier = Modifier.size(24.dp),
+                    ) {
                         Icon(
                             imageVector = Icons.Outlined.Settings,
                             contentDescription = stringResource(MR.strings.label_settings),
-                            tint = MaterialTheme.colorScheme.onSurface,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp),
                         )
                     }
                 }
+            }
 
-                Switch(
-                    checked = source.enabled,
-                    onCheckedChange = null,
-                    modifier = Modifier.padding(start = TrailingWidgetBuffer),
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Select languages to use in this extension",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.secondaryItemAlpha(),
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                sources.forEach { source ->
+                    LanguageRowItem(
+                        source = source,
+                        onClickSource = onClickSource,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LanguageRowItem(
+    source: ExtensionSourceItem,
+    onClickSource: (sourceId: Long) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val displayName = remember(source.source) {
+        if (source.labelAsName) {
+            source.source.toString()
+        } else {
+            LocaleHelper.getSourceDisplayName(source.source.lang, context)
+        }
+    }
+
+    ElevatedCard(
+        onClick = { onClickSource(source.source.id) },
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+        ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp, horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                        shape = CircleShape,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Language,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp),
                 )
             }
-        },
-        onPreferenceClick = { onClickSource(source.source.id) },
-    )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Text(
+                text = displayName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
+            )
+
+            Switch(
+                checked = source.enabled,
+                onCheckedChange = null,
+            )
+        }
+    }
 }
 
 @Composable

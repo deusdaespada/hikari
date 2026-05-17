@@ -1,30 +1,51 @@
 package eu.kanade.presentation.more.settings.screen.about
 
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Android
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Gavel
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Smartphone
 import androidx.compose.material.icons.outlined.SystemUpdate
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
-import tachiyomi.presentation.core.components.CommunityTile
-import tachiyomi.presentation.core.components.HikariSnackbarHost
+import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -46,8 +67,8 @@ import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.release.interactor.GetApplicationRelease
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariSnackbarHost
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
-import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -56,6 +77,7 @@ import uy.kohesive.injekt.api.get
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import androidx.core.net.toUri
 
 object AboutScreen : Screen() {
 
@@ -67,6 +89,40 @@ object AboutScreen : Screen() {
         val navigator = LocalNavigator.currentOrThrow
         val snackbarHostState = remember { SnackbarHostState() }
         var isCheckingUpdates by remember { mutableStateOf(false) }
+
+        val packageManager = context.packageManager
+        val packageInfo = remember(context) {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    packageManager.getPackageInfo(context.packageName, PackageManager.PackageInfoFlags.of(0))
+                } else {
+                    @Suppress("DEPRECATION")
+                    packageManager.getPackageInfo(context.packageName, 0)
+                }
+            } catch (_: Exception) {
+                null
+            }
+        }
+
+        val firstInstallTimeText = remember(packageInfo) {
+            val installTime = packageInfo?.firstInstallTime ?: 0L
+            if (installTime > 0L) {
+                try {
+                    LocalDateTime.ofInstant(
+                        Instant.ofEpochMilli(installTime),
+                        ZoneId.systemDefault(),
+                    ).toDateTimestampString(
+                        UiPreferences.dateFormat(
+                            Injekt.get<UiPreferences>().dateFormat.get(),
+                        ),
+                    )
+                } catch (_: Exception) {
+                    "-"
+                }
+            } else {
+                "-"
+            }
+        }
 
         Scaffold(
             topBar = { scrollBehavior ->
@@ -88,92 +144,302 @@ object AboutScreen : Screen() {
                 }
 
                 item {
-                    SectionCard(
-                        titleRes = MR.strings.pref_category_about,
-                        highEmphasis = true,
-                        showAccent = false,
+                    Text(
+                        text = stringResource(MR.strings.pref_category_about),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(
+                            horizontal = MaterialTheme.padding.medium,
+                            vertical = MaterialTheme.padding.small,
+                        ),
+                    )
+                }
+
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = MaterialTheme.padding.medium),
+                        verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = MaterialTheme.padding.medium)
-                                .padding(vertical = MaterialTheme.padding.small),
-                            verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
-                            ) {
-                                CommunityTile(
-                                    label = stringResource(MR.strings.check_for_updates),
-                                    icon = Icons.Outlined.SystemUpdate,
-                                    horizontal = true,
-                                    modifier = Modifier.weight(1f),
-                                    trailingWidget = {
-                                        AnimatedVisibility(visible = isCheckingUpdates) {
-                                            CircularProgressIndicator(
-                                                modifier = Modifier.size(18.dp),
-                                                strokeWidth = 2.dp,
+                            AboutGridCard(
+                                title = stringResource(MR.strings.check_for_updates),
+                                subtitle = stringResource(MR.strings.update_check_look_for_updates),
+                                icon = Icons.Outlined.SystemUpdate,
+                                onClick = {
+                                    if (!isCheckingUpdates) {
+                                        scope.launch {
+                                            isCheckingUpdates = true
+                                            checkVersion(
+                                                context = context,
+                                                onAvailableUpdate = { result ->
+                                                    val updateScreen = NewUpdateScreen(
+                                                        versionName = result.release.version,
+                                                        changelogInfo = result.release.info,
+                                                        releaseLink = result.release.releaseLink,
+                                                        downloadLink = result.release.downloadLink,
+                                                    )
+                                                    navigator.push(updateScreen)
+                                                },
+                                                onFinish = { isCheckingUpdates = false },
+                                                onError = { message ->
+                                                    scope.launch { snackbarHostState.showSnackbar(message) }
+                                                },
+                                                onNoUpdate = {
+                                                    scope.launch {
+                                                        snackbarHostState.showSnackbar(
+                                                            context.stringResource(MR.strings.update_check_no_new_updates),
+                                                        )
+                                                    }
+                                                },
                                             )
                                         }
-                                    },
-                                    onClick = {
-                                        if (!isCheckingUpdates) {
-                                            scope.launch {
-                                                isCheckingUpdates = true
-                                                checkVersion(
-                                                    context = context,
-                                                    onAvailableUpdate = { result ->
-                                                        val updateScreen = NewUpdateScreen(
-                                                            versionName = result.release.version,
-                                                            changelogInfo = result.release.info,
-                                                            releaseLink = result.release.releaseLink,
-                                                            downloadLink = result.release.downloadLink,
-                                                        )
-                                                        navigator.push(updateScreen)
-                                                    },
-                                                    onFinish = { isCheckingUpdates = false },
-                                                    onError = { message ->
-                                                        scope.launch { snackbarHostState.showSnackbar(message) }
-                                                    },
-                                                    onNoUpdate = {
-                                                        scope.launch {
-                                                            snackbarHostState.showSnackbar(
-                                                                context.stringResource(MR.strings.update_check_no_new_updates),
-                                                            )
-                                                        }
-                                                    },
-                                                )
-                                            }
-                                        }
-                                    },
-                                )
-                                CommunityTile(
-                                    label = stringResource(MR.strings.licenses),
-                                    icon = Icons.Outlined.Gavel,
-                                    horizontal = true,
-                                    modifier = Modifier.weight(1f),
-                                    onClick = { navigator.push(OpenSourceLicensesScreen()) },
-                                )
-                            }
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
-                            ) {
-                                CommunityTile(
-                                    label = stringResource(MR.strings.whats_new),
-                                    icon = Icons.Outlined.Info,
-                                    horizontal = true,
-                                    modifier = Modifier.weight(1f),
-                                    url = RELEASE_URL,
-                                )
-                                androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
-                            }
+                                    }
+                                },
+                                modifier = Modifier.weight(1f),
+                                trailingContent = {
+                                    AnimatedVisibility(visible = isCheckingUpdates) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(18.dp),
+                                            strokeWidth = 2.dp,
+                                        )
+                                    }
+                                },
+                            )
+
+                            AboutGridCard(
+                                title = stringResource(MR.strings.about_licenses_title),
+                                subtitle = stringResource(MR.strings.about_open_source_licenses),
+                                icon = Icons.Outlined.Gavel,
+                                onClick = { navigator.push(OpenSourceLicensesScreen()) },
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                        ) {
+                            AboutGridCard(
+                                title = stringResource(MR.strings.whats_new),
+                                subtitle = stringResource(MR.strings.about_view_changelog),
+                                icon = Icons.Outlined.Info,
+                                onClick = {
+                                    val intent = android.content.Intent(
+                                        android.content.Intent.ACTION_VIEW,
+                                        RELEASE_URL.toUri(),
+                                    )
+                                    context.startActivity(intent)
+                                },
+                                modifier = Modifier.weight(1f),
+                            )
+
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }
+
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(MR.strings.about_app_information),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(
+                            horizontal = MaterialTheme.padding.medium,
+                            vertical = MaterialTheme.padding.small,
+                        ),
+                    )
+                }
+
+                item {
+                    ElevatedCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = MaterialTheme.padding.medium),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = CardDefaults.elevatedCardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
+                        ),
+                    ) {
+                        Column {
+                            AppInfoRow(
+                                label = stringResource(MR.strings.about_package_name),
+                                value = context.packageName,
+                                icon = Icons.Outlined.Code,
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                            )
+                            AppInfoRow(
+                                label = stringResource(MR.strings.about_platform),
+                                value = stringResource(MR.strings.about_platform_value),
+                                icon = Icons.Outlined.Android,
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                            )
+                            AppInfoRow(
+                                label = stringResource(MR.strings.about_installed_on),
+                                value = firstInstallTimeText,
+                                icon = Icons.Outlined.CalendarMonth,
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                            )
+                            AppInfoRow(
+                                label = stringResource(MR.strings.about_version_code),
+                                value = BuildConfig.VERSION_CODE.toString(),
+                                icon = Icons.Outlined.Smartphone,
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(28.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = MaterialTheme.padding.medium),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(
+                            text = stringResource(MR.strings.about_built_with_passion),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            textAlign = TextAlign.Center,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(MR.strings.about_copyright),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(28.dp))
+                }
             }
+        }
+    }
+
+    @Composable
+    private fun AboutGridCard(
+        title: String,
+        subtitle: String,
+        icon: ImageVector,
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier,
+        trailingContent: @Composable (() -> Unit)? = null,
+    ) {
+        ElevatedCard(
+            onClick = onClick,
+            modifier = modifier,
+            shape = MaterialTheme.shapes.medium,
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
+            ),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                            shape = CircleShape,
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    )
+                }
+                if (trailingContent != null) {
+                    trailingContent()
+                } else {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun AppInfoRow(
+        label: String,
+        value: String,
+        icon: ImageVector,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp, horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                        shape = CircleShape,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            )
         }
     }
 

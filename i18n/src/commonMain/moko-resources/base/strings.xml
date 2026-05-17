@@ -180,6 +180,20 @@
     <!-- Onboarding -->
     <string name="pref_onboarding_guide">Onboarding guide</string>
     <string name="onboarding_heading">Welcome!</string>
+    <string name="welcome_back">Welcome back!</string>
+    <string name="welcome_back_subtitle">Enjoy your reading journey.</string>
+    <string name="about_stable_badge">Stable</string>
+    <string name="about_built_with_passion">♡ Built with passion for readers</string>
+    <string name="about_copyright">© 2026 LeverTeam. All rights reserved.</string>
+    <string name="about_package_name">Package name</string>
+    <string name="about_platform">Platform</string>
+    <string name="about_platform_value">Android</string>
+    <string name="about_installed_on">Installed on</string>
+    <string name="about_version_code">Version code</string>
+    <string name="about_app_information">App information</string>
+    <string name="about_open_source_licenses">Open source licenses</string>
+    <string name="about_licenses_title">Licenses</string>
+    <string name="about_view_changelog">View changelog</string>
     <string name="onboarding_description">Let\'s set some things up first. You can always change
         these in the settings later too.
     </string>

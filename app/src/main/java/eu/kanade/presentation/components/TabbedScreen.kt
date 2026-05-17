@@ -8,17 +8,19 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -38,7 +40,6 @@ import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.TabText
 import tachiyomi.presentation.core.i18n.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TabbedScreen(
     titleRes: StringResource,
@@ -56,16 +57,7 @@ fun TabbedScreen(
             val searchEnabled = tab.searchEnabled
 
             SearchToolbar(
-                titleContent = {
-                    Column {
-                        AppBarTitle(stringResource(titleRes))
-                        Text(
-                            text = "Explore extensions and sources",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                },
+                titleContent = { AppBarTitle(stringResource(titleRes)) },
                 searchEnabled = searchEnabled,
                 searchQuery = if (searchEnabled) searchQuery else null,
                 onChangeSearchQuery = onChangeSearchQuery,
@@ -81,55 +73,37 @@ fun TabbedScreen(
                 end = contentPadding.calculateEndPadding(LocalLayoutDirection.current),
             ),
         ) {
-            PrimaryTabRow(
+            TabRow(
                 selectedTabIndex = state.currentPage,
                 modifier = Modifier.zIndex(1f),
                 containerColor = MaterialTheme.colorScheme.surface,
                 divider = {},
-                indicator = {
-                    Box(
-                        Modifier
-                            .tabIndicatorLayout { measurable, constraints, tabPositions ->
-                                if (state.currentPage < tabPositions.size) {
-                                    val fraction = state.currentPageOffsetFraction
-                                    val currentTab = tabPositions[state.currentPage]
-                                    val targetTab =
-                                        tabPositions.getOrNull(if (fraction > 0) state.currentPage + 1 else state.currentPage - 1)
-                                            ?: currentTab
+                indicator = { tabPositions ->
+                    if (state.currentPage < tabPositions.size) {
+                        val fraction = state.currentPageOffsetFraction
+                        val currentTab = tabPositions[state.currentPage]
+                        val targetTab =
+                            tabPositions.getOrNull(if (fraction > 0) state.currentPage + 1 else state.currentPage - 1)
+                                ?: currentTab
 
-                                    val indicatorWidth = lerp(currentTab.width, targetTab.width, fraction.absoluteValue)
-                                    val indicatorOffset = lerp(currentTab.left, targetTab.left, fraction.absoluteValue)
+                        val indicatorWidth = lerp(currentTab.width, targetTab.width, fraction.absoluteValue)
+                        val indicatorOffset = lerp(currentTab.left, targetTab.left, fraction.absoluteValue)
 
-                                    val stretch = (targetTab.left - currentTab.left).value.absoluteValue.dp * fraction.absoluteValue * 0.4f
+                        val stretch = (targetTab.left - currentTab.left).value.absoluteValue.dp * fraction.absoluteValue * 0.4f
 
-                                    val placeable = measurable.measure(
-                                        constraints.copy(
-                                            minWidth = (indicatorWidth + stretch).roundToPx(),
-                                            maxWidth = (indicatorWidth + stretch).roundToPx(),
-                                            minHeight = 3.dp.roundToPx(),
-                                            maxHeight = 3.dp.roundToPx(),
-                                        )
-                                    )
-
-                                    layout(placeable.width, placeable.height) {
-                                        placeable.placeRelative(
-                                            x = (indicatorOffset - (stretch / 2)).roundToPx(),
-                                            y = constraints.maxHeight - 3.dp.roundToPx(),
-                                        )
-                                    }
-                                } else {
-                                    val placeable = measurable.measure(constraints)
-                                    layout(placeable.width, placeable.height) {
-                                        placeable.placeRelative(0, 0)
-                                    }
-                                }
-                            }
-                            .fillMaxWidth()
-                            .background(
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
-                            ),
-                    )
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .wrapContentSize(Alignment.BottomStart)
+                                .offset(x = indicatorOffset - (stretch / 2))
+                                .width(indicatorWidth + stretch)
+                                .height(3.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
+                                ),
+                        )
+                    }
                 },
             ) {
                 tabs.forEachIndexed { index, tab ->
