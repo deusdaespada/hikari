@@ -28,8 +28,6 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,7 +35,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -66,6 +63,8 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCard
+import tachiyomi.presentation.core.components.HikariCardDefaults
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.Switch
@@ -237,12 +236,10 @@ private fun DetailsHeader(
     onClickAppInfo: (() -> Unit)?,
 ) {
     val context = LocalContext.current
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
+    HikariCard(
+        modifier = Modifier
+            .fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
-        ),
     ) {
         Column(
             modifier = Modifier
@@ -431,12 +428,10 @@ private fun IncognitoCard(
     onIncognitoChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ElevatedCard(
-        modifier = modifier.fillMaxWidth(),
+    HikariCard(
+        modifier = modifier
+            .fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
-        ),
     ) {
         Row(
             modifier = Modifier
@@ -494,12 +489,10 @@ private fun LanguagesCard(
         sources.find { it.source is ConfigurableSource }
     }
 
-    ElevatedCard(
-        modifier = modifier.fillMaxWidth(),
+    HikariCard(
+        modifier = modifier
+            .fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
-        ),
     ) {
         Column(
             modifier = Modifier
@@ -570,17 +563,16 @@ private fun LanguageRowItem(
         }
     }
 
-    ElevatedCard(
-        onClick = { onClickSource(source.source.id) },
-        modifier = modifier.fillMaxWidth(),
+    HikariCard(
+        modifier = modifier
+            .fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
-        ),
+        containerColor = HikariCardDefaults.containerColor(HikariCardDefaults.nestedCardElevation),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .clickable { onClickSource(source.source.id) }
                 .padding(vertical = 10.dp, horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {

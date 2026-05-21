@@ -23,16 +23,16 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.data.preference.SharedPreferencesDataStore
-import eu.kanade.tachiyomi.source.ConfigurableSource
-import eu.kanade.tachiyomi.source.sourcePreferences
 import eu.kanade.presentation.more.settings.widget.EditTextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.ListPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.MultiSelectListPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.PreferenceGroupHeader
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
+import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.data.preference.SharedPreferencesDataStore
+import eu.kanade.tachiyomi.source.ConfigurableSource
+import eu.kanade.tachiyomi.source.sourcePreferences
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -43,6 +43,7 @@ import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.screens.LoadingScreen
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import eu.kanade.presentation.more.settings.Preference.PreferenceItem.MultiSelectListPreference as HikariMultiSelectListPreference
 
 class SourcePreferencesScreen(val sourceId: Long) : Screen() {
 
@@ -152,7 +153,7 @@ class SourcePreferencesScreen(val sourceId: Long) : Screen() {
                         .toImmutableMap()
                 }
                 MultiSelectListPreferenceWidget(
-                    preference = eu.kanade.presentation.more.settings.Preference.PreferenceItem.MultiSelectListPreference(
+                    preference = HikariMultiSelectListPreference(
                         preference = object : Preference<Set<String>> {
                             override fun key() = pref.key ?: ""
                             override fun get() = values
@@ -163,7 +164,8 @@ class SourcePreferencesScreen(val sourceId: Long) : Screen() {
 
                             override fun defaultValue() = pref.values ?: emptySet()
                             override fun isSet() = dataStore.getStringSet(pref.key, null) != null
-                            override fun delete() { /* not implemented */
+                            override fun delete() {
+                                /* not implemented */
                             }
 
                             override fun changes(): Flow<Set<String>> = throw UnsupportedOperationException()

@@ -166,7 +166,8 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             val excludedCategories = libraryPreferences.updateCategoriesExclude.get().map { it.toLong() }
 
             libraryManga.filter {
-                val included = includedCategories.isEmpty() || it.categories.intersect(includedCategories.toSet()).isNotEmpty()
+                val included =
+                    includedCategories.isEmpty() || it.categories.intersect(includedCategories.toSet()).isNotEmpty()
                 val excluded = it.categories.intersect(excludedCategories.toSet()).isNotEmpty()
                 included && !excluded
             }

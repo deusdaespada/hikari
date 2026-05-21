@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,15 +26,12 @@ import androidx.compose.material.icons.outlined.Gavel
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Smartphone
 import androidx.compose.material.icons.outlined.SystemUpdate
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.ui.UiPreferences
@@ -67,6 +66,9 @@ import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.release.interactor.GetApplicationRelease
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCard
+import tachiyomi.presentation.core.components.HikariCardDefaults
+import tachiyomi.presentation.core.components.HikariSectionHeader
 import tachiyomi.presentation.core.components.HikariSnackbarHost
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -77,7 +79,6 @@ import uy.kohesive.injekt.api.get
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import androidx.core.net.toUri
 
 object AboutScreen : Screen() {
 
@@ -144,16 +145,7 @@ object AboutScreen : Screen() {
                 }
 
                 item {
-                    Text(
-                        text = stringResource(MR.strings.pref_category_about),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(
-                            horizontal = MaterialTheme.padding.medium,
-                            vertical = MaterialTheme.padding.small,
-                        ),
-                    )
+                    HikariSectionHeader(text = stringResource(MR.strings.pref_category_about))
                 }
 
                 item {
@@ -193,7 +185,9 @@ object AboutScreen : Screen() {
                                                 onNoUpdate = {
                                                     scope.launch {
                                                         snackbarHostState.showSnackbar(
-                                                            context.stringResource(MR.strings.update_check_no_new_updates),
+                                                            context.stringResource(
+                                                                MR.strings.update_check_no_new_updates,
+                                                            ),
                                                         )
                                                     }
                                                 },
@@ -245,28 +239,16 @@ object AboutScreen : Screen() {
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = stringResource(MR.strings.about_app_information),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(
-                            horizontal = MaterialTheme.padding.medium,
-                            vertical = MaterialTheme.padding.small,
-                        ),
-                    )
+                    Spacer(modifier = Modifier.height(MaterialTheme.padding.medium))
+                    HikariSectionHeader(text = stringResource(MR.strings.about_app_information))
                 }
 
                 item {
-                    ElevatedCard(
+                    HikariCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = MaterialTheme.padding.medium),
                         shape = MaterialTheme.shapes.medium,
-                        colors = CardDefaults.elevatedCardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
-                        ),
                     ) {
                         Column {
                             AppInfoRow(
@@ -275,8 +257,8 @@ object AboutScreen : Screen() {
                                 icon = Icons.Outlined.Code,
                             )
                             HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
                             )
                             AppInfoRow(
                                 label = stringResource(MR.strings.about_platform),
@@ -284,8 +266,8 @@ object AboutScreen : Screen() {
                                 icon = Icons.Outlined.Android,
                             )
                             HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
                             )
                             AppInfoRow(
                                 label = stringResource(MR.strings.about_installed_on),
@@ -293,8 +275,8 @@ object AboutScreen : Screen() {
                                 icon = Icons.Outlined.CalendarMonth,
                             )
                             HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
                             )
                             AppInfoRow(
                                 label = stringResource(MR.strings.about_version_code),
@@ -342,18 +324,15 @@ object AboutScreen : Screen() {
         modifier: Modifier = Modifier,
         trailingContent: @Composable (() -> Unit)? = null,
     ) {
-        ElevatedCard(
-            onClick = onClick,
+        HikariCard(
             modifier = modifier,
             shape = MaterialTheme.shapes.medium,
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
-            ),
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .clickable(onClick = onClick)
+                    .padding(MaterialTheme.padding.medium),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
@@ -372,7 +351,7 @@ object AboutScreen : Screen() {
                         modifier = Modifier.size(20.dp),
                     )
                 }
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(MaterialTheme.padding.medium))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = title,
@@ -409,7 +388,7 @@ object AboutScreen : Screen() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 16.dp),
+                .padding(vertical = MaterialTheme.padding.small, horizontal = MaterialTheme.padding.medium),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
@@ -428,7 +407,7 @@ object AboutScreen : Screen() {
                     modifier = Modifier.size(20.dp),
                 )
             }
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(MaterialTheme.padding.medium))
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium,

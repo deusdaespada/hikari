@@ -29,7 +29,6 @@ fun TachiyomiTheme(
     )
 }
 
-
 @Composable
 fun TachiyomiPreviewTheme(
     appTheme: AppTheme = AppTheme.DEFAULT,

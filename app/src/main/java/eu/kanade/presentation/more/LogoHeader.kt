@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.R
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCard
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.secondaryItemAlpha
@@ -46,12 +45,12 @@ fun LogoHeader(
             colors = listOf(
                 MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
                 MaterialTheme.colorScheme.surfaceVariant,
-            )
+            ),
         )
 
         val waveColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
 
-        ElevatedCard(
+        HikariCard(
             modifier = Modifier
                 .padding(horizontal = MaterialTheme.padding.medium)
                 .fillMaxWidth()
@@ -64,14 +63,12 @@ fun LogoHeader(
                             color = waveColor,
                             radius = radius.toPx(),
                             center = center,
-                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = strokeWidth)
+                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = strokeWidth),
                         )
                     }
                 },
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = Color.Transparent
-            ),
             shape = MaterialTheme.shapes.extraLarge,
+            containerColor = Color.Transparent,
         ) {
             Row(
                 modifier = Modifier
@@ -126,18 +123,18 @@ fun LogoHeader(
                         }
 
                         Row(
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             androidx.compose.material3.Surface(
                                 color = MaterialTheme.colorScheme.primaryContainer,
-                                shape = RoundedCornerShape(6.dp)
+                                shape = RoundedCornerShape(6.dp),
                             ) {
                                 Text(
                                     text = stringResource(MR.strings.about_stable_badge),
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                 )
                             }
 

@@ -6,8 +6,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,7 +22,6 @@ import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -52,7 +49,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -77,6 +73,7 @@ import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCard
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
@@ -210,8 +207,8 @@ fun TrackerSearch(
                     )
                 } else {
                     ScrollbarLazyColumn(
-                        contentPadding = innerPadding + PaddingValues(vertical = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = innerPadding + PaddingValues(vertical = MaterialTheme.padding.small),
+                        verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                     ) {
                         items(
                             items = availableTracks,
@@ -248,117 +245,113 @@ private fun SearchResultItem(
     val type = trackSearch.publishing_type.toLowerCase(Locale.current).capitalize(Locale.current)
     val status = trackSearch.publishing_status.toLowerCase(Locale.current).capitalize(Locale.current)
     val description = trackSearch.summary.trim()
-    val shape = RoundedCornerShape(16.dp)
-    val borderColor = if (selected) MaterialTheme.colorScheme.outline else Color.Transparent
     var dropDownMenuExpanded by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    Box(
+    HikariCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp)
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.surface)
-            .border(
-                width = 2.dp,
-                color = borderColor,
-                shape = shape,
-            )
-            .combinedClickable(
-                onLongClick = { dropDownMenuExpanded = true },
-                onClick = {
-                    focusManager.clearFocus()
-                    onClick()
-                },
-            )
-            .padding(12.dp),
+            .padding(horizontal = MaterialTheme.padding.medium),
+        selected = selected,
     ) {
-        if (selected) {
-            Icon(
-                imageVector = Icons.Filled.CheckCircle,
-                contentDescription = null,
-                modifier = Modifier.align(Alignment.TopEnd),
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        }
-        Column {
-            Row {
-                MangaCover.Book(
-                    data = trackSearch.cover_url,
-                    modifier = Modifier.height(96.dp),
+        Box(
+            modifier = Modifier
+                .combinedClickable(
+                    onLongClick = { dropDownMenuExpanded = true },
+                    onClick = {
+                        focusManager.clearFocus()
+                        onClick()
+                    },
                 )
-                Spacer(modifier = Modifier.width(12.dp))
-                Column {
-                    Text(
-                        text = trackSearch.title,
-                        modifier = Modifier.padding(end = 28.dp),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.titleMedium,
+                .padding(MaterialTheme.padding.medium),
+        ) {
+            if (selected) {
+                Icon(
+                    imageVector = Icons.Filled.CheckCircle,
+                    contentDescription = null,
+                    modifier = Modifier.align(Alignment.TopEnd),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+            Column {
+                Row {
+                    MangaCover.Book(
+                        data = trackSearch.cover_url,
+                        modifier = Modifier.height(96.dp),
                     )
-                    SearchResultItemDropDownMenu(
-                        expanded = dropDownMenuExpanded,
-                        onCollapseMenu = { dropDownMenuExpanded = false },
-                        onCopyName = {
-                            scope.launch {
-                                val clipEntry = ClipData.newPlainText(
-                                    trackSearch.title,
-                                    trackSearch.title,
-                                ).toClipEntry()
-                                clipboard.setClipEntry(clipEntry)
-                            }
-                        },
-                        onOpenInBrowser = {
-                            val url = trackSearch.tracking_url
-                            if (url.isNotBlank()) {
-                                context.openInBrowser(url)
-                            }
-                        },
-                    )
-                    if (trackSearch.authors.isNotEmpty() || trackSearch.artists.isNotEmpty()) {
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
                         Text(
-                            text = (trackSearch.authors + trackSearch.artists).distinct().joinToString(),
-                            modifier = Modifier.secondaryItemAlpha(),
-                            maxLines = 1,
+                            text = trackSearch.title,
+                            modifier = Modifier.padding(end = 28.dp),
+                            maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.titleMedium,
                         )
-                    }
-                    if (type.isNotBlank()) {
-                        SearchResultItemDetails(
-                            title = stringResource(MR.strings.track_type),
-                            text = type,
+                        SearchResultItemDropDownMenu(
+                            expanded = dropDownMenuExpanded,
+                            onCollapseMenu = { dropDownMenuExpanded = false },
+                            onCopyName = {
+                                scope.launch {
+                                    val clipEntry = ClipData.newPlainText(
+                                        trackSearch.title,
+                                        trackSearch.title,
+                                    ).toClipEntry()
+                                    clipboard.setClipEntry(clipEntry)
+                                }
+                            },
+                            onOpenInBrowser = {
+                                val url = trackSearch.tracking_url
+                                if (url.isNotBlank()) {
+                                    context.openInBrowser(url)
+                                }
+                            },
                         )
-                    }
-                    if (trackSearch.start_date.isNotBlank()) {
-                        SearchResultItemDetails(
-                            title = stringResource(MR.strings.label_started),
-                            text = trackSearch.start_date,
-                        )
-                    }
-                    if (status.isNotBlank()) {
-                        SearchResultItemDetails(
-                            title = stringResource(MR.strings.track_status),
-                            text = status,
-                        )
-                    }
-                    if (trackSearch.score != -1.0) {
-                        SearchResultItemDetails(
-                            title = stringResource(MR.strings.score),
-                            text = trackSearch.score.toString(),
-                        )
+                        if (trackSearch.authors.isNotEmpty() || trackSearch.artists.isNotEmpty()) {
+                            Text(
+                                text = (trackSearch.authors + trackSearch.artists).distinct().joinToString(),
+                                modifier = Modifier.secondaryItemAlpha(),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        if (type.isNotBlank()) {
+                            SearchResultItemDetails(
+                                title = stringResource(MR.strings.track_type),
+                                text = type,
+                            )
+                        }
+                        if (trackSearch.start_date.isNotBlank()) {
+                            SearchResultItemDetails(
+                                title = stringResource(MR.strings.label_started),
+                                text = trackSearch.start_date,
+                            )
+                        }
+                        if (status.isNotBlank()) {
+                            SearchResultItemDetails(
+                                title = stringResource(MR.strings.track_status),
+                                text = status,
+                            )
+                        }
+                        if (trackSearch.score != -1.0) {
+                            SearchResultItemDetails(
+                                title = stringResource(MR.strings.score),
+                                text = trackSearch.score.toString(),
+                            )
+                        }
                     }
                 }
-            }
-            if (description.isNotBlank()) {
-                Text(
-                    text = description,
-                    modifier = Modifier
-                        .paddingFromBaseline(top = 24.dp)
-                        .secondaryItemAlpha(),
-                    maxLines = 4,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                if (description.isNotBlank()) {
+                    Text(
+                        text = description,
+                        modifier = Modifier
+                            .paddingFromBaseline(top = 24.dp)
+                            .secondaryItemAlpha(),
+                        maxLines = 4,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
         }
     }

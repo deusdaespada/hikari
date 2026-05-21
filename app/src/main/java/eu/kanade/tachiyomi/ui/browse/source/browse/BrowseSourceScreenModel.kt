@@ -38,12 +38,12 @@ import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.category.interactor.GetCategories
-import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.SetMangaDefaultChapterFlags
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
+import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaWithChapterCount
@@ -115,7 +115,8 @@ class BrowseSourceScreenModel(
         .map { it.map { m -> m.id }.toSet() }
         .stateIn(screenModelScope, SharingStarted.Lazily, emptySet())
 
-    val mangaPagerFlowFlow: kotlinx.coroutines.flow.StateFlow<kotlinx.coroutines.flow.Flow<androidx.paging.PagingData<Manga>>> =
+    val mangaPagerFlowFlow:
+        kotlinx.coroutines.flow.StateFlow<kotlinx.coroutines.flow.Flow<androidx.paging.PagingData<Manga>>> =
         state.map { it.listing }
             .distinctUntilChanged()
             .map { listing ->

@@ -71,7 +71,9 @@ fun LibraryContent(
         }
 
         LaunchedEffect(currentPage) {
-            if (!pagerState.isScrollInProgress && pagerState.currentPage != currentPage && currentPage < categories.size) {
+            if (!pagerState.isScrollInProgress && pagerState.currentPage != currentPage &&
+                currentPage < categories.size
+            ) {
                 pagerState.scrollToPage(currentPage)
             }
         }

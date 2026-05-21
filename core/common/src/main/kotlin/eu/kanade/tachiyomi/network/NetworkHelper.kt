@@ -3,9 +3,9 @@ package eu.kanade.tachiyomi.network
 import android.content.Context
 import com.google.net.cronet.okhttptransport.CronetInterceptor
 import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
+import eu.kanade.tachiyomi.network.interceptor.CronetCookieSyncInterceptor
 import eu.kanade.tachiyomi.network.interceptor.IgnoreGzipInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
-import eu.kanade.tachiyomi.network.interceptor.CronetCookieSyncInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UserAgentInterceptor
 import okhttp3.Cache
 import okhttp3.OkHttpClient
@@ -80,7 +80,10 @@ class NetworkHelper(
                     while (current != null) {
                         if (current.javaClass.name.contains("org.chromium.net") ||
                             current is java.util.concurrent.ExecutionException ||
-                            (current is NullPointerException && current.message?.contains("okhttp3.Response\$Builder.body") == true)
+                            (
+                                current is NullPointerException &&
+                                    current.message?.contains("okhttp3.Response\$Builder.body") == true
+                                )
                         ) {
                             isCronetError = true
                             break

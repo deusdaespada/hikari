@@ -2,10 +2,14 @@ package eu.kanade.presentation.more.settings.screen
 
 import android.app.Activity
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -23,7 +27,9 @@ import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableMap
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCardDefaults
 import tachiyomi.presentation.core.components.SectionCard
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
@@ -78,6 +84,11 @@ object SettingsAppearanceScreen : SearchableSettings {
                                 },
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
+
                             AppThemePreferenceWidget(
                                 value = appTheme,
                                 amoled = amoled,
@@ -130,6 +141,10 @@ object SettingsAppearanceScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.ListPreference(
@@ -155,9 +170,6 @@ object SettingsAppearanceScreen : SearchableSettings {
     private fun getDisplayGroup(
         uiPreferences: UiPreferences,
     ): Preference.PreferenceGroup {
-        val context = LocalContext.current
-        val navigator = LocalNavigator.currentOrThrow
-
         val now = remember { LocalDate.now() }
 
         val dateFormat by uiPreferences.dateFormat.collectAsState()
@@ -177,18 +189,22 @@ object SettingsAppearanceScreen : SearchableSettings {
                                 item = Preference.PreferenceItem.ListPreference(
                                     preference = uiPreferences.dateFormat,
                                     entries = DateFormats.associateWith {
-                                            val formattedDate = UiPreferences.dateFormat(it).format(now)
-                                            "${
-                                                it.ifEmpty {
-                                                    stringResource(MR.strings.label_default)
-                                                }
-                                            } ($formattedDate)"
-                                        }.toImmutableMap(),
+                                        val formattedDate = UiPreferences.dateFormat(it).format(now)
+                                        "${
+                                            it.ifEmpty {
+                                                stringResource(MR.strings.label_default)
+                                            }
+                                        } ($formattedDate)"
+                                    }.toImmutableMap(),
                                     title = stringResource(MR.strings.pref_date_format),
                                 ),
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -203,6 +219,10 @@ object SettingsAppearanceScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(

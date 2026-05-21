@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,6 +63,7 @@ import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCardDefaults
 import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.components.material.TextButton
 import tachiyomi.presentation.core.components.material.padding
@@ -265,7 +267,6 @@ object SettingsDataScreen : SearchableSettings {
                                 }
                             }
 
-
                             PreferenceItem(
                                 item = Preference.PreferenceItem.ListPreference(
                                     preference = backupSchedulePref,
@@ -328,6 +329,11 @@ object SettingsDataScreen : SearchableSettings {
                                 modifier = Modifier.padding(top = MaterialTheme.padding.small),
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
+
                             PreferenceItem(
                                 item = Preference.PreferenceItem.TextPreference(
                                     title = stringResource(MR.strings.pref_clear_chapter_cache),
@@ -355,6 +361,10 @@ object SettingsDataScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(

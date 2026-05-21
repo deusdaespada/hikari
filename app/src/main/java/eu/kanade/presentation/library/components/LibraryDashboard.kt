@@ -13,12 +13,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import eu.kanade.tachiyomi.ui.library.LibraryItem
 import tachiyomi.domain.history.model.HistoryWithRelations
-import tachiyomi.presentation.core.components.material.padding
-import tachiyomi.presentation.core.screens.EmptyScreen
-import tachiyomi.i18n.MR
 import tachiyomi.domain.manga.model.asMangaCover
+import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.Badge
 import tachiyomi.presentation.core.components.BadgeGroup
+import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.screens.EmptyScreen
 
 @Composable
 fun LibraryDashboard(
@@ -62,9 +62,11 @@ fun LibraryDashboard(
                         title = libraryItem.libraryManga.manga.title,
                         subtitle = "",
                         footer = "",
-                        progress = libraryItem.libraryManga.readCount.toFloat() / libraryItem.libraryManga.totalChapters.coerceAtLeast(
-                            1,
-                        ),
+                        progress =
+                        libraryItem.libraryManga.readCount.toFloat() /
+                            libraryItem.libraryManga.totalChapters.coerceAtLeast(
+                                1,
+                            ),
                         isSharedElementEnabled = true,
                         sharedElementTag = "dashboard",
                         onClick = { onMangaClick(libraryItem, "dashboard") },

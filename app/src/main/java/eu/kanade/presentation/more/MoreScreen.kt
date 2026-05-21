@@ -1,7 +1,6 @@
 package eu.kanade.presentation.more
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -9,16 +8,12 @@ import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.GetApp
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Storage
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -29,6 +24,8 @@ import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.more.DownloadQueueState
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCardDefaults
+import tachiyomi.presentation.core.components.HikariCardGroup
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.pluralStringResource
@@ -46,7 +43,6 @@ fun MoreScreen(
     onClickStats: () -> Unit,
     onClickDataAndStorage: () -> Unit,
     onClickSettings: () -> Unit,
-    onClickAbout: () -> Unit,
 ) {
     Scaffold { contentPadding ->
         LazyColumn(
@@ -57,15 +53,7 @@ fun MoreScreen(
             }
 
             item {
-                ElevatedCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
-                    colors = CardDefaults.elevatedCardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
-                    ),
-                    shape = MaterialTheme.shapes.large,
-                ) {
+                HikariCardGroup {
                     Column {
                         SwitchPreferenceWidget(
                             title = stringResource(MR.strings.label_downloaded_only),
@@ -76,7 +64,7 @@ fun MoreScreen(
                         )
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                            color = HikariCardDefaults.dividerColor(),
                         )
                         SwitchPreferenceWidget(
                             title = stringResource(MR.strings.pref_incognito_mode),
@@ -90,15 +78,7 @@ fun MoreScreen(
             }
 
             item {
-                ElevatedCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
-                    colors = CardDefaults.elevatedCardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
-                    ),
-                    shape = MaterialTheme.shapes.large,
-                ) {
+                HikariCardGroup {
                     Column {
                         val downloadQueueState = downloadQueueStateProvider()
                         TextPreferenceWidget(
@@ -119,6 +99,7 @@ fun MoreScreen(
                                         }"
                                     }
                                 }
+
                                 is DownloadQueueState.Downloading -> {
                                     val pending = downloadQueueState.pending
                                     pluralStringResource(MR.plurals.download_queue_summary, count = pending, pending)
@@ -136,7 +117,7 @@ fun MoreScreen(
                         )
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                            color = HikariCardDefaults.dividerColor(),
                         )
                         TextPreferenceWidget(
                             title = stringResource(MR.strings.categories),
@@ -152,7 +133,7 @@ fun MoreScreen(
                         )
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                            color = HikariCardDefaults.dividerColor(),
                         )
                         TextPreferenceWidget(
                             title = stringResource(MR.strings.label_stats),
@@ -168,7 +149,7 @@ fun MoreScreen(
                         )
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                            color = HikariCardDefaults.dividerColor(),
                         )
                         TextPreferenceWidget(
                             title = stringResource(MR.strings.label_data_storage),
@@ -187,15 +168,7 @@ fun MoreScreen(
             }
 
             item {
-                ElevatedCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
-                    colors = CardDefaults.elevatedCardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
-                    ),
-                    shape = MaterialTheme.shapes.large,
-                ) {
+                HikariCardGroup {
                     Column {
                         TextPreferenceWidget(
                             title = stringResource(MR.strings.label_settings),
@@ -208,22 +181,6 @@ fun MoreScreen(
                                 )
                             },
                             onPreferenceClick = onClickSettings,
-                        )
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                        )
-                        TextPreferenceWidget(
-                            title = stringResource(MR.strings.pref_category_about),
-                            icon = Icons.Outlined.Info,
-                            widget = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                )
-                            },
-                            onPreferenceClick = onClickAbout,
                         )
                     }
                 }

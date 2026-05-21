@@ -16,7 +16,6 @@ import eu.kanade.presentation.more.settings.screen.SettingsAppearanceScreen
 import eu.kanade.presentation.more.settings.screen.SettingsDataScreen
 import eu.kanade.presentation.more.settings.screen.SettingsMainScreen
 import eu.kanade.presentation.more.settings.screen.SettingsTrackingScreen
-import eu.kanade.presentation.more.settings.screen.about.AboutScreen
 import eu.kanade.presentation.util.DefaultNavigatorScreenTransition
 import eu.kanade.presentation.util.LocalBackPress
 import eu.kanade.presentation.util.Screen
@@ -35,7 +34,6 @@ class SettingsScreen(
         if (!isTabletUi()) {
             Navigator(
                 screen = when (destination) {
-                    Destination.About.id -> AboutScreen
                     Destination.DataAndStorage.id -> SettingsDataScreen
                     Destination.Tracking.id -> SettingsTrackingScreen
                     else -> SettingsMainScreen
@@ -56,7 +54,6 @@ class SettingsScreen(
         } else {
             Navigator(
                 screen = when (destination) {
-                    Destination.About.id -> AboutScreen
                     Destination.DataAndStorage.id -> SettingsDataScreen
                     Destination.Tracking.id -> SettingsTrackingScreen
                     else -> SettingsAppearanceScreen
@@ -80,7 +77,6 @@ class SettingsScreen(
     }
 
     sealed class Destination(val id: Int) {
-        data object About : Destination(0)
         data object DataAndStorage : Destination(1)
         data object Tracking : Destination(2)
     }

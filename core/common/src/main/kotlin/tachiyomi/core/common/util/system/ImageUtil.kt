@@ -371,7 +371,10 @@ object ImageUtil {
         val botRightPixelDark = botRightPixel.isDark()
 
         var darkBG =
-            (topLeftPixelDark && (botLeftPixelDark || botRightPixelDark || topRightPixelDark || midLeftPixelDark || topMidPixelDark)) ||
+            (
+                topLeftPixelDark &&
+                    (botLeftPixelDark || botRightPixelDark || topRightPixelDark || midLeftPixelDark || topMidPixelDark)
+                ) ||
                 (topRightPixelDark && (botRightPixelDark || botLeftPixelDark || midRightPixelDark || topMidPixelDark))
 
         val topAndBotPixels =

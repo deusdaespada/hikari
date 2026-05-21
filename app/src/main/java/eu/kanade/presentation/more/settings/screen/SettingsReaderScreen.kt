@@ -1,10 +1,14 @@
 package eu.kanade.presentation.more.settings.screen
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.PreferenceItem
@@ -16,7 +20,9 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCardDefaults
 import tachiyomi.presentation.core.components.SectionCard
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
@@ -66,6 +72,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.ListPreference(
@@ -80,6 +90,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -90,6 +104,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -100,6 +118,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -138,6 +160,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.ListPreference(
@@ -153,6 +179,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -162,6 +192,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -172,6 +206,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -181,6 +219,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -225,6 +267,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SliderPreference(
@@ -238,6 +284,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SliderPreference(
@@ -255,6 +305,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.ListPreference(
@@ -297,6 +351,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -306,6 +364,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -315,6 +377,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -362,6 +428,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.ListPreference(
@@ -380,6 +450,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.ListPreference(
@@ -393,6 +467,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.ListPreference(
@@ -406,6 +484,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -415,6 +497,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -424,6 +510,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -434,6 +524,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -444,6 +538,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -457,6 +555,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -468,6 +570,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -481,6 +587,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -531,6 +641,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.ListPreference(
@@ -549,6 +663,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SliderPreference(
@@ -563,6 +681,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.ListPreference(
@@ -583,6 +705,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -592,6 +718,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -605,6 +735,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -616,6 +750,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -629,6 +767,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -639,6 +781,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -648,6 +794,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -683,6 +833,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -693,6 +847,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -702,6 +860,10 @@ object SettingsReaderScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(

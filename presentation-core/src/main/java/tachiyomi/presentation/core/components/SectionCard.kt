@@ -57,7 +57,11 @@ fun SectionCard(
                 Text(
                     modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
                     text = stringResource(titleRes),
-                    style = if (highEmphasis) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium,
+                    style = if (highEmphasis) {
+                        MaterialTheme.typography.titleLarge
+                    } else {
+                        MaterialTheme.typography.titleMedium
+                    },
                     color = color,
                 )
             }

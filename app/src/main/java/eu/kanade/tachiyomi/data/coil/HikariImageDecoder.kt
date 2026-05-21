@@ -11,8 +11,8 @@ import coil3.decode.ImageSource
 import coil3.fetch.SourceFetchResult
 import coil3.request.Options
 import coil3.request.allowRgb565
-import okio.BufferedSource
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import okio.BufferedSource
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.core.common.util.system.NativeImageDecoder
 import uy.kohesive.injekt.Injekt

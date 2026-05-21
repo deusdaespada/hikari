@@ -432,7 +432,7 @@ private fun MangaContentInfo(
             text = title.ifBlank { stringResource(MR.strings.unknown_title) },
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier
-                .mangaSharedElement("${sharedElementTag}-title", mangaId)
+                .mangaSharedElement("$sharedElementTag-title", mangaId)
                 .clickableNoIndication(
                     onLongClick = {
                         if (title.isNotBlank()) {

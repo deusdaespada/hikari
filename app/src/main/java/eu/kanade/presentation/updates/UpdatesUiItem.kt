@@ -1,19 +1,19 @@
 package eu.kanade.presentation.updates
 
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -31,63 +31,53 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.outlined.History
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.surfaceColorAtElevation
-import androidx.compose.ui.draw.clip
 import eu.kanade.presentation.components.relativeDateText
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterDownloadIndicator
 import eu.kanade.presentation.manga.components.DotSeparatorText
 import eu.kanade.presentation.manga.components.MangaCover
+import eu.kanade.presentation.updates.components.UpdatesGroupHeader
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.presentation.util.relativeTimeSpanString
-import eu.kanade.presentation.updates.components.UpdatesGroupHeader
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
 import tachiyomi.domain.updates.model.UpdatesWithRelations
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCardGroup
+import tachiyomi.presentation.core.components.HikariGroupedListItem
+import tachiyomi.presentation.core.components.HikariListItemPosition
 import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
-import tachiyomi.presentation.core.util.selectedBackground
 
 internal fun LazyListScope.updatesLastUpdatedItem(
     lastUpdated: Long,
 ) {
     item(key = "updates-lastUpdated") {
-        Box(
-            modifier = Modifier
-                .animateItem(fadeInSpec = null, fadeOutSpec = null)
-                .fillMaxWidth()
-                .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small)
-                .clip(MaterialTheme.shapes.large)
-                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp))
-                .padding(MaterialTheme.padding.medium),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Outlined.History,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(modifier = Modifier.width(MaterialTheme.padding.medium))
-                Column {
-                    Text(
-                        text = stringResource(MR.strings.updates_last_update_info, ""),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        HikariCardGroup(modifier = Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null)) {
+            Box(
+                modifier = Modifier.padding(MaterialTheme.padding.medium),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Outlined.History,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary,
                     )
-                    Text(
-                        text = relativeTimeSpanString(lastUpdated),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                    )
+                    Spacer(modifier = Modifier.width(MaterialTheme.padding.medium))
+                    Column {
+                        Text(
+                            text = stringResource(MR.strings.updates_last_update_info, ""),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = relativeTimeSpanString(lastUpdated),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
                 }
             }
         }
@@ -194,36 +184,21 @@ private fun UpdatesUiItem(
     val haptic = LocalHapticFeedback.current
     val textAlpha = if (update.read) DISABLED_ALPHA else 1f
 
-    val shape = when (position) {
-        ItemPosition.First -> RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-        ItemPosition.Last -> RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
-        ItemPosition.Single -> RoundedCornerShape(16.dp)
-        ItemPosition.Middle -> RoundedCornerShape(0.dp)
-    }
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                start = MaterialTheme.padding.medium,
-                end = MaterialTheme.padding.medium,
-                bottom = if (position == ItemPosition.Last || position == ItemPosition.Single) MaterialTheme.padding.small else 0.dp,
-            )
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp))
-            .selectedBackground(selected)
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = {
-                    onLongClick()
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                },
-            )
-            .height(72.dp)
-            .padding(horizontal = MaterialTheme.padding.medium),
+    HikariGroupedListItem(
+        modifier = modifier,
+        position = position.toHikariListItemPosition(),
+        selected = selected,
+        height = 72.dp,
+        onClick = onClick,
+        onLongClick = {
+            onLongClick()
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        },
     ) {
         Row(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = MaterialTheme.padding.medium),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             MangaCover.Square(
@@ -253,8 +228,7 @@ private fun UpdatesUiItem(
                         Icon(
                             imageVector = Icons.Filled.Circle,
                             contentDescription = stringResource(MR.strings.unread),
-                            modifier = Modifier
-                                .size(8.dp),
+                            modifier = Modifier.size(8.dp),
                             tint = MaterialTheme.colorScheme.primary,
                         )
                         Spacer(modifier = Modifier.width(4.dp))
@@ -300,14 +274,15 @@ private fun UpdatesUiItem(
                 onClick = { onDownloadChapter?.invoke(it) },
             )
         }
+    }
+}
 
-        if (position != ItemPosition.Last && position != ItemPosition.Single) {
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
-                thickness = 0.5.dp,
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-            )
-        }
+private fun ItemPosition.toHikariListItemPosition(): HikariListItemPosition {
+    return when (this) {
+        ItemPosition.First -> HikariListItemPosition.First
+        ItemPosition.Middle -> HikariListItemPosition.Middle
+        ItemPosition.Last -> HikariListItemPosition.Last
+        ItemPosition.Single -> HikariListItemPosition.Single
     }
 }
 

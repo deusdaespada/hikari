@@ -2,7 +2,6 @@ package eu.kanade.presentation.more.stats.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.Icon
@@ -15,16 +14,19 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import tachiyomi.presentation.core.components.material.SECONDARY_ALPHA
 import tachiyomi.presentation.core.components.material.padding
 
 @Composable
-fun RowScope.StatsOverviewItem(
+fun StatsOverviewItem(
     title: String,
     subtitle: String,
     icon: ImageVector,
+    modifier: Modifier = Modifier,
 ) {
     BaseStatsItem(
+        modifier = modifier,
         title = title,
         titleStyle = MaterialTheme.typography.titleLarge,
         subtitle = subtitle,
@@ -34,11 +36,13 @@ fun RowScope.StatsOverviewItem(
 }
 
 @Composable
-fun RowScope.StatsItem(
+fun StatsItem(
     title: String,
     subtitle: String,
+    modifier: Modifier = Modifier,
 ) {
     BaseStatsItem(
+        modifier = modifier,
         title = title,
         titleStyle = MaterialTheme.typography.bodyMedium,
         subtitle = subtitle,
@@ -47,7 +51,8 @@ fun RowScope.StatsItem(
 }
 
 @Composable
-private fun RowScope.BaseStatsItem(
+private fun BaseStatsItem(
+    modifier: Modifier,
     title: String,
     titleStyle: TextStyle,
     subtitle: String,
@@ -55,8 +60,7 @@ private fun RowScope.BaseStatsItem(
     icon: ImageVector? = null,
 ) {
     Column(
-        modifier = Modifier
-            .weight(1f)
+        modifier = modifier
             .fillMaxHeight(),
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -67,6 +71,7 @@ private fun RowScope.BaseStatsItem(
                 .copy(fontWeight = FontWeight.Bold),
             textAlign = TextAlign.Center,
             maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         Text(
             text = subtitle,
@@ -76,6 +81,8 @@ private fun RowScope.BaseStatsItem(
                         .copy(alpha = SECONDARY_ALPHA),
                 ),
             textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
         if (icon != null) {
             Spacer(modifier = Modifier.weight(1f))

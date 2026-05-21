@@ -12,7 +12,6 @@ import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -21,10 +20,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import hikari.domain.extensionrepo.model.ExtensionRepo
 import kotlinx.collections.immutable.ImmutableSet
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCard
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 
@@ -65,9 +66,7 @@ private fun ExtensionRepoListItem(
 ) {
     val context = LocalContext.current
 
-    ElevatedCard(
-        modifier = modifier,
-    ) {
+    HikariCard(modifier = modifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

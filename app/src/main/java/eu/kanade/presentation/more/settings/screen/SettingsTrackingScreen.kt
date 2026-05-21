@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -59,6 +61,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCardDefaults
 import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -88,6 +91,7 @@ object SettingsTrackingScreen : SearchableSettings {
                         onDismissRequest = { dialog = null },
                     )
                 }
+
                 is LogoutDialog -> {
                     TrackingLogoutDialog(
                         tracker = tracker,
@@ -137,7 +141,6 @@ object SettingsTrackingScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
-
                             PreferenceItem(
                                 item = Preference.PreferenceItem.ListPreference(
                                     preference = trackPreferences.autoUpdateTrackOnMarkRead,
@@ -186,7 +189,7 @@ object SettingsTrackingScreen : SearchableSettings {
                                 )
                             }
 
-                            trackers.forEach { (tracker, login) ->
+                            trackers.forEachIndexed { index, (tracker, login) ->
                                 PreferenceItem(
                                     item = Preference.PreferenceItem.TrackerPreference(
                                         tracker = tracker,
@@ -195,6 +198,12 @@ object SettingsTrackingScreen : SearchableSettings {
                                     ),
                                     highlightKey = null,
                                 )
+                                if (index < trackers.lastIndex) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                        color = HikariCardDefaults.dividerColor(),
+                                    )
+                                }
                             }
                         }
                     }
@@ -217,7 +226,7 @@ object SettingsTrackingScreen : SearchableSettings {
                 ) {
                     SectionCard {
                         Column {
-                            enhancedTrackers.forEach { service ->
+                            enhancedTrackers.forEachIndexed { index, service ->
                                 PreferenceItem(
                                     item = Preference.PreferenceItem.TrackerPreference(
                                         tracker = service,
@@ -226,6 +235,12 @@ object SettingsTrackingScreen : SearchableSettings {
                                     ),
                                     highlightKey = null,
                                 )
+                                if (index < enhancedTrackers.lastIndex) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                        color = HikariCardDefaults.dividerColor(),
+                                    )
+                                }
                             }
                         }
                     }

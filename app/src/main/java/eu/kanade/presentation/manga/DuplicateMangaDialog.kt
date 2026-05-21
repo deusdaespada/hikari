@@ -123,7 +123,6 @@ fun DuplicateMangaDialog(
                 .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
         ) {
-
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                 modifier = Modifier.height(getMaximumMangaCardHeight(duplicates)),

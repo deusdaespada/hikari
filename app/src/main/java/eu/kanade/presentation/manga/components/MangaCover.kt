@@ -34,7 +34,6 @@ enum class MangaCover(val ratio: Float) {
         mangaId: Long? = null,
         tag: String = "cover",
     ) {
-
         val id = mangaId ?: when (data) {
             is MangaCoverModel -> data.mangaId
             else -> null

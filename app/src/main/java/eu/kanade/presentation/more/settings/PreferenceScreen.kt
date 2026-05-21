@@ -4,9 +4,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -14,7 +15,9 @@ import androidx.compose.ui.util.fastForEachIndexed
 import eu.kanade.presentation.more.settings.screen.SearchableSettings
 import eu.kanade.presentation.more.settings.widget.PreferenceGroupHeader
 import kotlinx.coroutines.delay
+import tachiyomi.presentation.core.components.HikariCardGroup
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
+import tachiyomi.presentation.core.components.material.padding
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -48,29 +51,34 @@ fun PreferenceScreen(
     ) {
         items.fastForEachIndexed { i, preference ->
             when (preference) {
-                // Create Preference Group
                 is Preference.PreferenceGroup -> {
                     if (!preference.enabled) return@fastForEachIndexed
 
-                    item {
-                        Column {
-                            PreferenceGroupHeader(title = preference.title)
+                    item(key = "header_${preference.title}_$i") {
+                        PreferenceGroupHeader(title = preference.title)
+                    }
+                    item(key = "card_${preference.title}_$i") {
+                        HikariCardGroup {
+                            Column {
+                                preference.preferenceItems.fastForEachIndexed { index, item ->
+                                    val showDivider = index < preference.preferenceItems.lastIndex
+                                    CompositionLocalProvider(LocalPreferenceShowDivider provides showDivider) {
+                                        PreferenceItem(
+                                            item = item,
+                                            highlightKey = highlightKey,
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
-                    items(preference.preferenceItems) { item ->
-                        PreferenceItem(
-                            item = item,
-                            highlightKey = highlightKey,
-                        )
-                    }
-                    item {
+                    item(key = "spacer_${preference.title}_$i") {
                         if (i < items.lastIndex) {
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(MaterialTheme.padding.medium))
                         }
                     }
                 }
 
-                // Create Preference Item
                 is Preference.PreferenceItem<*, *> -> item {
                     PreferenceItem(
                         item = preference,
@@ -83,15 +91,30 @@ fun PreferenceScreen(
 }
 
 private fun List<Preference>.findHighlightedIndex(highlightKey: String): Int {
-    return flatMap {
-        if (it is Preference.PreferenceGroup) {
-            buildList<String?> {
-                add(null) // Header
-                addAll(it.preferenceItems.map { groupItem -> groupItem.title })
-                add(null) // Spacer
+    var lazyColumnIndex = 0
+    forEach { preference ->
+        when (preference) {
+            is Preference.PreferenceGroup -> {
+                if (!preference.enabled) return@forEach
+
+                lazyColumnIndex++
+
+                if (preference.preferenceItems.any { it.title == highlightKey }) {
+                    return lazyColumnIndex
+                }
+                lazyColumnIndex++
+
+                lazyColumnIndex++
             }
-        } else {
-            listOf(it.title)
+
+            is Preference.PreferenceItem<*, *> -> {
+                if (!preference.enabled) return@forEach
+                if (preference.title == highlightKey) {
+                    return lazyColumnIndex
+                }
+                lazyColumnIndex++
+            }
         }
-    }.indexOfFirst { it == highlightKey }
+    }
+    return -1
 }

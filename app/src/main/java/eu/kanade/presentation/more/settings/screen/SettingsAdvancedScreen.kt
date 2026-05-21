@@ -9,7 +9,10 @@ import android.webkit.WebView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -20,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.core.net.toUri
@@ -68,7 +72,9 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.ResetViewerFlags
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCardDefaults
 import tachiyomi.presentation.core.components.SectionCard
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
@@ -128,6 +134,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.TextPreference(
@@ -138,6 +148,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.TextPreference(
@@ -150,6 +164,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.TextPreference(
@@ -211,6 +229,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -225,6 +247,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.TextPreference(
@@ -234,6 +260,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.TextPreference(
@@ -241,6 +271,11 @@ object SettingsAdvancedScreen : SearchableSettings {
                                     onClick = { navigator.push(OnboardingScreen()) },
                                 ),
                                 highlightKey = null,
+                            )
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
                             )
 
                             PreferenceItem(
@@ -283,7 +318,8 @@ object SettingsAdvancedScreen : SearchableSettings {
                                         val packageName: String = context.packageName
                                         if (!context.powerManager.isIgnoringBatteryOptimizations(packageName)) {
                                             try {
-                                                @SuppressLint("BatteryLife") val intent = Intent().apply {
+                                                @SuppressLint("BatteryLife")
+                                                val intent = Intent().apply {
                                                     action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
                                                     data = "package:$packageName".toUri()
                                                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -302,6 +338,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.TextPreference(
@@ -319,14 +359,10 @@ object SettingsAdvancedScreen : SearchableSettings {
     }
 
     @Composable
-    private fun getDataGroup(): Preference.PreferenceGroup? = null
-
-    @Composable
     private fun getNetworkGroup(
         networkPreferences: NetworkPreferences,
     ): Preference.PreferenceGroup {
         val context = LocalContext.current
-        val networkHelper = remember { Injekt.get<NetworkHelper>() }
 
         val userAgentPref = networkPreferences.defaultUserAgent
         val userAgent by userAgentPref.collectAsState()
@@ -366,6 +402,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.EditTextPreference(
@@ -386,6 +426,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.TextPreference(
@@ -428,6 +472,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.TextPreference(
@@ -450,6 +498,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -460,6 +512,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -519,11 +575,17 @@ object SettingsAdvancedScreen : SearchableSettings {
                                             options[value].orEmpty(),
                                         )
                                     },
-                                    enabled = !ImageUtil.HARDWARE_BITMAP_UNSUPPORTED && GLUtil.DEVICE_TEXTURE_LIMIT > GLUtil.SAFE_TEXTURE_LIMIT,
+                                    enabled =
+                                    !ImageUtil.HARDWARE_BITMAP_UNSUPPORTED &&
+                                        GLUtil.DEVICE_TEXTURE_LIMIT > GLUtil.SAFE_TEXTURE_LIMIT,
                                 ),
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.SwitchPreference(
@@ -536,6 +598,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.TextPreference(
@@ -608,7 +674,9 @@ object SettingsAdvancedScreen : SearchableSettings {
                                     }.associateWith { stringResource(it.titleRes) }.toImmutableMap(),
                                     title = stringResource(MR.strings.ext_installer_pref),
                                     onValueChanged = {
-                                        if (it == BasePreferences.ExtensionInstaller.SHIZUKU && !context.isShizukuInstalled) {
+                                        if (it == BasePreferences.ExtensionInstaller.SHIZUKU &&
+                                            !context.isShizukuInstalled
+                                        ) {
                                             shizukuMissing = true
                                             false
                                         } else {
@@ -619,6 +687,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                                 highlightKey = null,
                             )
 
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                color = HikariCardDefaults.dividerColor(),
+                            )
 
                             PreferenceItem(
                                 item = Preference.PreferenceItem.TextPreference(

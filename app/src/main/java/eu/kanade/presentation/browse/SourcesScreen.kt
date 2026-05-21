@@ -111,7 +111,8 @@ fun SourcesScreen(
                         }
                         is SourceUiModel.Item -> {
                             val prevIsHeaderOrNull = index == 0 || state.items[index - 1] is SourceUiModel.Header
-                            val nextIsHeaderOrNull = index == state.items.lastIndex || state.items[index + 1] is SourceUiModel.Header
+                            val nextIsHeaderOrNull =
+                                index == state.items.lastIndex || state.items[index + 1] is SourceUiModel.Header
                             val position = when {
                                 prevIsHeaderOrNull && nextIsHeaderOrNull -> ItemPosition.Single
                                 prevIsHeaderOrNull -> ItemPosition.First

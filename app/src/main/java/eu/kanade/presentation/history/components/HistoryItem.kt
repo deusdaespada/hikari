@@ -1,29 +1,20 @@
 package eu.kanade.presentation.history.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -35,6 +26,8 @@ import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.tachiyomi.util.lang.toTimestampString
 import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariGroupedListItem
+import tachiyomi.presentation.core.components.HikariListItemPosition
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 
@@ -48,29 +41,16 @@ fun HistoryItem(
     onClickFavorite: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val shape = when (position) {
-        ItemPosition.First -> RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-        ItemPosition.Last -> RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
-        ItemPosition.Single -> RoundedCornerShape(16.dp)
-        ItemPosition.Middle -> RoundedCornerShape(0.dp)
-    }
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                start = MaterialTheme.padding.medium,
-                end = MaterialTheme.padding.medium,
-                bottom = if (position == ItemPosition.Last || position == ItemPosition.Single) MaterialTheme.padding.small else 0.dp,
-            )
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp))
-            .clickable(onClick = onClickResume)
-            .height(72.dp)
-            .padding(horizontal = MaterialTheme.padding.medium),
+    HikariGroupedListItem(
+        modifier = modifier,
+        position = position.toHikariListItemPosition(),
+        height = 72.dp,
+        onClick = onClickResume,
     ) {
         Row(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = MaterialTheme.padding.medium),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             MangaCover.Square(
@@ -80,7 +60,7 @@ fun HistoryItem(
                 data = history.coverData,
                 onClick = onClickCover,
             )
-            Column(
+            androidx.compose.foundation.layout.Column(
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = MaterialTheme.padding.medium),
@@ -129,14 +109,15 @@ fun HistoryItem(
                 )
             }
         }
+    }
+}
 
-        if (position != ItemPosition.Last && position != ItemPosition.Single) {
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
-                thickness = 0.5.dp,
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-            )
-        }
+fun ItemPosition.toHikariListItemPosition(): HikariListItemPosition {
+    return when (this) {
+        ItemPosition.First -> HikariListItemPosition.First
+        ItemPosition.Middle -> HikariListItemPosition.Middle
+        ItemPosition.Last -> HikariListItemPosition.Last
+        ItemPosition.Single -> HikariListItemPosition.Single
     }
 }
 
@@ -166,4 +147,3 @@ private fun HistoryItemPreviews(
         }
     }
 }
-
