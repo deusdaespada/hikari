@@ -1,14 +1,20 @@
 package eu.kanade.tachiyomi.ui.browse.migration.manga
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.animateFloatingActionButton
@@ -19,11 +25,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.manga.components.BaseMangaListItem
+import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
@@ -32,11 +41,15 @@ import kotlinx.coroutines.flow.collectLatest
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
+import tachiyomi.presentation.core.components.HikariGroupedListItem
+import tachiyomi.presentation.core.components.HikariListItemPosition
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
-import tachiyomi.presentation.core.util.selectedBackground
+import tachiyomi.presentation.core.util.plus
 import tachiyomi.presentation.core.util.shouldExpandFAB
 
 data class MigrateMangaScreen(
@@ -133,12 +146,23 @@ data class MigrateMangaScreen(
     ) {
         FastScrollLazyColumn(
             state = lazyListState,
-            contentPadding = contentPadding,
+            contentPadding = contentPadding + topSmallPaddingValues,
         ) {
-            items(state.titles) { manga ->
+            itemsIndexed(
+                items = state.titles,
+                key = { _, manga -> manga.id },
+            ) { index, manga ->
+                val position = when {
+                    state.titles.size == 1 -> HikariListItemPosition.Single
+                    index == 0 -> HikariListItemPosition.First
+                    index == state.titles.lastIndex -> HikariListItemPosition.Last
+                    else -> HikariListItemPosition.Middle
+                }
                 MigrateMangaItem(
                     manga = manga,
+                    position = position,
                     isSelected = manga.id in state.selection,
+                    modifier = Modifier.animateItem(),
                     onClickItem = onClickItem,
                     onClickCover = onClickCover,
                 )
@@ -149,16 +173,72 @@ data class MigrateMangaScreen(
     @Composable
     private fun MigrateMangaItem(
         manga: Manga,
+        position: HikariListItemPosition,
         isSelected: Boolean,
         onClickItem: (Manga) -> Unit,
         onClickCover: (Manga) -> Unit,
         modifier: Modifier = Modifier,
     ) {
-        BaseMangaListItem(
-            modifier = modifier.selectedBackground(isSelected),
-            manga = manga,
-            onClickItem = { onClickItem(manga) },
-            onClickCover = { onClickCover(manga) },
-        )
+        HikariGroupedListItem(
+            modifier = modifier,
+            position = position,
+            selected = isSelected,
+            height = 72.dp,
+            onClick = { onClickItem(manga) },
+        ) {
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = MaterialTheme.padding.medium),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                MangaCover.Square(
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .fillMaxHeight(),
+                    data = manga,
+                    onClick = { onClickCover(manga) },
+                )
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = MaterialTheme.padding.medium),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text(
+                        text = manga.title,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                    )
+
+                    manga.author
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { author ->
+                            Text(
+                                text = author,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (isSelected) {
+                                    MaterialTheme.colorScheme.onSurface
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                            )
+                        }
+                }
+
+                if (isSelected) {
+                    Icon(
+                        imageVector = Icons.Outlined.CheckCircle,
+                        contentDescription = stringResource(MR.strings.selected),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+        }
     }
 }

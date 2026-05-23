@@ -1,19 +1,19 @@
 package eu.kanade.tachiyomi.ui.browse.source.browse
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AdaptiveSheet
@@ -29,6 +29,7 @@ import tachiyomi.presentation.core.components.SortItem
 import tachiyomi.presentation.core.components.TextItem
 import tachiyomi.presentation.core.components.TriStateItem
 import tachiyomi.presentation.core.components.material.Button
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
@@ -44,36 +45,77 @@ fun SourceFilterDialog(
     AdaptiveSheet(
         onDismissRequest = onDismissRequest,
         header = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-            ) {
-                TextButton(onClick = onReset) {
-                    Text(
-                        text = stringResource(MR.strings.action_reset),
-                        style = LocalTextStyle.current.copy(
-                            color = MaterialTheme.colorScheme.primary,
-                        ),
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                Button(onClick = {
-                    onFilter()
-                    onDismissRequest()
-                }) {
-                    Text(stringResource(MR.strings.action_filter))
-                }
-            }
+            FilterSheetHeader(onReset = onReset)
         },
     ) {
-        LazyColumn {
-            items(filters) {
-                FilterItem(it, updateFilters)
+        Column(modifier = Modifier.fillMaxWidth()) {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(
+                    top = MaterialTheme.padding.small,
+                    bottom = MaterialTheme.padding.extraSmall,
+                ),
+            ) {
+                items(filters) {
+                    FilterItem(it, updateFilters)
+                }
             }
+
+            HorizontalDivider()
+
+            FilterSheetActionBar(
+                onFilter = {
+                    onFilter()
+                    onDismissRequest()
+                },
+            )
         }
+    }
+}
+
+@Composable
+private fun FilterSheetHeader(
+    onReset: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                start = MaterialTheme.padding.medium,
+                top = MaterialTheme.padding.small,
+                end = MaterialTheme.padding.small,
+                bottom = MaterialTheme.padding.small,
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+    ) {
+        Text(
+            text = stringResource(MR.strings.action_filter),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.weight(1f),
+        )
+        TextButton(onClick = onReset) {
+            Text(text = stringResource(MR.strings.action_reset))
+        }
+    }
+}
+
+@Composable
+private fun FilterSheetActionBar(
+    onFilter: () -> Unit,
+) {
+    Button(
+        onClick = onFilter,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                horizontal = MaterialTheme.padding.medium,
+                vertical = MaterialTheme.padding.small,
+            ),
+    ) {
+        Text(text = stringResource(MR.strings.action_filter))
     }
 }
 

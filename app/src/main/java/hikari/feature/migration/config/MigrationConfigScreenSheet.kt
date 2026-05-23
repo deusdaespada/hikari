@@ -4,9 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -38,12 +36,14 @@ import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.getAndSet
 import tachiyomi.core.common.preference.toggle
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCard
+import tachiyomi.presentation.core.components.HikariCardDefaults
+import tachiyomi.presentation.core.components.HikariCardGroup
 import tachiyomi.presentation.core.components.material.Button
 import tachiyomi.presentation.core.components.material.Switch
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.theme.active
-import tachiyomi.presentation.core.theme.header
 import tachiyomi.presentation.core.util.collectAsState
 
 @Composable
@@ -54,128 +54,226 @@ fun MigrationConfigScreenSheet(
 ) {
     var extraSearchQuery by rememberSaveable { mutableStateOf("") }
     val migrationFlags by preferences.migrationFlags.collectAsState()
-    AdaptiveSheet(onDismissRequest = onDismissRequest) {
+    AdaptiveSheet(
+        onDismissRequest = onDismissRequest,
+        header = { MigrationSheetHeader() },
+    ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier
                     .weight(1f, fill = false)
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
-                    .padding(top = MaterialTheme.padding.medium),
+                    .padding(
+                        top = MaterialTheme.padding.small,
+                        bottom = MaterialTheme.padding.extraSmall,
+                    ),
             ) {
-                Text(
-                    text = stringResource(MR.strings.migrationConfigScreen_dataToMigrateHeader),
-                    style = MaterialTheme.typography.header,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = MaterialTheme.padding.extraSmall)
-                        .padding(horizontal = MaterialTheme.padding.medium),
-                )
-                Spacer(modifier = Modifier.height(MaterialTheme.padding.extraSmall))
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = MaterialTheme.padding.medium)
-                        .padding(bottom = MaterialTheme.padding.extraSmall),
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
-                ) {
-                    MigrationFlag.entries
-                        .fastFilterNot { it == MigrationFlag.REMOVE_DOWNLOAD }
-                        .fastForEach { flag ->
-                            val selected = flag in migrationFlags
-                            FilterChip(
-                                selected = selected,
-                                onClick = {
-                                    preferences.migrationFlags.getAndSet { currentFlags ->
-                                        if (flag in currentFlags) {
-                                            currentFlags - flag
-                                        } else {
-                                            currentFlags + flag
-                                        }
-                                    }
-                                },
-                                label = { Text(stringResource(flag.getLabel())) },
-                                leadingIcon = {
-                                    if (selected) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Check,
-                                            contentDescription = null,
-                                        )
-                                    }
-                                },
-                            )
-                        }
-                }
-                val removeDownloads = MigrationFlag.REMOVE_DOWNLOAD in migrationFlags
-                MigrationSheetSwitchItem(
-                    title = stringResource(MR.strings.migrationConfigScreen_removeDownloadsTitle),
-                    subtitle = null,
-                    checked = removeDownloads,
-                    onClick = {
-                        preferences.migrationFlags.getAndSet {
-                            if (removeDownloads) {
-                                it - MigrationFlag.REMOVE_DOWNLOAD
+                MigrationSheetDataSection(
+                    migrationFlags = migrationFlags,
+                    onToggleFlag = { flag ->
+                        preferences.migrationFlags.getAndSet { currentFlags ->
+                            if (flag in currentFlags) {
+                                currentFlags - flag
                             } else {
-                                it + MigrationFlag.REMOVE_DOWNLOAD
+                                currentFlags + flag
+                            }
+                        }
+                    },
+                    onToggleRemoveDownloads = {
+                        preferences.migrationFlags.getAndSet { flags ->
+                            if (MigrationFlag.REMOVE_DOWNLOAD in flags) {
+                                flags - MigrationFlag.REMOVE_DOWNLOAD
+                            } else {
+                                flags + MigrationFlag.REMOVE_DOWNLOAD
                             }
                         }
                     },
                 )
-                MigrationSheetDividerItem()
-                OutlinedTextField(
-                    value = extraSearchQuery,
-                    onValueChange = { extraSearchQuery = it },
-                    label = { Text(stringResource(MR.strings.migrationConfigScreen_additionalSearchQueryLabel)) },
-                    supportingText = {
-                        Text(stringResource(MR.strings.migrationConfigScreen_additionalSearchQuerySupportingText))
-                    },
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            horizontal = MaterialTheme.padding.medium,
-                            vertical = MaterialTheme.padding.extraSmall,
-                        ),
+
+                MigrationSheetSearchSection(
+                    extraSearchQuery = extraSearchQuery,
+                    onExtraSearchQueryChange = { extraSearchQuery = it },
+                    hideUnmatchedPreference = preferences.migrationHideUnmatched,
+                    hideWithoutUpdatesPreference = preferences.migrationHideWithoutUpdates,
                 )
-                MigrationSheetSwitchItem(
-                    title = stringResource(MR.strings.migrationConfigScreen_hideUnmatchedTitle),
-                    subtitle = null,
-                    preference = preferences.migrationHideUnmatched,
-                )
-                MigrationSheetSwitchItem(
-                    title = stringResource(MR.strings.migrationConfigScreen_hideWithoutUpdatesTitle),
-                    subtitle = stringResource(MR.strings.migrationConfigScreen_hideWithoutUpdatesSubtitle),
-                    preference = preferences.migrationHideWithoutUpdates,
-                )
-                MigrationSheetDividerItem()
-                MigrationSheetWarningItem(stringResource(MR.strings.migrationConfigScreen_enhancedOptionsWarning))
-                MigrationSheetSwitchItem(
-                    title = stringResource(MR.strings.migrationConfigScreen_deepSearchModeTitle),
-                    subtitle = stringResource(MR.strings.migrationConfigScreen_deepSearchModeSubtitle),
-                    preference = preferences.migrationDeepSearchMode,
-                )
-                MigrationSheetSwitchItem(
-                    title = stringResource(MR.strings.migrationConfigScreen_prioritizeByChaptersTitle),
-                    subtitle = stringResource(MR.strings.migrationConfigScreen_prioritizeByChaptersSubtitle),
-                    preference = preferences.migrationPrioritizeByChapters,
+
+                MigrationSheetAdvancedSection(
+                    deepSearchModePreference = preferences.migrationDeepSearchMode,
+                    prioritizeByChaptersPreference = preferences.migrationPrioritizeByChapters,
                 )
             }
             HorizontalDivider()
-            Button(
-                onClick = {
-                    val cleanedExtraSearchQuery = extraSearchQuery.trim().ifBlank { null }
-                    onStartMigration(cleanedExtraSearchQuery)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = MaterialTheme.padding.medium,
-                        vertical = MaterialTheme.padding.small,
-                    ),
-            ) {
-                Text(text = stringResource(MR.strings.migrationConfigScreen_continueButtonText))
+            MigrationSheetActionBar {
+                val cleanedExtraSearchQuery = extraSearchQuery.trim().ifBlank { null }
+                onStartMigration(cleanedExtraSearchQuery)
             }
         }
+    }
+}
+
+@Composable
+private fun MigrationSheetHeader() {
+    Text(
+        text = stringResource(MR.strings.migrationConfigScreen_optionsTitle),
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                start = MaterialTheme.padding.medium,
+                top = MaterialTheme.padding.small,
+                end = MaterialTheme.padding.medium,
+                bottom = MaterialTheme.padding.small,
+            ),
+    )
+}
+
+@Composable
+private fun MigrationSheetDataSection(
+    migrationFlags: Set<MigrationFlag>,
+    onToggleFlag: (MigrationFlag) -> Unit,
+    onToggleRemoveDownloads: () -> Unit,
+) {
+    MigrationSheetSection(
+        title = stringResource(MR.strings.migrationConfigScreen_dataToMigrateHeader),
+    ) {
+        FlowRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = MaterialTheme.padding.medium,
+                    vertical = MaterialTheme.padding.extraSmall,
+                ),
+            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+        ) {
+            MigrationFlag.entries
+                .fastFilterNot { it == MigrationFlag.REMOVE_DOWNLOAD }
+                .fastForEach { flag ->
+                    val selected = flag in migrationFlags
+                    FilterChip(
+                        selected = selected,
+                        onClick = { onToggleFlag(flag) },
+                        label = { Text(stringResource(flag.getLabel())) },
+                        leadingIcon = {
+                            if (selected) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Check,
+                                    contentDescription = null,
+                                )
+                            }
+                        },
+                    )
+                }
+        }
+        HorizontalDivider(modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium))
+        MigrationSheetSwitchItem(
+            title = stringResource(MR.strings.migrationConfigScreen_removeDownloadsTitle),
+            subtitle = null,
+            checked = MigrationFlag.REMOVE_DOWNLOAD in migrationFlags,
+            onClick = onToggleRemoveDownloads,
+        )
+    }
+}
+
+@Composable
+private fun MigrationSheetSearchSection(
+    extraSearchQuery: String,
+    onExtraSearchQueryChange: (String) -> Unit,
+    hideUnmatchedPreference: Preference<Boolean>,
+    hideWithoutUpdatesPreference: Preference<Boolean>,
+) {
+    MigrationSheetSection(
+        title = stringResource(MR.strings.migrationConfigScreen_searchMatchingHeader),
+    ) {
+        OutlinedTextField(
+            value = extraSearchQuery,
+            onValueChange = onExtraSearchQueryChange,
+            label = { Text(stringResource(MR.strings.migrationConfigScreen_additionalSearchQueryLabel)) },
+            supportingText = {
+                Text(stringResource(MR.strings.migrationConfigScreen_additionalSearchQuerySupportingText))
+            },
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = MaterialTheme.padding.medium,
+                    vertical = MaterialTheme.padding.extraSmall,
+                ),
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium))
+        MigrationSheetSwitchItem(
+            title = stringResource(MR.strings.migrationConfigScreen_hideUnmatchedTitle),
+            subtitle = null,
+            preference = hideUnmatchedPreference,
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium))
+        MigrationSheetSwitchItem(
+            title = stringResource(MR.strings.migrationConfigScreen_hideWithoutUpdatesTitle),
+            subtitle = stringResource(MR.strings.migrationConfigScreen_hideWithoutUpdatesSubtitle),
+            preference = hideWithoutUpdatesPreference,
+        )
+    }
+}
+
+@Composable
+private fun MigrationSheetAdvancedSection(
+    deepSearchModePreference: Preference<Boolean>,
+    prioritizeByChaptersPreference: Preference<Boolean>,
+) {
+    MigrationSheetSection(
+        title = stringResource(MR.strings.migrationConfigScreen_advancedMatchingHeader),
+    ) {
+        MigrationSheetWarningItem(stringResource(MR.strings.migrationConfigScreen_enhancedOptionsWarning))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium))
+        MigrationSheetSwitchItem(
+            title = stringResource(MR.strings.migrationConfigScreen_deepSearchModeTitle),
+            subtitle = stringResource(MR.strings.migrationConfigScreen_deepSearchModeSubtitle),
+            preference = deepSearchModePreference,
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium))
+        MigrationSheetSwitchItem(
+            title = stringResource(MR.strings.migrationConfigScreen_prioritizeByChaptersTitle),
+            subtitle = stringResource(MR.strings.migrationConfigScreen_prioritizeByChaptersSubtitle),
+            preference = prioritizeByChaptersPreference,
+        )
+    }
+}
+
+@Composable
+private fun MigrationSheetSection(
+    title: String,
+    content: @Composable () -> Unit,
+) {
+    HikariCardGroup(
+        verticalPadding = MaterialTheme.padding.extraSmall,
+        containerColor = HikariCardDefaults.containerColor(HikariCardDefaults.nestedCardElevation),
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(
+                horizontal = MaterialTheme.padding.medium,
+                vertical = MaterialTheme.padding.small,
+            ),
+        )
+        content()
+    }
+}
+
+@Composable
+private fun MigrationSheetActionBar(
+    onContinue: () -> Unit,
+) {
+    Button(
+        onClick = onContinue,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                horizontal = MaterialTheme.padding.medium,
+                vertical = MaterialTheme.padding.small,
+            ),
+    ) {
+        Text(text = stringResource(MR.strings.migrationConfigScreen_continueButtonText))
     }
 }
 
@@ -215,29 +313,34 @@ private fun MigrationSheetSwitchItem(
 }
 
 @Composable
-private fun MigrationSheetDividerItem() {
-    HorizontalDivider(modifier = Modifier.padding(vertical = MaterialTheme.padding.extraSmall))
-}
-
-@Composable
 private fun MigrationSheetWarningItem(
     text: String,
 ) {
-    ListItem(
-        leadingContent = {
-            Icon(
-                imageVector = Icons.Outlined.Warning,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.active,
-            )
-        },
-        headlineContent = {
-            Text(
-                text = text,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier,
-            )
-        },
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-    )
+    HikariCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                horizontal = MaterialTheme.padding.medium,
+                vertical = MaterialTheme.padding.extraSmall,
+            ),
+        containerColor = MaterialTheme.colorScheme.errorContainer,
+        showBorder = false,
+    ) {
+        ListItem(
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.active,
+                )
+            },
+            headlineContent = {
+                Text(
+                    text = text,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                )
+            },
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        )
+    }
 }

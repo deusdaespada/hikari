@@ -83,6 +83,8 @@
     <string name="action_mark_as_unread">Mark as unread</string>
     <string name="action_mark_previous_as_read">Mark previous as read</string>
     <string name="action_download">Download</string>
+    <string name="download_status_downloading">Downloading</string>
+    <string name="download_status_queued">Queued</string>
     <string name="action_bookmark">Bookmark chapter</string>
     <string name="action_remove_bookmark">Unbookmark chapter</string>
     <string name="action_delete">Delete</string>
@@ -951,6 +953,7 @@
     <!-- Reader activity -->
     <string name="custom_filter">Custom filter</string>
     <string name="set_as_cover">Set as cover</string>
+    <string name="reader_page_actions_title">Page actions</string>
     <string name="cover_updated">Cover updated</string>
     <string name="share_page_info">%1$s: %2$s, page %3$d</string>
     <string name="chapter_progress">Page: %1$d</string>
@@ -1159,8 +1162,11 @@
     <string name="migrationConfigScreen.selectNoneLabel">Select none</string>
     <string name="migrationConfigScreen.selectEnabledLabel">Select enabled sources</string>
     <string name="migrationConfigScreen.selectPinnedLabel">Select pinned sources</string>
+    <string name="migrationConfigScreen.optionsTitle">Migration options</string>
     <string name="migrationConfigScreen.continueButtonText">Continue</string>
     <string name="migrationConfigScreen.dataToMigrateHeader">Data to migrate</string>
+    <string name="migrationConfigScreen.searchMatchingHeader">Search matching</string>
+    <string name="migrationConfigScreen.advancedMatchingHeader">Advanced matching</string>
     <string name="migrationConfigScreen.removeDownloadsTitle">Delete downloads of current entry
         after migration
     </string>

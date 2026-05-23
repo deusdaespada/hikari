@@ -34,6 +34,7 @@ import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
@@ -60,7 +61,6 @@ import eu.kanade.presentation.components.AdaptiveSheet
 import eu.kanade.presentation.components.TabbedDialogPaddings
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.more.settings.LocalPreferenceMinHeight
-import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SManga
 import tachiyomi.domain.manga.model.Manga
@@ -103,7 +103,7 @@ fun DuplicateMangaDialog(
             ) {
                 Text(
                     text = stringResource(MR.strings.possible_duplicates_title),
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
                         .then(horizontalPaddingModifier)
                         .padding(top = MaterialTheme.padding.small),
@@ -112,6 +112,7 @@ fun DuplicateMangaDialog(
                 Text(
                     text = stringResource(MR.strings.possible_duplicates_summary),
                     style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.then(horizontalPaddingModifier),
                 )
             }
@@ -144,32 +145,50 @@ fun DuplicateMangaDialog(
 
             Column(modifier = horizontalPaddingModifier) {
                 HorizontalDivider()
-
-                TextPreferenceWidget(
-                    title = stringResource(MR.strings.action_add_anyway),
-                    icon = Icons.Outlined.Add,
-                    onPreferenceClick = {
-                        onDismissRequest()
-                        onConfirm()
-                    },
-                    modifier = Modifier.clip(CircleShape),
-                )
-            }
-
-            OutlinedButton(
-                onClick = onDismissRequest,
-                modifier = Modifier
-                    .then(horizontalPaddingModifier)
-                    .padding(bottom = MaterialTheme.padding.medium)
-                    .heightIn(min = minHeight)
-                    .fillMaxWidth(),
-            ) {
-                Text(
-                    modifier = Modifier.padding(vertical = MaterialTheme.padding.extraSmall),
-                    text = stringResource(MR.strings.action_cancel),
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.bodyLarge,
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = MaterialTheme.padding.small, bottom = MaterialTheme.padding.medium),
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                ) {
+                    OutlinedButton(
+                        onClick = onDismissRequest,
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = minHeight),
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(vertical = MaterialTheme.padding.extraSmall),
+                            text = stringResource(MR.strings.action_cancel),
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                    }
+                    FilledTonalButton(
+                        onClick = {
+                            onDismissRequest()
+                            onConfirm()
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = minHeight),
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Add,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Text(
+                                text = stringResource(MR.strings.action_add_anyway),
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        }
+                    }
+                }
             }
         }
     }

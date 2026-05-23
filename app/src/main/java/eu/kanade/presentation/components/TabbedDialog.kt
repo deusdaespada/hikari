@@ -23,7 +23,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +38,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCardDefaults
 import tachiyomi.presentation.core.components.material.TabText
 import tachiyomi.presentation.core.i18n.stringResource
 import kotlin.math.absoluteValue
@@ -63,13 +63,15 @@ fun TabbedDialog(
         onDismissRequest = onDismissRequest,
         header = {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(HikariCardDefaults.containerColor(2.dp)),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 TabRow(
                     modifier = Modifier.weight(1f),
                     selectedTabIndex = pagerState.currentPage,
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    containerColor = HikariCardDefaults.containerColor(2.dp),
                     divider = {},
                     indicator = { tabPositions ->
                         if (pagerState.currentPage < tabPositions.size) {

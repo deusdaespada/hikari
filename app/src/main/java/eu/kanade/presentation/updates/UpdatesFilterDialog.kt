@@ -16,10 +16,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import eu.kanade.presentation.components.TabbedDialog
+import eu.kanade.presentation.components.AdaptiveSheet
 import eu.kanade.presentation.components.TabbedDialogPaddings
 import eu.kanade.tachiyomi.ui.updates.UpdatesSettingsScreenModel
-import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.core.common.preference.getAndSet
 import tachiyomi.domain.updates.service.UpdatesPreferences
 import tachiyomi.i18n.MR
@@ -35,11 +34,22 @@ fun UpdatesFilterDialog(
     onDismissRequest: () -> Unit,
     screenModel: UpdatesSettingsScreenModel,
 ) {
-    TabbedDialog(
+    AdaptiveSheet(
         onDismissRequest = onDismissRequest,
-        tabTitles = persistentListOf(
-            stringResource(MR.strings.action_filter),
-        ),
+        header = {
+            Text(
+                text = stringResource(MR.strings.action_filter),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = MaterialTheme.padding.medium,
+                        top = MaterialTheme.padding.small,
+                        end = MaterialTheme.padding.medium,
+                        bottom = MaterialTheme.padding.small,
+                    ),
+            )
+        },
     ) {
         Column(
             modifier = Modifier

@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -65,6 +66,8 @@ fun AdaptiveSheet(
 ) {
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
+    val sheetColor = HikariCardDefaults.containerColor(4.dp).copy(alpha = 0.98f)
+    val sheetBorder = BorderStroke(1.dp, HikariCardDefaults.dividerColor())
     if (isTabletUi) {
         var targetAlpha by remember { mutableFloatStateOf(0f) }
         val alpha by animateFloatAsState(
@@ -100,9 +103,9 @@ fun AdaptiveSheet(
                     .systemBarsPadding()
                     .padding(vertical = 16.dp)
                     .then(modifier),
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.95f),
-                border = BorderStroke(1.dp, HikariCardDefaults.dividerColor()),
+                shape = RoundedCornerShape(28.dp),
+                color = sheetColor,
+                border = sheetBorder,
                 tonalElevation = 4.dp,
                 shadowElevation = 4.dp,
                 content = {
@@ -186,9 +189,9 @@ fun AdaptiveSheet(
                         enabled = enableSwipeDismiss,
                         flingBehavior = flingBehavior,
                     ),
-                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.95f),
-                border = BorderStroke(1.dp, HikariCardDefaults.dividerColor()),
+                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+                color = sheetColor,
+                border = sheetBorder,
                 tonalElevation = 4.dp,
                 shadowElevation = 4.dp,
                 content = {
@@ -199,13 +202,21 @@ fun AdaptiveSheet(
                     Box(contentAlignment = Alignment.TopCenter) {
                         Column {
                             if (header != null) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(MaterialTheme.colorScheme.surfaceContainer)
-                                        .padding(top = 16.dp),
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
                                 ) {
-                                    header()
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(HikariCardDefaults.containerColor(2.dp))
+                                            .padding(top = 18.dp),
+                                    ) {
+                                        header()
+                                    }
+                                    HorizontalDivider(
+                                        thickness = 0.5.dp,
+                                        color = HikariCardDefaults.dividerColor(),
+                                    )
                                 }
                             }
                             Box(
@@ -216,9 +227,9 @@ fun AdaptiveSheet(
                         }
                         Surface(
                             modifier = Modifier
-                                .padding(vertical = 10.dp)
-                                .size(width = 32.dp, height = 4.dp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                .padding(vertical = 12.dp)
+                                .size(width = 36.dp, height = 4.dp),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
                             shape = CircleShape,
                         ) {}
                     }

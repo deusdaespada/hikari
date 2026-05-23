@@ -6,14 +6,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -63,6 +63,9 @@ import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.Badge
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
+import tachiyomi.presentation.core.components.HikariCard
+import tachiyomi.presentation.core.components.HikariCardDefaults
+import tachiyomi.presentation.core.components.HikariCardGroup
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
@@ -113,56 +116,84 @@ fun MigrationListScreenContent(
     ) { contentPadding ->
         FastScrollLazyColumn(contentPadding = contentPadding + topSmallPaddingValues) {
             items(items, key = { it.manga.id }) { item ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .animateItemFastScroll()
-                        .padding(
-                            start = MaterialTheme.padding.medium,
-                            end = MaterialTheme.padding.small,
-                        )
-                        .height(IntrinsicSize.Min),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    MigrationListItem(
-                        modifier = Modifier
-                            .weight(1f)
-                            .align(Alignment.Top)
-                            .fillMaxHeight(),
-                        manga = item.manga,
-                        source = item.source,
-                        chapterCount = item.chapterCount,
-                        latestChapter = item.latestChapter,
-                        onClick = { onItemClick(item.manga) },
-                    )
-
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
-                        contentDescription = null,
-                        modifier = Modifier.weight(0.2f),
-                    )
-
-                    val result by item.searchResult.collectAsState()
-                    MigrationListItemResult(
-                        modifier = Modifier
-                            .weight(1f)
-                            .align(Alignment.Top)
-                            .fillMaxHeight(),
-                        result = result,
-                        onItemClick = onItemClick,
-                    )
-
-                    MigrationListItemAction(
-                        modifier = Modifier.weight(0.2f),
-                        result = result,
-                        onSearchManually = { onSearchManually(item) },
-                        onSkip = { onSkip(item.manga.id) },
-                        onMigrate = { onMigrate(item.manga.id) },
-                        onCopy = { onCopy(item.manga.id) },
-                    )
-                }
+                val result by item.searchResult.collectAsState()
+                MigrationRow(
+                    modifier = Modifier.animateItemFastScroll(),
+                    sourceManga = item.manga,
+                    sourceName = item.source,
+                    sourceChapterCount = item.chapterCount,
+                    sourceLatestChapter = item.latestChapter,
+                    result = result,
+                    onItemClick = onItemClick,
+                    onSearchManually = { onSearchManually(item) },
+                    onSkip = { onSkip(item.manga.id) },
+                    onMigrate = { onMigrate(item.manga.id) },
+                    onCopy = { onCopy(item.manga.id) },
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun MigrationRow(
+    modifier: Modifier,
+    sourceManga: Manga,
+    sourceName: String,
+    sourceChapterCount: Int,
+    sourceLatestChapter: Double?,
+    result: MigratingManga.SearchResult,
+    onItemClick: (Manga) -> Unit,
+    onSearchManually: () -> Unit,
+    onSkip: () -> Unit,
+    onMigrate: () -> Unit,
+    onCopy: () -> Unit,
+) {
+    HikariCardGroup(
+        modifier = modifier,
+        containerColor = HikariCardDefaults.containerColor(HikariCardDefaults.cardElevation),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(MaterialTheme.padding.medium),
+            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            MigrationListItem(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                manga = sourceManga,
+                source = sourceName,
+                chapterCount = sourceChapterCount,
+                latestChapter = sourceLatestChapter,
+                onClick = { onItemClick(sourceManga) },
+            )
+
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp),
+            )
+
+            MigrationListItemResult(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                result = result,
+                onItemClick = onItemClick,
+            )
+
+            MigrationListItemAction(
+                modifier = Modifier.align(Alignment.Top),
+                result = result,
+                onSearchManually = onSearchManually,
+                onSkip = onSkip,
+                onMigrate = onMigrate,
+                onCopy = onCopy,
+            )
         }
     }
 }
@@ -176,73 +207,82 @@ fun MigrationListItem(
     latestChapter: Double?,
     onClick: () -> Unit,
 ) {
-    Column(
+    HikariCard(
         modifier = modifier
             .widthIn(max = 150.dp)
             .fillMaxWidth()
-            .clip(MaterialTheme.shapes.small)
-            .clickable(onClick = onClick)
-            .padding(4.dp),
+            .clickable(onClick = onClick),
+        containerColor = HikariCardDefaults.containerColor(HikariCardDefaults.nestedCardElevation),
+        showBorder = false,
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(MangaCover.Book.ratio),
+                .padding(4.dp),
         ) {
-            MangaCover.Book(
-                modifier = Modifier.fillMaxWidth(),
-                data = manga,
-            )
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp))
-                    .background(
-                        Brush.verticalGradient(
-                            0f to Color.Transparent,
-                            1f to MaterialTheme.colorScheme.background,
-                        ),
+            Column {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(MangaCover.Book.ratio),
+                ) {
+                    MangaCover.Book(
+                        modifier = Modifier.fillMaxWidth(),
+                        data = manga,
                     )
-                    .fillMaxHeight(0.4f)
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter),
-            )
-            Text(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.BottomStart),
-                text = manga.title,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 2,
-                style = MaterialTheme.typography.labelMedium,
-            )
-            BadgeGroup(modifier = Modifier.padding(4.dp)) {
-                Badge(text = "$chapterCount")
-            }
-        }
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp))
+                            .background(
+                                Brush.verticalGradient(
+                                    0f to Color.Transparent,
+                                    1f to MaterialTheme.colorScheme.background,
+                                ),
+                            )
+                            .fillMaxHeight(0.4f)
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter),
+                    )
+                    Text(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .align(Alignment.BottomStart),
+                        text = manga.title,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 2,
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                    BadgeGroup(modifier = Modifier.padding(4.dp)) {
+                        Badge(text = "$chapterCount")
+                    }
+                }
 
-        Column(
-            modifier = Modifier
-                .padding(MaterialTheme.padding.extraSmall),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Text(
-                text = source,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-                style = MaterialTheme.typography.titleSmall,
-            )
-            val formattedLatestChapters = remember(latestChapter) {
-                latestChapter?.let(::formatChapterNumber)
+                Column(
+                    modifier = Modifier.padding(MaterialTheme.padding.extraSmall),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text(
+                        text = source,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    val formattedLatestChapters = remember(latestChapter) {
+                        latestChapter?.let(::formatChapterNumber)
+                    }
+                    Text(
+                        text = stringResource(
+                            MR.strings.migrationListScreen_latestChapterLabel,
+                            formattedLatestChapters
+                                ?: stringResource(MR.strings.migrationListScreen_unknownLatestChapter),
+                        ),
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
-            Text(
-                text = stringResource(
-                    MR.strings.migrationListScreen_latestChapterLabel,
-                    formattedLatestChapters ?: stringResource(MR.strings.migrationListScreen_unknownLatestChapter),
-                ),
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-                style = MaterialTheme.typography.bodyMedium,
-            )
         }
     }
 }
@@ -253,53 +293,66 @@ fun MigrationListItemResult(
     result: MigratingManga.SearchResult,
     onItemClick: (Manga) -> Unit,
 ) {
-    Box(modifier.height(IntrinsicSize.Min)) {
-        when (result) {
-            MigratingManga.SearchResult.Searching -> {
-                Box(
+    when (result) {
+        MigratingManga.SearchResult.Searching -> {
+            MigrationStateCard(modifier = modifier) {
+                CircularProgressIndicator()
+            }
+        }
+        MigratingManga.SearchResult.NotFound -> {
+            MigrationStateCard(
+                modifier = modifier,
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
+            ) {
+                Image(
+                    painter = rememberResourceBitmapPainter(id = R.drawable.cover_error),
+                    contentDescription = null,
                     modifier = Modifier
-                        .widthIn(max = 150.dp)
-                        .fillMaxSize()
-                        .aspectRatio(MangaCover.Book.ratio),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-            MigratingManga.SearchResult.NotFound -> {
-                Column(
-                    Modifier
-                        .widthIn(max = 150.dp)
-                        .fillMaxSize()
-                        .padding(4.dp),
-                ) {
-                    Image(
-                        painter = rememberResourceBitmapPainter(id = R.drawable.cover_error),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(MangaCover.Book.ratio)
-                            .clip(MaterialTheme.shapes.extraSmall),
-                        contentScale = ContentScale.Crop,
-                    )
-                    Text(
-                        text = stringResource(MR.strings.migrationListScreen_noMatchFoundText),
-                        modifier = Modifier.padding(MaterialTheme.padding.extraSmall),
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                }
-            }
-            is MigratingManga.SearchResult.Success -> {
-                MigrationListItem(
-                    modifier = Modifier.fillMaxSize(),
-                    manga = result.manga,
-                    source = result.source,
-                    chapterCount = result.chapterCount,
-                    latestChapter = result.latestChapter,
-                    onClick = { onItemClick(result.manga) },
+                        .fillMaxWidth()
+                        .aspectRatio(MangaCover.Book.ratio)
+                        .clip(MaterialTheme.shapes.extraSmall),
+                    contentScale = ContentScale.Crop,
+                )
+                Text(
+                    text = stringResource(MR.strings.migrationListScreen_noMatchFoundText),
+                    style = MaterialTheme.typography.titleSmall,
                 )
             }
         }
+        is MigratingManga.SearchResult.Success -> {
+            MigrationListItem(
+                modifier = modifier,
+                manga = result.manga,
+                source = result.source,
+                chapterCount = result.chapterCount,
+                latestChapter = result.latestChapter,
+                onClick = { onItemClick(result.manga) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun MigrationStateCard(
+    modifier: Modifier,
+    verticalArrangement: Arrangement.Vertical = Arrangement.Center,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    HikariCard(
+        modifier = modifier
+            .widthIn(max = 150.dp)
+            .fillMaxWidth(),
+        containerColor = HikariCardDefaults.containerColor(HikariCardDefaults.nestedCardElevation),
+        showBorder = false,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalArrangement = verticalArrangement,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            content = content,
+        )
     }
 }
 

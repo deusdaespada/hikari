@@ -3,6 +3,7 @@ package eu.kanade.presentation.browse.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -20,6 +21,8 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCard
+import tachiyomi.presentation.core.components.HikariCardDefaults
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 
@@ -36,8 +39,9 @@ fun GlobalSearchCardRow(
     }
 
     LazyRow(
+        modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(MaterialTheme.padding.small),
-        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
     ) {
         items(titles) {
             val title by getManga(it)
@@ -60,18 +64,24 @@ private fun MangaItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
 ) {
-    Box(modifier = Modifier.width(96.dp)) {
-        MangaComfortableGridItem(
-            title = title,
-            titleMaxLines = 3,
-            coverData = cover,
-            coverBadgeStart = {
-                InLibraryBadge(enabled = isFavorite)
-            },
-            coverAlpha = if (isFavorite) CommonMangaItemDefaults.BrowseFavoriteCoverAlpha else 1f,
-            onClick = onClick,
-            onLongClick = onLongClick,
-        )
+    HikariCard(
+        modifier = Modifier.width(104.dp),
+        containerColor = HikariCardDefaults.containerColor(HikariCardDefaults.nestedCardElevation),
+        showBorder = false,
+    ) {
+        Box(modifier = Modifier.padding(4.dp)) {
+            MangaComfortableGridItem(
+                title = title,
+                titleMaxLines = 3,
+                coverData = cover,
+                coverBadgeStart = {
+                    InLibraryBadge(enabled = isFavorite)
+                },
+                coverAlpha = if (isFavorite) CommonMangaItemDefaults.BrowseFavoriteCoverAlpha else 1f,
+                onClick = onClick,
+                onLongClick = onLongClick,
+            )
+        }
     }
 }
 
@@ -82,7 +92,8 @@ private fun EmptyResultItem() {
         modifier = Modifier
             .padding(
                 horizontal = MaterialTheme.padding.medium,
-                vertical = MaterialTheme.padding.small,
+                vertical = MaterialTheme.padding.medium,
             ),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 }

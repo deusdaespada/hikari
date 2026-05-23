@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCardDefaults
+import tachiyomi.presentation.core.components.HikariCardGroup
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 
@@ -35,29 +38,42 @@ fun GlobalSearchResultItem(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    Column(modifier = modifier) {
+    HikariCardGroup(
+        modifier = modifier,
+        containerColor = HikariCardDefaults.containerColor(HikariCardDefaults.cardElevation),
+    ) {
         Row(
             modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
                 .padding(
                     start = MaterialTheme.padding.medium,
                     end = MaterialTheme.padding.extraSmall,
-                )
-                .fillMaxWidth()
-                .clickable(onClick = onClick),
+                    top = MaterialTheme.padding.small,
+                    bottom = MaterialTheme.padding.small,
+                ),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                 )
-                Text(text = subtitle)
+                Text(
+                    text = subtitle,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
             IconButton(onClick = onClick) {
                 Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null)
             }
         }
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+            thickness = 0.5.dp,
+            color = HikariCardDefaults.dividerColor(),
+        )
         content()
     }
 }
@@ -84,7 +100,7 @@ fun GlobalSearchErrorResultItem(message: String?) {
         modifier = Modifier
             .padding(
                 horizontal = MaterialTheme.padding.medium,
-                vertical = MaterialTheme.padding.small,
+                vertical = MaterialTheme.padding.medium,
             )
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,

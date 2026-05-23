@@ -6,14 +6,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.Numbers
 import androidx.compose.material.icons.outlined.SortByAlpha
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.presentation.browse.components.SourceIcon
@@ -93,39 +96,70 @@ private fun MigrateSourceList(
             Row(
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(start = MaterialTheme.padding.medium, end = MaterialTheme.padding.medium),
+                    .padding(
+                        start = MaterialTheme.padding.medium,
+                        end = MaterialTheme.padding.medium,
+                        bottom = MaterialTheme.padding.small,
+                    ),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = stringResource(MR.strings.migration_selection_prompt),
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.header,
+                FilterChip(
+                    selected = true,
+                    onClick = onToggleSortingMode,
+                    label = {
+                        Text(
+                            text = when (sortingMode) {
+                                SetMigrateSorting.Mode.ALPHABETICAL -> stringResource(MR.strings.action_sort_alpha)
+                                SetMigrateSorting.Mode.TOTAL -> stringResource(MR.strings.action_sort_count)
+                            },
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = when (sortingMode) {
+                                SetMigrateSorting.Mode.ALPHABETICAL -> Icons.Outlined.SortByAlpha
+                                SetMigrateSorting.Mode.TOTAL -> Icons.Outlined.Numbers
+                            },
+                            contentDescription = null,
+                            modifier = Modifier.size(FilterChipDefaults.IconSize),
+                        )
+                    },
+                    border = null,
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ),
                 )
-
-                IconButton(onClick = onToggleSortingMode) {
-                    when (sortingMode) {
-                        SetMigrateSorting.Mode.ALPHABETICAL -> Icon(
-                            Icons.Outlined.SortByAlpha,
-                            contentDescription = stringResource(MR.strings.action_sort_alpha),
+                FilterChip(
+                    selected = true,
+                    onClick = onToggleSortingDirection,
+                    label = {
+                        Text(
+                            text = when (sortingDirection) {
+                                SetMigrateSorting.Direction.ASCENDING -> stringResource(MR.strings.action_asc)
+                                SetMigrateSorting.Direction.DESCENDING -> stringResource(MR.strings.action_desc)
+                            },
                         )
-                        SetMigrateSorting.Mode.TOTAL -> Icon(
-                            Icons.Outlined.Numbers,
-                            contentDescription = stringResource(MR.strings.action_sort_count),
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = when (sortingDirection) {
+                                SetMigrateSorting.Direction.ASCENDING -> Icons.Outlined.ArrowUpward
+                                SetMigrateSorting.Direction.DESCENDING -> Icons.Outlined.ArrowDownward
+                            },
+                            contentDescription = null,
+                            modifier = Modifier.size(FilterChipDefaults.IconSize),
                         )
-                    }
-                }
-                IconButton(onClick = onToggleSortingDirection) {
-                    when (sortingDirection) {
-                        SetMigrateSorting.Direction.ASCENDING -> Icon(
-                            Icons.Outlined.ArrowUpward,
-                            contentDescription = stringResource(MR.strings.action_asc),
-                        )
-                        SetMigrateSorting.Direction.DESCENDING -> Icon(
-                            Icons.Outlined.ArrowDownward,
-                            contentDescription = stringResource(MR.strings.action_desc),
-                        )
-                    }
-                }
+                    },
+                    border = null,
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f),
+                        selectedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        selectedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
+                )
             }
         }
 
@@ -169,8 +203,12 @@ private fun MigrateSourceItem(
         onLongClickItem = onLongClickItem,
         icon = { SourceIcon(source = source) },
         action = {
-            BadgeGroup {
-                Badge(text = "$count")
+            BadgeGroup(modifier = Modifier.padding(4.dp)) {
+                Badge(
+                    text = "$count",
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    textColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
             }
         },
         content = { _, sourceLangString ->
@@ -183,7 +221,7 @@ private fun MigrateSourceItem(
                     text = source.name.ifBlank { source.id.toString() },
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.titleSmall,
                 )
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),

@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -69,6 +69,7 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariListItemPosition
 import tachiyomi.presentation.core.components.HikariSnackbarHost
 import tachiyomi.presentation.core.components.TwoPanelBox
 import tachiyomi.presentation.core.components.VerticalFastScroller
@@ -741,17 +742,17 @@ private fun LazyListScope.sharedChapterItems(
     onChapterSwipe: (ChapterList.Item, LibraryPreferences.ChapterSwipeAction) -> Unit,
     onGroupClicked: (ChapterList.Group) -> Unit,
 ) {
-    items(
+    itemsIndexed(
         items = chapters,
-        key = { item ->
+        key = { _, item ->
             when (item) {
                 is ChapterList.MissingCount -> "missing-count-${item.id}"
                 is ChapterList.Group -> "group-${item.id}"
                 is ChapterList.Item -> "chapter-${item.id}"
             }
         },
-        contentType = { MangaScreenItem.CHAPTER },
-    ) { item ->
+        contentType = { _, _ -> MangaScreenItem.CHAPTER },
+    ) { index, item ->
         val haptic = LocalHapticFeedback.current
 
         when (item) {
@@ -764,6 +765,7 @@ private fun LazyListScope.sharedChapterItems(
                     name = item.name,
                     chapterCount = item.chapters.size,
                     isExpanded = item.isExpanded,
+                    position = chapters.toGroupedPosition(index),
                     onClick = { onGroupClicked(item) },
                 )
             }
@@ -816,9 +818,21 @@ private fun LazyListScope.sharedChapterItems(
                     onChapterSwipe = {
                         onChapterSwipe(item, it)
                     },
+                    position = chapters.toGroupedPosition(index),
                 )
             }
         }
+    }
+}
+
+private fun List<ChapterList>.toGroupedPosition(index: Int): HikariListItemPosition {
+    val previousGrouped = getOrNull(index - 1)?.let { it is ChapterList.Item || it is ChapterList.Group } == true
+    val nextGrouped = getOrNull(index + 1)?.let { it is ChapterList.Item || it is ChapterList.Group } == true
+    return when {
+        previousGrouped && nextGrouped -> HikariListItemPosition.Middle
+        previousGrouped -> HikariListItemPosition.Last
+        nextGrouped -> HikariListItemPosition.First
+        else -> HikariListItemPosition.Single
     }
 }
 
