@@ -13,6 +13,12 @@
 - Redesigned bottom sheets and selection dialogs across reader, migration, source filtering, updates, and tracking
 - Redesigned the Library screen with a category selector sheet, category-scoped search, and richer reading progress details
 
+### Fixed
+
+- Extension updates no longer silently no-op when the available extension list is stale
+- Scheduled library updates no longer get re-scheduled on every app launch (which could make them appear to run constantly)
+- Library update job reliability and UX improvements: retry transient network errors, reduce progress notification churn, and surface skipped entries
+
 ## [0.4.1] - 2026-04-19
 
 ### Added
