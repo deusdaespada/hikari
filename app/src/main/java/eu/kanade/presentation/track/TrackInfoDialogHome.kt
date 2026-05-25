@@ -1,32 +1,30 @@
 package eu.kanade.presentation.track
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.absoluteOffset
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -35,7 +33,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -59,6 +56,9 @@ import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.util.lang.toLocalDate
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCard
+import tachiyomi.presentation.core.components.HikariCardDefaults
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import java.time.format.DateTimeFormatter
 
@@ -77,20 +77,27 @@ fun TrackInfoDialogHome(
     onCopyLink: (TrackItem) -> Unit,
     onTogglePrivate: (TrackItem) -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .animateContentSize()
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
-            .windowInsetsPadding(WindowInsets.systemBars),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+            start = MaterialTheme.padding.medium,
+            top = MaterialTheme.padding.small,
+            end = MaterialTheme.padding.medium,
+            bottom = MaterialTheme.padding.large,
+        ),
+        verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
     ) {
-        trackItems.forEach { item ->
+        if (trackItems.isEmpty()) {
+            item {
+                EmptyTrackingState()
+            }
+        }
+
+        itemsIndexed(
+            items = trackItems,
+            key = { _, item -> item.tracker.id },
+        ) { index, item ->
             if (item.track != null) {
-                val supportsScoring = item.tracker.getScoreList().isNotEmpty()
-                val supportsReadingDates = item.tracker.supportsReadingDates
-                val supportsPrivate = item.tracker.supportsPrivateTracking
                 TrackInfoItem(
                     title = item.track.title,
                     tracker = item.tracker,
@@ -98,38 +105,40 @@ fun TrackInfoDialogHome(
                     onStatusClick = { onStatusClick(item) },
                     chapters = "${item.track.lastChapterRead.toInt()}".let {
                         val totalChapters = item.track.totalChapters
-                        if (totalChapters > 0) {
-                            // Add known total chapter count
-                            "$it / $totalChapters"
-                        } else {
-                            it
-                        }
+                        if (totalChapters > 0) "$it / $totalChapters" else it
                     },
                     onChaptersClick = { onChapterClick(item) },
                     score = item.tracker.displayScore(item.track)
-                        .takeIf { supportsScoring && item.track.score != 0.0 },
+                        .takeIf { item.tracker.getScoreList().isNotEmpty() && item.track.score != 0.0 },
                     onScoreClick = { onScoreClick(item) }
-                        .takeIf { supportsScoring },
-                    startDate = remember(item.track.startDate) { dateFormat.format(item.track.startDate.toLocalDate()) }
-                        .takeIf { supportsReadingDates && item.track.startDate != 0L },
-                    onStartDateClick = { onStartDateEdit(item) } // TODO
-                        .takeIf { supportsReadingDates },
+                        .takeIf { item.tracker.getScoreList().isNotEmpty() },
+                    startDate = dateFormat.format(item.track.startDate.toLocalDate())
+                        .takeIf { item.tracker.supportsReadingDates && item.track.startDate != 0L },
+                    onStartDateClick = { onStartDateEdit(item) }
+                        .takeIf { item.tracker.supportsReadingDates },
                     endDate = dateFormat.format(item.track.finishDate.toLocalDate())
-                        .takeIf { supportsReadingDates && item.track.finishDate != 0L },
+                        .takeIf { item.tracker.supportsReadingDates && item.track.finishDate != 0L },
                     onEndDateClick = { onEndDateEdit(item) }
-                        .takeIf { supportsReadingDates },
+                        .takeIf { item.tracker.supportsReadingDates },
                     onNewSearch = { onNewSearch(item) },
                     onOpenInBrowser = { onOpenInBrowser(item) },
                     onRemoved = { onRemoved(item) },
                     onCopyLink = { onCopyLink(item) },
                     private = item.track.private,
                     onTogglePrivate = { onTogglePrivate(item) }
-                        .takeIf { supportsPrivate },
+                        .takeIf { item.tracker.supportsPrivateTracking },
                 )
             } else {
                 TrackInfoItemEmpty(
                     tracker = item.tracker,
                     onNewSearch = { onNewSearch(item) },
+                )
+            }
+
+            if (index != trackItems.lastIndex) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(top = MaterialTheme.padding.medium),
+                    color = HikariCardDefaults.dividerColor(),
                 )
             }
         }
@@ -158,143 +167,155 @@ private fun TrackInfoItem(
     onTogglePrivate: (() -> Unit)?,
 ) {
     val context = LocalContext.current
-    Column {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+
+    HikariCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(MaterialTheme.padding.medium),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
         ) {
-            BadgedBox(
-                badge = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
+            ) {
+                Box {
+                    TrackLogoIcon(
+                        tracker = tracker,
+                        onClick = onOpenInBrowser,
+                        onLongClick = onCopyLink,
+                    )
                     if (private) {
                         Badge(
+                            modifier = Modifier.align(Alignment.TopEnd),
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.absoluteOffset(x = (-5).dp),
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.VisibilityOff,
                                 contentDescription = stringResource(MR.strings.tracked_privately),
-                                modifier = Modifier.size(14.dp),
+                                modifier = Modifier.size(12.dp),
                             )
                         }
                     }
-                },
-            ) {
-                TrackLogoIcon(
-                    tracker = tracker,
-                    onClick = onOpenInBrowser,
-                    onLongClick = onCopyLink,
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .height(48.dp)
-                    .weight(1f)
-                    .combinedClickable(
-                        onClick = onNewSearch,
-                        onLongClick = {
-                            context.copyToClipboard(title, title)
-                        },
-                    )
-                    .padding(start = 16.dp),
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                Text(
-                    text = title,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-            VerticalDivider()
-            TrackInfoItemMenu(
-                onOpenInBrowser = onOpenInBrowser,
-                onRemoved = onRemoved,
-                onCopyLink = onCopyLink,
-                private = private,
-                onTogglePrivate = onTogglePrivate,
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .padding(top = 12.dp)
-                .clip(MaterialTheme.shapes.medium)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                .padding(8.dp)
-                .clip(RoundedCornerShape(6.dp)),
-        ) {
-            Column {
-                Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-                    TrackDetailsItem(
-                        modifier = Modifier.weight(1f),
-                        text = status?.let { stringResource(it) } ?: "",
-                        onClick = onStatusClick,
-                    )
-                    VerticalDivider()
-                    TrackDetailsItem(
-                        modifier = Modifier.weight(1f),
-                        text = chapters,
-                        onClick = onChaptersClick,
-                    )
-                    if (onScoreClick != null) {
-                        VerticalDivider()
-                        TrackDetailsItem(
-                            modifier = Modifier.weight(1f),
-                            text = score,
-                            placeholder = stringResource(MR.strings.score),
-                            onClick = onScoreClick,
-                        )
-                    }
                 }
 
-                if (onStartDateClick != null && onEndDateClick != null) {
-                    HorizontalDivider()
-                    Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-                        TrackDetailsItem(
-                            modifier = Modifier.weight(1F),
-                            text = startDate,
-                            placeholder = stringResource(MR.strings.track_started_reading_date),
-                            onClick = onStartDateClick,
-                        )
-                        VerticalDivider()
-                        TrackDetailsItem(
-                            modifier = Modifier.weight(1F),
-                            text = endDate,
-                            placeholder = stringResource(MR.strings.track_finished_reading_date),
-                            onClick = onEndDateClick,
-                        )
-                    }
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .combinedClickable(
+                            onClick = onNewSearch,
+                            onLongClick = { context.copyToClipboard(title, title) },
+                        ),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = tracker.name,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                TrackInfoItemMenu(
+                    onOpenInBrowser = onOpenInBrowser,
+                    onRemoved = onRemoved,
+                    onCopyLink = onCopyLink,
+                    private = private,
+                    onTogglePrivate = onTogglePrivate,
+                )
+            }
+
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+            ) {
+                TrackMetricChip(
+                    label = stringResource(MR.strings.status),
+                    value = status?.let { stringResource(it) } ?: "-",
+                    onClick = onStatusClick,
+                )
+                TrackMetricChip(
+                    label = stringResource(MR.strings.chapters),
+                    value = chapters,
+                    onClick = onChaptersClick,
+                )
+                if (onScoreClick != null) {
+                    TrackMetricChip(
+                        label = stringResource(MR.strings.score),
+                        value = score ?: stringResource(MR.strings.score),
+                        muted = score == null,
+                        onClick = onScoreClick,
+                    )
+                }
+                if (onStartDateClick != null) {
+                    TrackMetricChip(
+                        label = stringResource(MR.strings.track_started_reading_date),
+                        value = startDate ?: stringResource(MR.strings.track_started_reading_date),
+                        muted = startDate == null,
+                        onClick = onStartDateClick,
+                    )
+                }
+                if (onEndDateClick != null) {
+                    TrackMetricChip(
+                        label = stringResource(MR.strings.track_finished_reading_date),
+                        value = endDate ?: stringResource(MR.strings.track_finished_reading_date),
+                        muted = endDate == null,
+                        onClick = onEndDateClick,
+                    )
                 }
             }
         }
     }
 }
 
-private const val UNSET_TEXT_ALPHA = 0.5F
-
 @Composable
-private fun TrackDetailsItem(
-    text: String?,
+private fun TrackMetricChip(
+    label: String,
+    value: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    placeholder: String = "",
+    muted: Boolean = false,
 ) {
-    Box(
-        modifier = modifier
-            .clickable(onClick = onClick)
-            .fillMaxHeight()
-            .padding(12.dp),
-        contentAlignment = Alignment.Center,
+    Surface(
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        tonalElevation = 2.dp,
+        color = HikariCardDefaults.containerColor(HikariCardDefaults.nestedCardElevation),
     ) {
-        Text(
-            text = text ?: placeholder,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (text == null) UNSET_TEXT_ALPHA else 1f),
-        )
+        Column(
+            modifier = Modifier
+                .widthIn(min = 112.dp)
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (muted) 0.6f else 1f),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }
 
@@ -303,17 +324,86 @@ private fun TrackInfoItemEmpty(
     tracker: Tracker,
     onNewSearch: () -> Unit,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    HikariCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge,
     ) {
-        TrackLogoIcon(tracker)
-        TextButton(
-            onClick = onNewSearch,
+        Row(
             modifier = Modifier
-                .padding(start = 16.dp)
-                .weight(1f),
+                .fillMaxWidth()
+                .padding(MaterialTheme.padding.medium),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
         ) {
-            Text(text = stringResource(MR.strings.add_tracking))
+            TrackLogoIcon(tracker)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = tracker.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                )
+                Text(
+                    text = stringResource(MR.strings.add_tracking),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            AssistChip(
+                onClick = onNewSearch,
+                label = { Text(stringResource(MR.strings.add_tracking)) },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                },
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    labelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyTrackingState() {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge,
+        color = HikariCardDefaults.containerColor(HikariCardDefaults.cardElevation),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = MaterialTheme.padding.large, vertical = 28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.secondaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Language,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+            }
+            Text(
+                text = stringResource(MR.strings.manga_tracking_tab),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = stringResource(MR.strings.add_tracking),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
@@ -327,7 +417,7 @@ private fun TrackInfoItemMenu(
     onTogglePrivate: (() -> Unit)?,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
+    Box {
         IconButton(onClick = { expanded = true }) {
             Icon(
                 imageVector = Icons.Default.MoreVert,
@@ -357,11 +447,7 @@ private fun TrackInfoItemMenu(
                     text = {
                         Text(
                             stringResource(
-                                if (private) {
-                                    MR.strings.action_toggle_private_off
-                                } else {
-                                    MR.strings.action_toggle_private_on
-                                },
+                                if (private) MR.strings.action_toggle_private_off else MR.strings.action_toggle_private_on,
                             ),
                         )
                     },

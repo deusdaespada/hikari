@@ -10,6 +10,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFromBaseline
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.items
@@ -31,16 +32,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -74,6 +76,7 @@ import eu.kanade.tachiyomi.util.system.openInBrowser
 import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.HikariCard
+import tachiyomi.presentation.core.components.HikariCardDefaults
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
@@ -104,60 +107,82 @@ fun TrackerSearch(
 
     Scaffold(
         topBar = {
-            Column {
-                TopAppBar(
-                    navigationIcon = {
-                        IconButton(onClick = onDismissRequest) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = MaterialTheme.padding.medium,
+                        top = MaterialTheme.padding.small,
+                        end = MaterialTheme.padding.medium,
+                        bottom = MaterialTheme.padding.small,
+                    ),
+                shape = MaterialTheme.shapes.extraLarge,
+                color = HikariCardDefaults.containerColor(HikariCardDefaults.nestedCardElevation),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = MaterialTheme.padding.small, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                ) {
+                    IconButton(onClick = onDismissRequest) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    BasicTextField(
+                        state = state,
+                        modifier = Modifier
+                            .weight(1f)
+                            .focusRequester(focusRequester)
+                            .runOnEnterKeyPressed(action = dispatchQueryAndClearFocus),
+                        textStyle = MaterialTheme.typography.bodyLarge
+                            .copy(color = MaterialTheme.colorScheme.onSurface),
+                        lineLimits = TextFieldLineLimits.SingleLine,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        onKeyboardAction = { dispatchQueryAndClearFocus() },
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        decorator = {
+                            if (state.text.isEmpty()) {
+                                Text(
+                                    text = stringResource(MR.strings.action_search_hint),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                )
+                            }
+                            it()
+                        },
+                    )
+                    if (state.text.isNotEmpty()) {
+                        IconButton(
+                            onClick = {
+                                state.clearText()
+                                focusRequester.requestFocus()
+                            },
+                        ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                imageVector = Icons.Default.Close,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                    },
-                    title = {
-                        BasicTextField(
-                            state = state,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .focusRequester(focusRequester)
-                                .runOnEnterKeyPressed(action = dispatchQueryAndClearFocus),
-                            textStyle = MaterialTheme.typography.bodyLarge
-                                .copy(color = MaterialTheme.colorScheme.onSurface),
-                            lineLimits = TextFieldLineLimits.SingleLine,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            onKeyboardAction = { dispatchQueryAndClearFocus() },
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            decorator = {
-                                if (state.text.isEmpty()) {
-                                    Text(
-                                        text = stringResource(MR.strings.action_search_hint),
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                    )
-                                }
-                                it()
-                            },
+                    }
+                    IconButton(onClick = dispatchQueryAndClearFocus) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = stringResource(MR.strings.action_search),
+                            tint = MaterialTheme.colorScheme.primary,
                         )
-                    },
-                    actions = {
-                        if (state.text.isNotEmpty()) {
-                            IconButton(
-                                onClick = {
-                                    state.clearText()
-                                    focusRequester.requestFocus()
-                                },
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                    },
-                )
-                HorizontalDivider()
+                    }
+                }
             }
         },
         bottomBar = {
@@ -207,7 +232,7 @@ fun TrackerSearch(
                     )
                 } else {
                     ScrollbarLazyColumn(
-                        contentPadding = innerPadding + PaddingValues(vertical = MaterialTheme.padding.small),
+                        contentPadding = innerPadding + PaddingValues(MaterialTheme.padding.medium),
                         verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                     ) {
                         items(
@@ -249,11 +274,11 @@ private fun SearchResultItem(
     val scope = rememberCoroutineScope()
     HikariCard(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = MaterialTheme.padding.medium),
+            .fillMaxWidth(),
         selected = selected,
+        shape = MaterialTheme.shapes.extraLarge,
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .combinedClickable(
                     onLongClick = { dropDownMenuExpanded = true },
@@ -263,32 +288,64 @@ private fun SearchResultItem(
                     },
                 )
                 .padding(MaterialTheme.padding.medium),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
         ) {
-            if (selected) {
-                Icon(
-                    imageVector = Icons.Filled.CheckCircle,
-                    contentDescription = null,
-                    modifier = Modifier.align(Alignment.TopEnd),
-                    tint = MaterialTheme.colorScheme.primary,
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
+            ) {
+                MangaCover.Book(
+                    data = trackSearch.cover_url,
+                    modifier = Modifier.height(112.dp),
                 )
-            }
-            Column {
-                Row {
-                    MangaCover.Book(
-                        data = trackSearch.cover_url,
-                        modifier = Modifier.height(96.dp),
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = trackSearch.title,
-                            modifier = Modifier.padding(end = 28.dp),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        SearchResultItemDropDownMenu(
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            if (selected) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.CheckCircle,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.primary,
+                                    )
+                                    Text(
+                                        text = stringResource(MR.strings.selected),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
+                                }
+                            }
+                            Text(
+                                text = trackSearch.title,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                            if (trackSearch.authors.isNotEmpty() || trackSearch.artists.isNotEmpty()) {
+                                Text(
+                                    text = (trackSearch.authors + trackSearch.artists).distinct().joinToString(),
+                                    modifier = Modifier.secondaryItemAlpha(),
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
+                        }
+                        SearchResultItemDropDownMenuButton(
                             expanded = dropDownMenuExpanded,
+                            onExpand = { dropDownMenuExpanded = true },
                             onCollapseMenu = { dropDownMenuExpanded = false },
                             onCopyName = {
                                 scope.launch {
@@ -306,51 +363,61 @@ private fun SearchResultItem(
                                 }
                             },
                         )
-                        if (trackSearch.authors.isNotEmpty() || trackSearch.artists.isNotEmpty()) {
-                            Text(
-                                text = (trackSearch.authors + trackSearch.artists).distinct().joinToString(),
-                                modifier = Modifier.secondaryItemAlpha(),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                        }
+                    }
+
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                        verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                    ) {
                         if (type.isNotBlank()) {
-                            SearchResultItemDetails(
+                            SearchResultMetaChip(
                                 title = stringResource(MR.strings.track_type),
                                 text = type,
                             )
                         }
-                        if (trackSearch.start_date.isNotBlank()) {
-                            SearchResultItemDetails(
-                                title = stringResource(MR.strings.label_started),
-                                text = trackSearch.start_date,
-                            )
-                        }
                         if (status.isNotBlank()) {
-                            SearchResultItemDetails(
+                            SearchResultMetaChip(
                                 title = stringResource(MR.strings.track_status),
                                 text = status,
                             )
                         }
+                        if (trackSearch.start_date.isNotBlank()) {
+                            SearchResultMetaChip(
+                                title = stringResource(MR.strings.label_started),
+                                text = trackSearch.start_date,
+                            )
+                        }
                         if (trackSearch.score != -1.0) {
-                            SearchResultItemDetails(
+                            SearchResultMetaChip(
                                 title = stringResource(MR.strings.score),
                                 text = trackSearch.score.toString(),
                             )
                         }
                     }
                 }
-                if (description.isNotBlank()) {
-                    Text(
-                        text = description,
-                        modifier = Modifier
-                            .paddingFromBaseline(top = 24.dp)
-                            .secondaryItemAlpha(),
-                        maxLines = 4,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
+            }
+
+            if (description.isNotBlank()) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.large,
+                    color = HikariCardDefaults.containerColor(HikariCardDefaults.nestedCardElevation),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(
+                            horizontal = MaterialTheme.padding.medium,
+                            vertical = MaterialTheme.padding.small,
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        Text(
+                            text = description,
+                            modifier = Modifier.secondaryItemAlpha(),
+                            maxLines = 4,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
                 }
             }
         }
@@ -358,52 +425,68 @@ private fun SearchResultItem(
 }
 
 @Composable
-private fun SearchResultItemDropDownMenu(
+private fun SearchResultItemDropDownMenuButton(
     expanded: Boolean,
+    onExpand: () -> Unit,
     onCollapseMenu: () -> Unit,
     onCopyName: () -> Unit,
     onOpenInBrowser: () -> Unit,
 ) {
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onCollapseMenu,
-    ) {
-        DropdownMenuItem(
-            text = { Text(stringResource(MR.strings.action_copy_to_clipboard)) },
-            onClick = {
-                onCopyName()
-                onCollapseMenu()
-            },
-        )
-        DropdownMenuItem(
-            text = { Text(stringResource(MR.strings.action_open_in_browser)) },
-            onClick = {
-                onOpenInBrowser()
-            },
-        )
+    Box {
+        IconButton(onClick = onExpand) {
+            Icon(
+                imageVector = Icons.Filled.MoreVert,
+                contentDescription = stringResource(MR.strings.label_more),
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = onCollapseMenu,
+        ) {
+            DropdownMenuItem(
+                text = { Text(stringResource(MR.strings.action_copy_to_clipboard)) },
+                onClick = {
+                    onCopyName()
+                    onCollapseMenu()
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(MR.strings.action_open_in_browser)) },
+                onClick = {
+                    onOpenInBrowser()
+                    onCollapseMenu()
+                },
+            )
+        }
     }
 }
 
 @Composable
-private fun SearchResultItemDetails(
+private fun SearchResultMetaChip(
     title: String,
     text: String,
 ) {
-    Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall)) {
-        Text(
-            text = title,
-            maxLines = 1,
-            style = MaterialTheme.typography.titleSmall,
-        )
-        Text(
-            text = text,
-            modifier = Modifier
-                .weight(1f)
-                .secondaryItemAlpha(),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.bodyMedium,
-        )
+    Surface(
+        shape = MaterialTheme.shapes.large,
+        color = HikariCardDefaults.containerColor(HikariCardDefaults.nestedCardElevation),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = title,
+                maxLines = 1,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = text,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
     }
 }
 
