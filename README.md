@@ -3,12 +3,16 @@
 Manga reader for Android based on Hikari with NDK image decoding and sectional UI.
 
 ![License](https://img.shields.io/badge/license-Apache_2.0-blue?style=flat-square)
-![Version](https://img.shields.io/badge/version-0.3.7-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-0.5.0-blue?style=flat-square)
 ![Repo Size](https://img.shields.io/github/repo-size/LeverTeam/hikari?style=flat-square)
 ![Language](https://img.shields.io/badge/language-Kotlin-purple?style=flat-square)
 
 ## Features
 
+- Redesigned extension and source filtering with local search, card-grouping panels, custom flag badges, and active source count tracking
+- Redesigned onboarding setup flow with automated theme selections and system permission configuration dashboards
+- Unified card, list item, and detail screen containers under the custom HikariCard component
+- Rebuilt Compose-based download queue with real-time active downloader pipeline
 - Extension management with automatic repository synchronization
 - Sectional dashboard for library and reader configuration
 - NDK-based image decoding using AImageDecoder

@@ -43,6 +43,9 @@ class SourcesFilterScreen : Screen() {
             state = successState,
             onClickLanguage = screenModel::toggleLanguage,
             onClickSource = screenModel::toggleSource,
+            onClickSelectAll = screenModel::selectAll,
+            onClickSelectInverse = screenModel::selectInverse,
+            onClickReset = screenModel::reset,
         )
     }
 }

@@ -57,6 +57,30 @@ class ExtensionFilterScreenModel(
     fun toggle(language: String) {
         toggleLanguage.await(language)
     }
+
+    fun selectAll() {
+        val state = state.value as? ExtensionFilterState.Success ?: return
+        screenModelScope.launch {
+            state.languages.forEach { language ->
+                if (language !in state.enabledLanguages) {
+                    toggleLanguage.await(language)
+                }
+            }
+        }
+    }
+
+    fun selectInverse() {
+        val state = state.value as? ExtensionFilterState.Success ?: return
+        screenModelScope.launch {
+            state.languages.forEach { language ->
+                toggleLanguage.await(language)
+            }
+        }
+    }
+
+    fun reset() {
+        preferences.enabledLanguages.delete()
+    }
 }
 
 sealed interface ExtensionFilterEvent {

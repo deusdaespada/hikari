@@ -1,9 +1,13 @@
 # Changelog
 
-## [Unreleased]
+
+## [0.5.0] - 2026-05-28
 
 ### Changed
 
+- Redesigned the Browse filter screens (Extension and Sources Filters) with local search capability, elevated card-grouping panels, custom flag badges, and real-time active sources count indicators
+- Refactored legacy standard Material 3 Card and OutlinedCard components to HikariCard across all app surfaces (including chapter transitions, backup restoration summaries, and manga details) for complete visual consistency
+- Redesigned the Onboarding Experience with premium, status-driven setup cards and simplified configuration screens
 - Refined the Library dashboard and manga details UI with richer progress and category navigation
 - Redesigned the Updates screen
 - Redesigned the Browse and History screens

@@ -58,6 +58,31 @@ class SourcesFilterScreenModel(
         toggleLanguage.await(language)
     }
 
+    fun selectAll() {
+        val state = state.value as? State.Success ?: return
+        screenModelScope.launch {
+            state.items.keys.forEach { language ->
+                if (language !in state.enabledLanguages) {
+                    toggleLanguage.await(language)
+                }
+            }
+        }
+    }
+
+    fun selectInverse() {
+        val state = state.value as? State.Success ?: return
+        screenModelScope.launch {
+            state.items.keys.forEach { language ->
+                toggleLanguage.await(language)
+            }
+        }
+    }
+
+    fun reset() {
+        preferences.enabledLanguages.delete()
+        preferences.disabledSources.delete()
+    }
+
     sealed interface State {
 
         @Immutable

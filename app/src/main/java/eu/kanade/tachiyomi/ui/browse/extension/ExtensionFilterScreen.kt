@@ -35,6 +35,9 @@ class ExtensionFilterScreen : Screen() {
             navigateUp = navigator::pop,
             state = successState,
             onClickToggle = screenModel::toggle,
+            onClickSelectAll = screenModel::selectAll,
+            onClickSelectInverse = screenModel::selectInverse,
+            onClickReset = screenModel::reset,
         )
 
         LaunchedEffect(Unit) {
