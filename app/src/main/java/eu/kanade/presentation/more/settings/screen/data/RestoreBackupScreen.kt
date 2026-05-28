@@ -16,13 +16,14 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.CompositionLocalProvider
+import tachiyomi.presentation.core.components.HikariCard
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -214,37 +215,36 @@ class RestoreBackupScreen(
         containerColor: androidx.compose.ui.graphics.Color,
         contentColor: androidx.compose.ui.graphics.Color,
     ) {
-        Card(
+        HikariCard(
             modifier = Modifier.weight(1f),
-            colors = CardDefaults.cardColors(
-                containerColor = containerColor,
-                contentColor = contentColor,
-            ),
+            containerColor = containerColor,
         ) {
-            Column(
-                modifier = Modifier.padding(MaterialTheme.padding.medium),
-                verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+            CompositionLocalProvider(LocalContentColor provides contentColor) {
+                Column(
+                    modifier = Modifier.padding(MaterialTheme.padding.medium),
+                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                 ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        modifier = Modifier.secondaryItemAlpha(),
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            modifier = Modifier.secondaryItemAlpha(),
+                        )
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Medium,
+                        )
+                    }
                     Text(
-                        text = label,
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Medium,
+                        text = value,
+                        style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.Bold,
                     )
                 }
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.Bold,
-                )
             }
         }
     }
@@ -265,19 +265,17 @@ class RestoreBackupScreen(
         error: Any?,
     ) {
         item {
-            Card(
+            HikariCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                ),
+                containerColor = MaterialTheme.colorScheme.errorContainer,
             ) {
-                Column(
-                    modifier = Modifier.padding(MaterialTheme.padding.medium),
-                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
-                ) {
+                CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onErrorContainer) {
+                    Column(
+                        modifier = Modifier.padding(MaterialTheme.padding.medium),
+                        verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                    ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
@@ -352,6 +350,7 @@ class RestoreBackupScreen(
                 }
             }
         }
+    }
     }
 }
 

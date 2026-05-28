@@ -9,24 +9,33 @@ import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.getSystemService
@@ -34,14 +43,14 @@ import androidx.core.net.toUri
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.util.rememberRequestPackageInstallsPermissionState
 import eu.kanade.tachiyomi.util.system.launchRequestPackageInstallsPermission
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.SectionCard
-import tachiyomi.presentation.core.components.material.Switch
+import tachiyomi.presentation.core.components.material.Button
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
-import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 internal class PermissionStep : OnboardingStep {
 
@@ -49,6 +58,12 @@ internal class PermissionStep : OnboardingStep {
     private var batteryGranted by mutableStateOf(false)
 
     override val isComplete: Boolean = true
+
+    override val titleRes: StringResource = MR.strings.onboarding_permission_title
+
+    override val subtitleRes: StringResource = MR.strings.onboarding_permission_subtitle
+
+    override val icon: ImageVector = Icons.Outlined.Security
 
     @Composable
     override fun Content() {
@@ -129,20 +144,6 @@ internal class PermissionStep : OnboardingStep {
     }
 
     @Composable
-    private fun SectionHeader(
-        text: String,
-        modifier: Modifier = Modifier,
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleLarge,
-            modifier = modifier
-                .padding(horizontal = 16.dp)
-                .secondaryItemAlpha(),
-        )
-    }
-
-    @Composable
     private fun PermissionCheckbox(
         title: String,
         subtitle: String,
@@ -152,45 +153,67 @@ internal class PermissionStep : OnboardingStep {
     ) {
         ListItem(
             modifier = modifier,
-            headlineContent = { Text(text = title) },
-            supportingContent = { Text(text = subtitle) },
+            headlineContent = {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (granted) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurface,
+                )
+            },
+            supportingContent = {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                )
+            },
             trailingContent = {
-                OutlinedButton(
-                    enabled = !granted,
-                    onClick = onButtonClick,
-                ) {
-                    if (granted) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                if (granted) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f),
+                        border = Modifier.border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+                            shape = RoundedCornerShape(100.dp),
+                        ).let { null },
+                        shape = RoundedCornerShape(100.dp),
+                        modifier = Modifier
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+                                shape = RoundedCornerShape(100.dp),
+                            )
+                            .padding(horizontal = 4.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp),
+                            )
+                            Text(
+                                text = "Active",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
+                } else {
+                    Button(
+                        onClick = onButtonClick,
+                        modifier = Modifier.width(100.dp),
+                    ) {
+                        Text(
+                            text = stringResource(MR.strings.onboarding_permission_action_grant),
+                            style = MaterialTheme.typography.labelLarge,
                         )
-                    } else {
-                        Text(stringResource(MR.strings.onboarding_permission_action_grant))
                     }
                 }
-            },
-            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-        )
-    }
-
-    @Composable
-    private fun PermissionSwitch(
-        title: String,
-        subtitle: String,
-        granted: Boolean,
-        modifier: Modifier = Modifier,
-        onToggleChange: (Boolean) -> Unit,
-    ) {
-        ListItem(
-            modifier = modifier,
-            headlineContent = { Text(text = title) },
-            supportingContent = { Text(text = subtitle) },
-            trailingContent = {
-                Switch(
-                    checked = granted,
-                    onCheckedChange = onToggleChange,
-                )
             },
             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         )

@@ -2,11 +2,15 @@ package eu.kanade.presentation.more.onboarding
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.RocketLaunch
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -15,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import soup.compose.material.motion.animation.materialSharedAxisX
 import soup.compose.material.motion.animation.rememberSlideDistance
 import tachiyomi.i18n.MR
@@ -45,9 +50,9 @@ fun OnboardingScreen(
     }
 
     InfoScreen(
-        icon = Icons.Outlined.RocketLaunch,
-        headingText = stringResource(MR.strings.onboarding_heading),
-        subtitleText = stringResource(MR.strings.onboarding_description),
+        icon = steps[currentStep].icon,
+        headingText = stringResource(steps[currentStep].titleRes),
+        subtitleText = stringResource(steps[currentStep].subtitleRes),
         acceptText = stringResource(
             if (isLastStep) {
                 MR.strings.onboarding_action_finish
@@ -64,6 +69,25 @@ fun OnboardingScreen(
             }
         },
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = MaterialTheme.padding.small),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            steps.forEachIndexed { index, _ ->
+                val active = index <= currentStep
+                val alpha = if (active) 1.0f else 0.25f
+                val color = if (index == currentStep) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(6.dp)
+                        .background(color.copy(alpha = alpha), shape = RoundedCornerShape(100.dp)),
+                )
+            }
+        }
+
         Box(
             modifier = Modifier
                 .padding(vertical = MaterialTheme.padding.medium)

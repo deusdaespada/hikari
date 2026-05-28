@@ -14,11 +14,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material3.CardColors
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
+import tachiyomi.presentation.core.components.HikariCard
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -146,9 +144,9 @@ private fun NoChapterNotification(
     text: String,
     modifier: Modifier = Modifier,
 ) {
-    OutlinedCard(
+    HikariCard(
         modifier = modifier,
-        colors = CardColor,
+        containerColor = Color.Transparent,
     ) {
         Row(
             modifier = Modifier
@@ -175,9 +173,9 @@ private fun ChapterGapWarning(
     gapCount: Int,
     modifier: Modifier = Modifier,
 ) {
-    OutlinedCard(
+    HikariCard(
         modifier = modifier,
-        colors = CardColor,
+        containerColor = Color.Transparent,
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -264,13 +262,6 @@ private fun ChapterText(
         }
     }
 }
-
-private val CardColor: CardColors
-    @Composable
-    get() = CardDefaults.outlinedCardColors(
-        containerColor = Color.Transparent,
-        contentColor = MaterialTheme.colorScheme.onSurface,
-    )
 
 private val VerticalSpacerSize = 24.dp
 private const val DOWNLOADED_ICON_ID = "downloaded"

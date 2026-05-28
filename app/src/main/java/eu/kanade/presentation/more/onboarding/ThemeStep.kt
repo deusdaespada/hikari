@@ -16,10 +16,21 @@ import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.ui.graphics.vector.ImageVector
+import dev.icerock.moko.resources.StringResource
+import tachiyomi.i18n.MR
 
 internal class ThemeStep : OnboardingStep {
 
     override val isComplete: Boolean = true
+
+    override val titleRes: StringResource = MR.strings.onboarding_theme_title
+
+    override val subtitleRes: StringResource = MR.strings.onboarding_theme_subtitle
+
+    override val icon: ImageVector = Icons.Outlined.Palette
 
     private val uiPreferences: UiPreferences = Injekt.get()
 
