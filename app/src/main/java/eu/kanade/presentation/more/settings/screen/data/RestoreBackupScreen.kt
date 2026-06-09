@@ -24,6 +24,8 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
 import tachiyomi.presentation.core.components.HikariCard
+import tachiyomi.presentation.core.components.HikariCardDefaults
+import tachiyomi.presentation.core.components.HikariCardGroup
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -54,7 +56,6 @@ import kotlinx.coroutines.flow.update
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.components.LazyColumnWithAction
-import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -101,42 +102,44 @@ class RestoreBackupScreen(
                     }
 
                     item {
-                        SectionCard {
-                            RestoreOptions.options.forEachIndexed { index, option ->
-                                if (index > 0) {
-                                    HorizontalDivider(
-                                        modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f),
+                        HikariCardGroup {
+                            Column {
+                                RestoreOptions.options.forEachIndexed { index, option ->
+                                    if (index > 0) {
+                                        HorizontalDivider(
+                                            modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                            color = HikariCardDefaults.dividerColor(),
+                                        )
+                                    }
+                                    val label = stringResource(option.label)
+                                    val checked = option.getter(state.options)
+                                    ListItem(
+                                        headlineContent = {
+                                            Text(
+                                                text = label,
+                                                style = MaterialTheme.typography.titleMedium,
+                                            )
+                                        },
+                                        supportingContent = {
+                                            Text(
+                                                text = getOptionDescription(option.label),
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                modifier = Modifier.secondaryItemAlpha(),
+                                            )
+                                        },
+                                        trailingContent = {
+                                            Switch(
+                                                checked = checked,
+                                                onCheckedChange = {
+                                                    model.toggle(option.setter, it)
+                                                },
+                                            )
+                                        },
+                                        colors = ListItemDefaults.colors(
+                                            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                                        ),
                                     )
                                 }
-                                val label = stringResource(option.label)
-                                val checked = option.getter(state.options)
-                                ListItem(
-                                    headlineContent = {
-                                        Text(
-                                            text = label,
-                                            style = MaterialTheme.typography.titleMedium,
-                                        )
-                                    },
-                                    supportingContent = {
-                                        Text(
-                                            text = getOptionDescription(option.label),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            modifier = Modifier.secondaryItemAlpha(),
-                                        )
-                                    },
-                                    trailingContent = {
-                                        Switch(
-                                            checked = checked,
-                                            onCheckedChange = {
-                                                model.toggle(option.setter, it)
-                                            },
-                                        )
-                                    },
-                                    colors = ListItemDefaults.colors(
-                                        containerColor = androidx.compose.ui.graphics.Color.Transparent,
-                                    ),
-                                )
                             }
                         }
                     }

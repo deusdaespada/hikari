@@ -43,6 +43,7 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import me.saket.swipe.SwipeableActionsBox
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCardDefaults
 import tachiyomi.presentation.core.components.HikariGroupedListItem
 import tachiyomi.presentation.core.components.HikariListItemPosition
 import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
@@ -97,11 +98,23 @@ fun MangaChapterListItem(
         swipeThreshold = swipeActionThreshold,
         backgroundUntilSwipeThreshold = MaterialTheme.colorScheme.surfaceContainerLowest,
     ) {
+        val baseContainerColor = HikariCardDefaults.containerColor()
+        val primaryContainerColor = MaterialTheme.colorScheme.primaryContainer
+        val customContainerColor = remember(selected, read, bookmark, baseContainerColor, primaryContainerColor) {
+            when {
+                selected -> baseContainerColor
+                bookmark -> primaryContainerColor.copy(alpha = 0.12f)
+                read -> baseContainerColor.copy(alpha = 0.6f)
+                else -> baseContainerColor
+            }
+        }
+
         HikariGroupedListItem(
             position = position,
             selected = selected,
             onClick = onClick,
             onLongClick = onLongClick,
+            containerColor = customContainerColor,
         ) {
             Row(
                 modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 8.dp, bottom = 12.dp),

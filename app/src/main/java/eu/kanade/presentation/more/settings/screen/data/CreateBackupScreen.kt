@@ -38,8 +38,10 @@ import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.HikariCardDefaults
+import tachiyomi.presentation.core.components.HikariCardGroup
+import tachiyomi.presentation.core.components.HikariSectionHeader
 import tachiyomi.presentation.core.components.LazyColumnWithAction
-import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -118,14 +120,24 @@ class CreateBackupScreen : Screen() {
                 }
 
                 item {
-                    SectionCard(MR.strings.label_library) {
-                        Options(BackupOptions.libraryOptions, state, model)
+                    HikariSectionHeader(text = stringResource(MR.strings.label_library))
+                }
+                item {
+                    HikariCardGroup {
+                        Column {
+                            Options(BackupOptions.libraryOptions, state, model)
+                        }
                     }
                 }
 
                 item {
-                    SectionCard(MR.strings.label_settings) {
-                        Options(BackupOptions.settingsOptions, state, model)
+                    HikariSectionHeader(text = stringResource(MR.strings.label_settings))
+                }
+                item {
+                    HikariCardGroup {
+                        Column {
+                            Options(BackupOptions.settingsOptions, state, model)
+                        }
                     }
                 }
             }
@@ -142,7 +154,7 @@ class CreateBackupScreen : Screen() {
             if (index > 0) {
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f),
+                    color = HikariCardDefaults.dividerColor(),
                 )
             }
             val label = stringResource(option.label)
