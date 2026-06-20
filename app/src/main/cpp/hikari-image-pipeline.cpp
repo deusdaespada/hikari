@@ -38,7 +38,8 @@ typedef int (*pfn_AImageDecoder_decodeImage)(AImageDecoder *, void *, size_t,
 
 typedef void (*pfn_AImageDecoder_delete)(AImageDecoder *);
 
-typedef int (*pfn_AImageDecoder_setAndroidBitmapFormat)(AImageDecoder *, int32_t);
+typedef int (*pfn_AImageDecoder_setAndroidBitmapFormat)(AImageDecoder *,
+                                                        int32_t);
 
 struct ImageDecoderFunctions {
   pfn_AImageDecoder_createFromBuffer createFromBuffer;
@@ -74,10 +75,11 @@ struct ImageDecoderFunctions {
         (pfn_AImageDecoder_decodeImage)dlsym(lib, "AImageDecoder_decodeImage");
     deleteDecoder =
         (pfn_AImageDecoder_delete)dlsym(lib, "AImageDecoder_delete");
-    setAndroidBitmapFormat =
-        (pfn_AImageDecoder_setAndroidBitmapFormat)dlsym(lib, "AImageDecoder_setAndroidBitmapFormat");
+    setAndroidBitmapFormat = (pfn_AImageDecoder_setAndroidBitmapFormat)dlsym(
+        lib, "AImageDecoder_setAndroidBitmapFormat");
 
-    available = createFromBuffer && decodeImage && deleteDecoder && setAndroidBitmapFormat;
+    available = createFromBuffer && decodeImage && deleteDecoder &&
+                setAndroidBitmapFormat;
   }
 };
 
@@ -201,7 +203,8 @@ Java_tachiyomi_core_common_util_system_NativeImageDecoder_nativeDecode(
   AndroidBitmapInfo info;
   AndroidBitmap_getInfo(env, bitmap, &info);
 
-  if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888 && info.format != ANDROID_BITMAP_FORMAT_RGB_565) {
+  if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888 &&
+      info.format != ANDROID_BITMAP_FORMAT_RGB_565) {
     return JNI_FALSE;
   }
 
@@ -268,7 +271,8 @@ Java_tachiyomi_core_common_util_system_NativeImageDecoder_nativeDecodeRegion(
   AndroidBitmapInfo info;
   AndroidBitmap_getInfo(env, bitmap, &info);
 
-  if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888 && info.format != ANDROID_BITMAP_FORMAT_RGB_565) {
+  if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888 &&
+      info.format != ANDROID_BITMAP_FORMAT_RGB_565) {
     return JNI_FALSE;
   }
 
@@ -333,10 +337,20 @@ Java_tachiyomi_core_common_util_system_NativeImageDecoder_nativeProcess(
     return JNI_FALSE;
 
   void *pixels;
-  AndroidBitmap_lockPixels(env, bitmap, &pixels);
+  if (AndroidBitmap_lockPixels(env, bitmap, &pixels) != 0) {
+    return JNI_FALSE;
+  }
 
   if (filters & 4) {
     LOGD("Native post-processing filter applied: UPSCALING");
+  }
+
+  if (filters & 2) {
+    hikari::denoise((uint32_t *)pixels, info.width, info.height);
+  }
+
+  if (filters & 1) {
+    hikari::sharpen((uint32_t *)pixels, info.width, info.height);
   }
 
   AndroidBitmap_unlockPixels(env, bitmap);

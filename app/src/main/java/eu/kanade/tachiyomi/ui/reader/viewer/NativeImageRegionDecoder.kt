@@ -55,11 +55,19 @@ class NativeImageRegionDecoder : ImageRegionDecoder {
         val bitmap = checkNotNull(decoder) { "Decoder not initialized" }
             .decodeRegion(sRect, options)
 
+        var filters = 0
         if (preferences.readerUpscaling.get()) {
-            NativeImageDecoder.process(
-                bitmap = bitmap,
-                filters = NativeImageDecoder.FILTER_UPSCALING,
-            )
+            filters = filters or NativeImageDecoder.FILTER_UPSCALING
+        }
+        if (preferences.readerSharpening.get()) {
+            filters = filters or NativeImageDecoder.FILTER_SHARPEN
+        }
+        if (preferences.readerDenoising.get()) {
+            filters = filters or NativeImageDecoder.FILTER_DENOISE
+        }
+
+        if (filters != 0) {
+            NativeImageDecoder.process(bitmap, filters)
         }
 
         return bitmap

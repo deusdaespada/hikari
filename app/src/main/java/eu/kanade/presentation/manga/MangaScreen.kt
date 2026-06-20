@@ -50,7 +50,6 @@ import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterHeader
 import eu.kanade.presentation.manga.components.ExpandableMangaDescription
 import eu.kanade.presentation.manga.components.MangaActionRow
-import eu.kanade.presentation.manga.components.MangaGenreSection
 import eu.kanade.presentation.manga.components.MangaBottomActionMenu
 import eu.kanade.presentation.manga.components.MangaChapterListItem
 import eu.kanade.presentation.manga.components.MangaInfoBox
@@ -407,19 +406,11 @@ private fun MangaScreenSmallImpl(
                         ExpandableMangaDescription(
                             defaultExpandState = state.isFromSource,
                             description = state.manga.description?.stripDeduplicationIds(),
-                            notes = state.manga.notes,
-                            onEditNotes = onEditNotesClicked,
-                        )
-                    }
-
-                    item(
-                        key = MangaScreenItem.GENRE,
-                        contentType = MangaScreenItem.GENRE,
-                    ) {
-                        MangaGenreSection(
                             tagsProvider = { state.manga.genre },
+                            notes = state.manga.notes,
                             onTagSearch = onTagSearch,
                             onCopyTagToClipboard = onCopyTagToClipboard,
+                            onEditNotes = onEditNotesClicked,
                         )
                     }
 
@@ -641,13 +632,11 @@ private fun MangaScreenLargeImpl(
                         ExpandableMangaDescription(
                             defaultExpandState = true,
                             description = state.manga.description?.stripDeduplicationIds(),
-                            notes = state.manga.notes,
-                            onEditNotes = onEditNotesClicked,
-                        )
-                        MangaGenreSection(
                             tagsProvider = { state.manga.genre },
+                            notes = state.manga.notes,
                             onTagSearch = onTagSearch,
                             onCopyTagToClipboard = onCopyTagToClipboard,
+                            onEditNotes = onEditNotesClicked,
                         )
                     }
                 },
