@@ -35,6 +35,8 @@ import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
+import tachiyomi.presentation.core.components.Badge
+import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.components.HikariSnackbarHost
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
@@ -123,11 +125,13 @@ private fun HistoryGroupHeader(
         modifier = modifier
             .fillMaxWidth()
             .padding(
-                horizontal = MaterialTheme.padding.medium,
-                vertical = MaterialTheme.padding.small,
+                start = MaterialTheme.padding.medium,
+                end = MaterialTheme.padding.medium,
+                top = MaterialTheme.padding.small,
+                bottom = MaterialTheme.padding.small,
             ),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
     ) {
         Text(
             text = text,
@@ -137,18 +141,13 @@ private fun HistoryGroupHeader(
         )
 
         if (count > 0) {
-            Text(
-                text = if (count == 1) "$count entry" else "$count entries",
-                modifier = Modifier
-                    .background(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = MaterialTheme.shapes.extraSmall,
-                    )
-                    .padding(horizontal = 6.dp, vertical = 2.dp),
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-            )
+            BadgeGroup {
+                Badge(
+                    text = "$count",
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    textColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+            }
         }
     }
 }

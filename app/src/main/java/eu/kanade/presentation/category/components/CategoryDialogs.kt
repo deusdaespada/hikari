@@ -1,6 +1,7 @@
 package eu.kanade.presentation.category.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,13 +9,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TriStateCheckbox
+import eu.kanade.presentation.components.AdaptiveSheet
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,30 +52,30 @@ fun CategoryCreateDialog(
     val focusRequester = remember { FocusRequester() }
     val nameAlreadyExists = remember(name) { categories.contains(name) }
 
-    AlertDialog(
+    AdaptiveSheet(
         onDismissRequest = onDismissRequest,
-        confirmButton = {
-            TextButton(
-                enabled = name.isNotEmpty() && !nameAlreadyExists,
-                onClick = {
-                    onCreate(name)
-                    onDismissRequest()
-                },
-            ) {
-                Text(text = stringResource(MR.strings.action_add))
-            }
+        header = {
+            Text(
+                text = stringResource(MR.strings.action_add_category),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = MaterialTheme.padding.medium,
+                        top = MaterialTheme.padding.small,
+                        end = MaterialTheme.padding.medium,
+                        bottom = MaterialTheme.padding.small,
+                    ),
+            )
         },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(MR.strings.action_cancel))
-            }
-        },
-        title = {
-            Text(text = stringResource(MR.strings.action_add_category))
-        },
-        text = {
+    ) {
+        Column(
+            modifier = Modifier.padding(MaterialTheme.padding.medium),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
+        ) {
             OutlinedTextField(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .focusRequester(focusRequester),
                 value = name,
                 onValueChange = { name = it },
@@ -89,8 +93,30 @@ fun CategoryCreateDialog(
                 isError = name.isNotEmpty() && nameAlreadyExists,
                 singleLine = true,
             )
-        },
-    )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+            ) {
+                OutlinedButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = onDismissRequest,
+                ) {
+                    Text(text = stringResource(MR.strings.action_cancel))
+                }
+                FilledTonalButton(
+                    modifier = Modifier.weight(1f),
+                    enabled = name.isNotEmpty() && !nameAlreadyExists,
+                    onClick = {
+                        onCreate(name)
+                        onDismissRequest()
+                    },
+                ) {
+                    Text(text = stringResource(MR.strings.action_add))
+                }
+            }
+        }
+    }
 
     LaunchedEffect(focusRequester) {
         // TODO: https://issuetracker.google.com/issues/204502668
@@ -112,30 +138,31 @@ fun CategoryRenameDialog(
     val focusRequester = remember { FocusRequester() }
     val nameAlreadyExists = remember(name) { categories.contains(name) }
 
-    AlertDialog(
+    AdaptiveSheet(
         onDismissRequest = onDismissRequest,
-        confirmButton = {
-            TextButton(
-                enabled = valueHasChanged && !nameAlreadyExists,
-                onClick = {
-                    onRename(name)
-                    onDismissRequest()
-                },
-            ) {
-                Text(text = stringResource(MR.strings.action_ok))
-            }
+        header = {
+            Text(
+                text = stringResource(MR.strings.action_rename_category),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = MaterialTheme.padding.medium,
+                        top = MaterialTheme.padding.small,
+                        end = MaterialTheme.padding.medium,
+                        bottom = MaterialTheme.padding.small,
+                    ),
+            )
         },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(MR.strings.action_cancel))
-            }
-        },
-        title = {
-            Text(text = stringResource(MR.strings.action_rename_category))
-        },
-        text = {
+    ) {
+        Column(
+            modifier = Modifier.padding(MaterialTheme.padding.medium),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
+        ) {
             OutlinedTextField(
-                modifier = Modifier.focusRequester(focusRequester),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester),
                 value = name,
                 onValueChange = {
                     valueHasChanged = name != it
@@ -153,8 +180,30 @@ fun CategoryRenameDialog(
                 isError = valueHasChanged && nameAlreadyExists,
                 singleLine = true,
             )
-        },
-    )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+            ) {
+                OutlinedButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = onDismissRequest,
+                ) {
+                    Text(text = stringResource(MR.strings.action_cancel))
+                }
+                FilledTonalButton(
+                    modifier = Modifier.weight(1f),
+                    enabled = valueHasChanged && !nameAlreadyExists,
+                    onClick = {
+                        onRename(name)
+                        onDismissRequest()
+                    },
+                ) {
+                    Text(text = stringResource(MR.strings.action_ok))
+                }
+            }
+        }
+    }
 
     LaunchedEffect(focusRequester) {
         // TODO: https://issuetracker.google.com/issues/204502668
@@ -169,28 +218,51 @@ fun CategoryDeleteDialog(
     onDelete: () -> Unit,
     category: String,
 ) {
-    AlertDialog(
+    AdaptiveSheet(
         onDismissRequest = onDismissRequest,
-        confirmButton = {
-            TextButton(onClick = {
-                onDelete()
-                onDismissRequest()
-            }) {
-                Text(text = stringResource(MR.strings.action_ok))
-            }
+        header = {
+            Text(
+                text = stringResource(MR.strings.delete_category),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = MaterialTheme.padding.medium,
+                        top = MaterialTheme.padding.small,
+                        end = MaterialTheme.padding.medium,
+                        bottom = MaterialTheme.padding.small,
+                    ),
+            )
         },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(MR.strings.action_cancel))
-            }
-        },
-        title = {
-            Text(text = stringResource(MR.strings.delete_category))
-        },
-        text = {
+    ) {
+        Column(
+            modifier = Modifier.padding(MaterialTheme.padding.medium),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
+        ) {
             Text(text = stringResource(MR.strings.delete_category_confirmation, category))
-        },
-    )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+            ) {
+                OutlinedButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = onDismissRequest,
+                ) {
+                    Text(text = stringResource(MR.strings.action_cancel))
+                }
+                FilledTonalButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        onDelete()
+                        onDismissRequest()
+                    },
+                ) {
+                    Text(text = stringResource(MR.strings.action_ok))
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -201,65 +273,79 @@ fun ChangeCategoryDialog(
     onConfirm: (List<Long>, List<Long>) -> Unit,
 ) {
     if (initialSelection.isEmpty()) {
-        AlertDialog(
+        AdaptiveSheet(
             onDismissRequest = onDismissRequest,
-            confirmButton = {
-                tachiyomi.presentation.core.components.material.TextButton(
-                    onClick = {
-                        onDismissRequest()
-                        onEditCategories()
-                    },
-                ) {
-                    Text(text = stringResource(MR.strings.action_edit_categories))
-                }
+            header = {
+                Text(
+                    text = stringResource(MR.strings.action_move_category),
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = MaterialTheme.padding.medium,
+                            top = MaterialTheme.padding.small,
+                            end = MaterialTheme.padding.medium,
+                            bottom = MaterialTheme.padding.small,
+                        ),
+                )
             },
-            title = {
-                Text(text = stringResource(MR.strings.action_move_category))
-            },
-            text = {
+        ) {
+            Column(
+                modifier = Modifier.padding(MaterialTheme.padding.medium),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
+            ) {
                 Text(text = stringResource(MR.strings.information_empty_category_dialog))
-            },
-        )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                ) {
+                    OutlinedButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = onDismissRequest,
+                    ) {
+                        Text(text = stringResource(MR.strings.action_cancel))
+                    }
+                    FilledTonalButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            onDismissRequest()
+                            onEditCategories()
+                        },
+                    ) {
+                        Text(text = stringResource(MR.strings.action_edit_categories))
+                    }
+                }
+            }
+        }
         return
     }
     var selection by remember { mutableStateOf(initialSelection) }
-    AlertDialog(
+    AdaptiveSheet(
         onDismissRequest = onDismissRequest,
-        confirmButton = {
-            Row {
-                tachiyomi.presentation.core.components.material.TextButton(onClick = {
-                    onDismissRequest()
-                    onEditCategories()
-                }) {
-                    Text(text = stringResource(MR.strings.action_edit))
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                tachiyomi.presentation.core.components.material.TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(MR.strings.action_cancel))
-                }
-                tachiyomi.presentation.core.components.material.TextButton(
-                    onClick = {
-                        onDismissRequest()
-                        onConfirm(
-                            selection
-                                .filter { it is CheckboxState.State.Checked || it is CheckboxState.TriState.Include }
-                                .map { it.value.id },
-                            selection
-                                .filter { it is CheckboxState.State.None || it is CheckboxState.TriState.None }
-                                .map { it.value.id },
-                        )
-                    },
-                ) {
-                    Text(text = stringResource(MR.strings.action_ok))
-                }
-            }
+        header = {
+            Text(
+                text = stringResource(MR.strings.action_move_category),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = MaterialTheme.padding.medium,
+                        top = MaterialTheme.padding.small,
+                        end = MaterialTheme.padding.medium,
+                        bottom = MaterialTheme.padding.small,
+                    ),
+            )
         },
-        title = {
-            Text(text = stringResource(MR.strings.action_move_category))
-        },
-        text = {
+    ) {
+        Column(
+            modifier = Modifier.padding(MaterialTheme.padding.medium),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
+        ) {
             Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()),
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState()),
             ) {
                 selection.forEach { checkbox ->
                     val onChange: (CheckboxState<Category>) -> Unit = {
@@ -298,6 +384,45 @@ fun ChangeCategoryDialog(
                     }
                 }
             }
-        },
-    )
+
+            HorizontalDivider()
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+            ) {
+                OutlinedButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        onDismissRequest()
+                        onEditCategories()
+                    },
+                ) {
+                    Text(text = stringResource(MR.strings.action_edit))
+                }
+                OutlinedButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = onDismissRequest,
+                ) {
+                    Text(text = stringResource(MR.strings.action_cancel))
+                }
+                FilledTonalButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        onDismissRequest()
+                        onConfirm(
+                            selection
+                                .filter { it is CheckboxState.State.Checked || it is CheckboxState.TriState.Include }
+                                .map { it.value.id },
+                            selection
+                                .filter { it is CheckboxState.State.None || it is CheckboxState.TriState.None }
+                                .map { it.value.id },
+                        )
+                    },
+                ) {
+                    Text(text = stringResource(MR.strings.action_ok))
+                }
+            }
+        }
+    }
 }

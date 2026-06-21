@@ -45,6 +45,7 @@ import androidx.compose.material3.Icon
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.secondaryItemAlpha
 import tachiyomi.presentation.core.screens.EmptyScreen
 
 @Composable
@@ -209,7 +210,7 @@ private fun SourcesFilterHeader(
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(CircleShape)
+                    .clip(MaterialTheme.shapes.medium)
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
@@ -233,8 +234,8 @@ private fun SourcesFilterHeader(
                 )
                 Text(
                     text = badgeText,
+                    modifier = Modifier.secondaryItemAlpha(),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 

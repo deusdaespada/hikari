@@ -29,6 +29,7 @@ import tachiyomi.presentation.core.components.HikariCardDefaults
 import tachiyomi.presentation.core.components.HikariCardGroup
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 @Composable
 fun GlobalSearchResultItem(
@@ -62,7 +63,8 @@ fun GlobalSearchResultItem(
                 )
                 Text(
                     text = subtitle,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.secondaryItemAlpha(),
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
             IconButton(onClick = onClick) {

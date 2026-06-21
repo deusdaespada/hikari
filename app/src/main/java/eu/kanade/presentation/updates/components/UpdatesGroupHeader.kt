@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import tachiyomi.presentation.core.components.Badge
+import tachiyomi.presentation.core.components.BadgeGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,11 +26,13 @@ internal fun UpdatesGroupHeader(
         modifier = modifier
             .fillMaxWidth()
             .padding(
-                horizontal = MaterialTheme.padding.medium,
-                vertical = MaterialTheme.padding.small,
+                start = MaterialTheme.padding.medium,
+                end = MaterialTheme.padding.medium,
+                top = MaterialTheme.padding.small,
+                bottom = MaterialTheme.padding.small,
             ),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
     ) {
         Text(
             text = text,
@@ -38,18 +42,13 @@ internal fun UpdatesGroupHeader(
         )
 
         if (count > 0) {
-            Text(
-                text = "$count updates",
-                modifier = Modifier
-                    .background(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = MaterialTheme.shapes.extraSmall,
-                    )
-                    .padding(horizontal = 6.dp, vertical = 2.dp),
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-            )
+            BadgeGroup {
+                Badge(
+                    text = "$count",
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    textColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+            }
         }
     }
 }

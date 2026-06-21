@@ -99,9 +99,10 @@ private fun MigrateSourceList(
                     .padding(
                         start = MaterialTheme.padding.medium,
                         end = MaterialTheme.padding.medium,
+                        top = MaterialTheme.padding.small,
                         bottom = MaterialTheme.padding.small,
                     ),
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 FilterChip(
@@ -113,6 +114,7 @@ private fun MigrateSourceList(
                                 SetMigrateSorting.Mode.ALPHABETICAL -> stringResource(MR.strings.action_sort_alpha)
                                 SetMigrateSorting.Mode.TOTAL -> stringResource(MR.strings.action_sort_count)
                             },
+                            style = MaterialTheme.typography.labelLarge,
                         )
                     },
                     leadingIcon = {
@@ -126,6 +128,7 @@ private fun MigrateSourceList(
                         )
                     },
                     border = null,
+                    shape = MaterialTheme.shapes.medium,
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                         selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -141,6 +144,7 @@ private fun MigrateSourceList(
                                 SetMigrateSorting.Direction.ASCENDING -> stringResource(MR.strings.action_asc)
                                 SetMigrateSorting.Direction.DESCENDING -> stringResource(MR.strings.action_desc)
                             },
+                            style = MaterialTheme.typography.labelLarge,
                         )
                     },
                     leadingIcon = {
@@ -154,8 +158,9 @@ private fun MigrateSourceList(
                         )
                     },
                     border = null,
+                    shape = MaterialTheme.shapes.medium,
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f),
+                        selectedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                         selectedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         selectedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     ),

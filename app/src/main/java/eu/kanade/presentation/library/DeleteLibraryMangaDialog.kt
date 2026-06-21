@@ -1,18 +1,27 @@
 package eu.kanade.presentation.library
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.presentation.components.AdaptiveSheet
 import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.LabeledCheckbox
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
@@ -31,32 +40,31 @@ fun DeleteLibraryMangaDialog(
             },
         )
     }
-    AlertDialog(
+
+    AdaptiveSheet(
         onDismissRequest = onDismissRequest,
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(MR.strings.action_cancel))
-            }
+        header = {
+            Text(
+                text = stringResource(MR.strings.action_remove),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = MaterialTheme.padding.medium,
+                        top = MaterialTheme.padding.small,
+                        end = MaterialTheme.padding.medium,
+                        bottom = MaterialTheme.padding.small,
+                    ),
+            )
         },
-        confirmButton = {
-            TextButton(
-                enabled = list.any { it.isChecked },
-                onClick = {
-                    onDismissRequest()
-                    onConfirm(
-                        list[0].isChecked,
-                        list.getOrElse(1) { CheckboxState.State.None(0) }.isChecked,
-                    )
-                },
+    ) {
+        Column(
+            modifier = Modifier.padding(MaterialTheme.padding.medium),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small)
             ) {
-                Text(text = stringResource(MR.strings.action_ok))
-            }
-        },
-        title = {
-            Text(text = stringResource(MR.strings.action_remove))
-        },
-        text = {
-            Column {
                 list.forEach { state ->
                     LabeledCheckbox(
                         label = stringResource(state.value),
@@ -72,6 +80,33 @@ fun DeleteLibraryMangaDialog(
                     )
                 }
             }
-        },
-    )
+
+            HorizontalDivider()
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+            ) {
+                OutlinedButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = onDismissRequest,
+                ) {
+                    Text(text = stringResource(MR.strings.action_cancel))
+                }
+                FilledTonalButton(
+                    modifier = Modifier.weight(1f),
+                    enabled = list.any { it.isChecked },
+                    onClick = {
+                        onDismissRequest()
+                        onConfirm(
+                            list[0].isChecked,
+                            list.getOrElse(1) { CheckboxState.State.None(0) }.isChecked,
+                        )
+                    },
+                ) {
+                    Text(text = stringResource(MR.strings.action_ok))
+                }
+            }
+        }
+    }
 }

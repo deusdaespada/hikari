@@ -92,6 +92,7 @@ fun GlobalSearchToolbar(
                     label = {
                         Text(text = stringResource(MR.strings.pinned_sources))
                     },
+                    shape = MaterialTheme.shapes.medium,
                 )
                 FilterChip(
                     selected = sourceFilter == SourceFilter.All,
@@ -107,6 +108,7 @@ fun GlobalSearchToolbar(
                     label = {
                         Text(text = stringResource(MR.strings.all))
                     },
+                    shape = MaterialTheme.shapes.medium,
                 )
 
                 VerticalDivider()
@@ -126,6 +128,7 @@ fun GlobalSearchToolbar(
                 label = {
                     Text(text = stringResource(MR.strings.has_results))
                 },
+                shape = MaterialTheme.shapes.medium,
             )
 
             FilterChip(
@@ -142,6 +145,7 @@ fun GlobalSearchToolbar(
                 label = {
                     Text(text = stringResource(MR.strings.action_group_results))
                 },
+                shape = MaterialTheme.shapes.medium,
             )
         }
 

@@ -231,6 +231,7 @@ private fun ColumnScope.DisplayPage(
                 selected = displayMode == mode,
                 onClick = { screenModel.setDisplayMode(mode) },
                 label = { Text(stringResource(titleRes)) },
+                shape = MaterialTheme.shapes.medium,
             )
         }
     }

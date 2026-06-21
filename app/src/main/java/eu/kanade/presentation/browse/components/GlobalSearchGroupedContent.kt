@@ -71,6 +71,7 @@ fun GlobalSearchGroupedContent(
                                     maxLines = 1,
                                 )
                             },
+                            shape = MaterialTheme.shapes.small,
                         )
                     }
                 }
