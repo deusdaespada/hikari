@@ -24,15 +24,17 @@ import tachiyomi.presentation.core.components.material.Button
 import tachiyomi.presentation.core.components.material.ButtonDefaults
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import androidx.compose.ui.graphics.graphicsLayer
 
 @Composable
 fun MangaNotesSection(
     content: String,
-    expanded: Boolean,
+    animProgress: Float,
     onEditNotes: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (content.isBlank()) return
+    val expanded = animProgress > 0.5f
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -41,7 +43,7 @@ fun MangaNotesSection(
             content = content,
             modifier = modifier.fillMaxWidth(),
         )
-        if (expanded) {
+        if (animProgress > 0f) {
             Button(
                 onClick = onEditNotes,
                 colors = ButtonDefaults.buttonColors(
@@ -50,6 +52,7 @@ fun MangaNotesSection(
                 ),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
+                    .graphicsLayer { alpha = animProgress }
                     .padding(horizontal = 16.dp, vertical = 4.dp),
             ) {
                 Row(
@@ -84,7 +87,7 @@ fun MangaNotesSection(
 private fun MangaNotesSectionPreview() {
     MangaNotesSection(
         onEditNotes = {},
-        expanded = true,
+        animProgress = 1f,
         content = "# Hello world\ntest1234 hi there!",
     )
 }

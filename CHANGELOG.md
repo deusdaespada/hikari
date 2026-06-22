@@ -5,12 +5,14 @@
 
 ### Added
 
-- Animated cover support: saving or sharing a cover now preserves GIF/WebP/HEIF animation instead of re-encoding as a static JPEG
+- Animated cover support: saving, sharing, or viewing a cover now preserves GIF/WebP/HEIF animation instead of re-encoding as a static JPEG
 - Download queue priority setting to control chapter ordering within the queue
 - Additional library update settings for controlling per-manga chapter limits during background updates
+- Snackbar feedback for extension install and update results (success and failure)
 
 ### Changed
 
+- Replaced bilinear EASU approximation with correct AMD FSR 1.0: Catmull-Rom 4-tap edge-adaptive upscaling followed by an RCAS sharpening pass when both upscaling and sharpening are enabled
 - Redesigned manga details screen: MangaInfoHeader, ChapterHeader, and chapter list items with refined layout and visual hierarchy
 - Redesigned Browse screens (Extensions and Sources) with updated card layouts
 - Redesigned manga dialogs: ChapterSettings, DuplicateManga, ScanlatorFilter, and MangaBottomActionMenu
@@ -25,10 +27,12 @@
 
 - Data URI loading in the HTTP page loader
 - Tracking redirect handling after adding a tracker
+- History tab and continue-reading card now correctly hide content while incognito mode is active
 
 ### Removed
 
 - Self-hosted tracker integrations: Kavita, Komga, and Suwayomi
+- Legacy Tachiyomi JSON metadata format support in local source (long-migrated to ComicInfo.xml)
 
 
 ## [0.5.0] - 2026-05-28

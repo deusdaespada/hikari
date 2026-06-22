@@ -70,6 +70,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
@@ -593,7 +594,7 @@ private fun MangaSummary(
                     ) {
                         MangaNotesSection(
                             content = notes,
-                            expanded = expanded,
+                            animProgress = animProgress,
                             onEditNotes = onEditNotesClicked,
                         )
                         SelectionContainer {
@@ -631,33 +632,38 @@ private fun MangaSummary(
                                     },
                                 )
                             }
-                            if (expanded) {
-                                FlowRow(
-                                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
-                                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
-                                ) {
-                                    tags.forEach {
-                                        TagsChip(
-                                            text = it,
-                                            onClick = {
-                                                tagSelected = it
-                                                showMenu = true
-                                            },
-                                        )
+                            Box {
+                                if (animProgress > 0f) {
+                                    FlowRow(
+                                        modifier = Modifier.graphicsLayer { alpha = animProgress },
+                                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
+                                        verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
+                                    ) {
+                                        tags.forEach {
+                                            TagsChip(
+                                                text = it,
+                                                onClick = {
+                                                    tagSelected = it
+                                                    showMenu = true
+                                                },
+                                            )
+                                        }
                                     }
                                 }
-                            } else {
-                                LazyRow(
-                                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
-                                ) {
-                                    items(items = tags) {
-                                        TagsChip(
-                                            text = it,
-                                            onClick = {
-                                                tagSelected = it
-                                                showMenu = true
-                                            },
-                                        )
+                                if (animProgress < 1f) {
+                                    LazyRow(
+                                        modifier = Modifier.graphicsLayer { alpha = 1f - animProgress },
+                                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
+                                    ) {
+                                        items(items = tags) {
+                                            TagsChip(
+                                                text = it,
+                                                onClick = {
+                                                    tagSelected = it
+                                                    showMenu = true
+                                                },
+                                            )
+                                        }
                                     }
                                 }
                             }

@@ -95,45 +95,317 @@ inline float clamp(float v, float min, float max) {
   return std::max(min, std::min(max, v));
 }
 
+struct FloatColor {
+  float r, g, b, a;
+};
+
+inline uint32_t getPixelClamp(const uint32_t *src, int x, int y, int sw,
+                              int sh) {
+  x = std::max(0, std::min(x, sw - 1));
+  y = std::max(0, std::min(y, sh - 1));
+  return src[y * sw + x];
+}
+
+inline FloatColor getFloatColor(uint32_t pixel) {
+  return {(pixel & 0xFF) / 255.0f, ((pixel >> 8) & 0xFF) / 255.0f,
+          ((pixel >> 16) & 0xFF) / 255.0f, ((pixel >> 24) & 0xFF) / 255.0f};
+}
+
+inline float getLuma(const FloatColor &c) {
+  return (c.r + 2.0f * c.g + c.b) * 0.25f;
+}
+
+inline float APrxLoRcpF1(float a) {
+  uint32_t u;
+  std::memcpy(&u, &a, sizeof(float));
+  u = 0x7ef07ebb - u;
+  float f;
+  std::memcpy(&f, &u, sizeof(float));
+  return f;
+}
+
+inline float APrxLoRsqF1(float a) {
+  uint32_t u;
+  std::memcpy(&u, &a, sizeof(float));
+  u = 0x5f347d74 - (u >> 1);
+  float f;
+  std::memcpy(&f, &u, sizeof(float));
+  return f;
+}
+
+inline float APrxMedRcpF1(float a) {
+  uint32_t u;
+  std::memcpy(&u, &a, sizeof(float));
+  u = 0x7ef19fff - u;
+  float f;
+  std::memcpy(&f, &u, sizeof(float));
+  return f * (-f * a + 2.0f);
+}
+
+inline void FsrEasuTap(float &aR, float &aG, float &aB, float &aA, float &aW,
+                       float offX, float offY, float dirX, float dirY,
+                       float lenX, float lenY, float lob, float clp,
+                       const FloatColor &c) {
+  float vx = offX * dirX + offY * dirY;
+  float vy = offX * -dirY + offY * dirX;
+  vx *= lenX;
+  vy *= lenY;
+  float d2 = vx * vx + vy * vy;
+  d2 = std::min(d2, clp);
+  float wB = 0.4f * d2 - 1.0f;
+  float wA = lob * d2 - 1.0f;
+  wB *= wB;
+  wA *= wA;
+  wB = 1.5625f * wB - 0.5625f;
+  float w = wB * wA;
+  aR += c.r * w;
+  aG += c.g * w;
+  aB += c.b * w;
+  aA += c.a * w;
+  aW += w;
+}
+
+inline void FsrEasuSet(float &dirX, float &dirY, float &len, float ppX,
+                       float ppY, bool biS, bool biT, bool biU, bool biV,
+                       float lA, float lB, float lC, float lD, float lE) {
+  float w = 0.0f;
+  if (biS)
+    w = (1.0f - ppX) * (1.0f - ppY);
+  if (biT)
+    w = ppX * (1.0f - ppY);
+  if (biU)
+    w = (1.0f - ppX) * ppY;
+  if (biV)
+    w = ppX * ppY;
+  float dc = lD - lC;
+  float cb = lC - lB;
+  float lenX = std::max(std::abs(dc), std::abs(cb));
+  lenX = APrxLoRcpF1(lenX);
+  float dx = lD - lB;
+  lenX = clamp(std::abs(dx) * lenX, 0.0f, 1.0f);
+  lenX *= lenX;
+  float ec = lE - lC;
+  float ca = lC - lA;
+  float lenY = std::max(std::abs(ec), std::abs(ca));
+  lenY = APrxLoRcpF1(lenY);
+  float dy = lE - lA;
+  lenY = clamp(std::abs(dy) * lenY, 0.0f, 1.0f);
+  lenY *= lenY;
+  dirX += dx * w;
+  dirY += dy * w;
+  len += w * lenX + w * lenY;
+}
+
 void easu(uint32_t *src, uint32_t *dst, int sw, int sh, int dw, int dh) {
   float sx = (float)sw / dw;
   float sy = (float)sh / dh;
-
   for (int y = 0; y < dh; y++) {
     for (int x = 0; x < dw; x++) {
-      float srcX = x * sx;
-      float srcY = y * sy;
-      int x0 = (int)srcX;
-      int y0 = (int)srcY;
-      int x1 = std::min(x0 + 1, sw - 1);
-      int y1 = std::min(y0 + 1, sh - 1);
+      float srcX = (x + 0.5f) * sx - 0.5f;
+      float srcY = (y + 0.5f) * sy - 0.5f;
+      int x0 = (int)std::floor(srcX);
+      int y0 = (int)std::floor(srcY);
+      float ppX = srcX - x0;
+      float ppY = srcY - y0;
 
-      float dx = srcX - x0;
-      float dy = srcY - y0;
+      uint32_t p_b = getPixelClamp(src, x0, y0 - 1, sw, sh);
+      uint32_t p_c = getPixelClamp(src, x0 + 1, y0 - 1, sw, sh);
+      uint32_t p_e = getPixelClamp(src, x0 - 1, y0, sw, sh);
+      uint32_t p_f = getPixelClamp(src, x0, y0, sw, sh);
+      uint32_t p_g = getPixelClamp(src, x0 + 1, y0, sw, sh);
+      uint32_t p_h = getPixelClamp(src, x0 + 2, y0, sw, sh);
+      uint32_t p_i = getPixelClamp(src, x0 - 1, y0 + 1, sw, sh);
+      uint32_t p_j = getPixelClamp(src, x0, y0 + 1, sw, sh);
+      uint32_t p_k = getPixelClamp(src, x0 + 1, y0 + 1, sw, sh);
+      uint32_t p_l = getPixelClamp(src, x0 + 2, y0 + 1, sw, sh);
+      uint32_t p_n = getPixelClamp(src, x0, y0 + 2, sw, sh);
+      uint32_t p_o = getPixelClamp(src, x0 + 1, y0 + 2, sw, sh);
 
-      uint32_t c00 = src[y0 * sw + x0];
-      uint32_t c10 = src[y0 * sw + x1];
-      uint32_t c01 = src[y1 * sw + x0];
-      uint32_t c11 = src[y1 * sw + x1];
+      FloatColor bL = getFloatColor(p_b);
+      FloatColor cL = getFloatColor(p_c);
+      FloatColor eL = getFloatColor(p_e);
+      FloatColor fL = getFloatColor(p_f);
+      FloatColor gL = getFloatColor(p_g);
+      FloatColor hL = getFloatColor(p_h);
+      FloatColor iL = getFloatColor(p_i);
+      FloatColor jL = getFloatColor(p_j);
+      FloatColor kL = getFloatColor(p_k);
+      FloatColor lL = getFloatColor(p_l);
+      FloatColor nL = getFloatColor(p_n);
+      FloatColor oL = getFloatColor(p_o);
 
-      float r = (1 - dx) * (1 - dy) * (c00 & 0xFF) +
-                dx * (1 - dy) * (c10 & 0xFF) + (1 - dx) * dy * (c01 & 0xFF) +
-                dx * dy * (c11 & 0xFF);
-      float g = (1 - dx) * (1 - dy) * ((c00 >> 8) & 0xFF) +
-                dx * (1 - dy) * ((c10 >> 8) & 0xFF) +
-                (1 - dx) * dy * ((c01 >> 8) & 0xFF) +
-                dx * dy * ((c11 >> 8) & 0xFF);
-      float b = (1 - dx) * (1 - dy) * ((c00 >> 16) & 0xFF) +
-                dx * (1 - dy) * ((c10 >> 16) & 0xFF) +
-                (1 - dx) * dy * ((c01 >> 16) & 0xFF) +
-                dx * dy * ((c11 >> 16) & 0xFF);
-      float a = (1 - dx) * (1 - dy) * ((c00 >> 24) & 0xFF) +
-                dx * (1 - dy) * ((c10 >> 24) & 0xFF) +
-                (1 - dx) * dy * ((c01 >> 24) & 0xFF) +
-                dx * dy * ((c11 >> 24) & 0xFF);
+      float l_b = getLuma(bL);
+      float l_c = getLuma(cL);
+      float l_e = getLuma(eL);
+      float l_f = getLuma(fL);
+      float l_g = getLuma(gL);
+      float l_h = getLuma(hL);
+      float l_i = getLuma(iL);
+      float l_j = getLuma(jL);
+      float l_k = getLuma(kL);
+      float l_l = getLuma(lL);
+      float l_n = getLuma(nL);
+      float l_o = getLuma(oL);
 
-      dst[y * dw + x] = ((uint32_t)a << 24) | ((uint32_t)b << 16) |
-                        ((uint32_t)g << 8) | (uint32_t)r;
+      float dirX = 0.0f;
+      float dirY = 0.0f;
+      float len = 0.0f;
+
+      FsrEasuSet(dirX, dirY, len, ppX, ppY, true, false, false, false, l_b, l_e,
+                 l_f, l_g, l_j);
+      FsrEasuSet(dirX, dirY, len, ppX, ppY, false, true, false, false, l_c, l_f,
+                 l_g, l_h, l_k);
+      FsrEasuSet(dirX, dirY, len, ppX, ppY, false, false, true, false, l_f, l_i,
+                 l_j, l_k, l_n);
+      FsrEasuSet(dirX, dirY, len, ppX, ppY, false, false, false, true, l_g, l_j,
+                 l_k, l_l, l_o);
+
+      float dirR = dirX * dirX + dirY * dirY;
+      bool zro = dirR < (1.0f / 32768.0f);
+      float dirRsq = APrxLoRsqF1(dirR);
+      if (zro) {
+        dirRsq = 1.0f;
+        dirX = 1.0f;
+      }
+      dirX *= dirRsq;
+      dirY *= dirRsq;
+
+      float maxDir = std::max(std::abs(dirX), std::abs(dirY));
+      float stretch = (dirX * dirX + dirY * dirY) * APrxLoRcpF1(maxDir);
+      float len_val = len * 0.5f;
+      len_val *= len_val;
+
+      float len2X = 1.0f + (stretch - 1.0f) * len_val;
+      float len2Y = 1.0f - 0.5f * len_val;
+      float lob = 0.5f + (0.21f - 0.5f) * len_val;
+      float clp = APrxLoRcpF1(lob);
+
+      float aR = 0.0f, aG = 0.0f, aB = 0.0f, aA = 0.0f, aW = 0.0f;
+
+      FsrEasuTap(aR, aG, aB, aA, aW, 0.0f - ppX, -1.0f - ppY, dirX, dirY, len2X,
+                 len2Y, lob, clp, bL);
+      FsrEasuTap(aR, aG, aB, aA, aW, 1.0f - ppX, -1.0f - ppY, dirX, dirY, len2X,
+                 len2Y, lob, clp, cL);
+      FsrEasuTap(aR, aG, aB, aA, aW, -1.0f - ppX, 1.0f - ppY, dirX, dirY, len2X,
+                 len2Y, lob, clp, iL);
+      FsrEasuTap(aR, aG, aB, aA, aW, 0.0f - ppX, 1.0f - ppY, dirX, dirY, len2X,
+                 len2Y, lob, clp, jL);
+      FsrEasuTap(aR, aG, aB, aA, aW, 0.0f - ppX, 0.0f - ppY, dirX, dirY, len2X,
+                 len2Y, lob, clp, fL);
+      FsrEasuTap(aR, aG, aB, aA, aW, -1.0f - ppX, 0.0f - ppY, dirX, dirY, len2X,
+                 len2Y, lob, clp, eL);
+      FsrEasuTap(aR, aG, aB, aA, aW, 1.0f - ppX, 1.0f - ppY, dirX, dirY, len2X,
+                 len2Y, lob, clp, kL);
+      FsrEasuTap(aR, aG, aB, aA, aW, 2.0f - ppX, 1.0f - ppY, dirX, dirY, len2X,
+                 len2Y, lob, clp, lL);
+      FsrEasuTap(aR, aG, aB, aA, aW, 2.0f - ppX, 0.0f - ppY, dirX, dirY, len2X,
+                 len2Y, lob, clp, hL);
+      FsrEasuTap(aR, aG, aB, aA, aW, 1.0f - ppX, 0.0f - ppY, dirX, dirY, len2X,
+                 len2Y, lob, clp, gL);
+      FsrEasuTap(aR, aG, aB, aA, aW, 1.0f - ppX, 2.0f - ppY, dirX, dirY, len2X,
+                 len2Y, lob, clp, oL);
+      FsrEasuTap(aR, aG, aB, aA, aW, 0.0f - ppX, 2.0f - ppY, dirX, dirY, len2X,
+                 len2Y, lob, clp, nL);
+
+      float rResult = aW > 0.0f ? (aR / aW) : fL.r;
+      float gResult = aW > 0.0f ? (aG / aW) : fL.g;
+      float bResult = aW > 0.0f ? (aB / aW) : fL.b;
+      float aResult = aW > 0.0f ? (aA / aW) : fL.a;
+
+      float minR = std::min(std::min(fL.r, gL.r), std::min(jL.r, kL.r));
+      float maxR = std::max(std::max(fL.r, gL.r), std::max(jL.r, kL.r));
+      rResult = clamp(rResult, minR, maxR);
+
+      float minG = std::min(std::min(fL.g, gL.g), std::min(jL.g, kL.g));
+      float maxG = std::max(std::max(fL.g, gL.g), std::max(jL.g, kL.g));
+      gResult = clamp(gResult, minG, maxG);
+
+      float minB = std::min(std::min(fL.b, gL.b), std::min(jL.b, kL.b));
+      float maxB = std::max(std::max(fL.b, gL.b), std::max(jL.b, kL.b));
+      bResult = clamp(bResult, minB, maxB);
+
+      float minA = std::min(std::min(fL.a, gL.a), std::min(jL.a, kL.a));
+      float maxA = std::max(std::max(fL.a, gL.a), std::max(jL.a, kL.a));
+      aResult = clamp(aResult, minA, maxA);
+
+      dst[y * dw + x] =
+          ((uint32_t)clamp(aResult * 255.0f, 0.0f, 255.0f) << 24) |
+          ((uint32_t)clamp(bResult * 255.0f, 0.0f, 255.0f) << 16) |
+          ((uint32_t)clamp(gResult * 255.0f, 0.0f, 255.0f) << 8) |
+          (uint32_t)clamp(rResult * 255.0f, 0.0f, 255.0f);
+    }
+  }
+}
+
+inline float computeRcasLobe(float e, float b, float d, float f, float h,
+                             float sharpness) {
+  float mn = std::min(std::min(b, d), std::min(f, h));
+  float mx = std::max(std::max(b, d), std::max(f, h));
+  float mnL = std::min(mn, e);
+  float mxL = std::max(mx, e);
+  float hitMin = mnL / (4.0f * mxL + 1e-5f);
+  float hitMax = (1.0f - mxL) / (4.0f * mnL - 4.0f - 1e-5f);
+  float lobeL = std::max(-hitMin, hitMax);
+  float limit = 0.1875f;
+  float lobe =
+      std::max(-limit, std::min(lobeL, 0.0f)) * std::pow(2.0f, -sharpness);
+
+  float nz = 0.25f * b + 0.25f * d + 0.25f * f + 0.25f * h - e;
+  float range = std::max(std::max(std::max(b, d), e), std::max(f, h)) -
+                std::min(std::min(std::min(b, d), e), std::min(f, h));
+  if (range > 1e-5f) {
+    float nz_val = clamp(std::abs(nz) / range, 0.0f, 1.0f);
+    float nz_factor = -0.5f * nz_val + 1.0f;
+    lobe *= nz_factor;
+  }
+  return lobe;
+}
+
+void rcas(uint32_t *pixels, int w, int h, float sharpness) {
+  std::vector<uint32_t> src(pixels, pixels + w * h);
+  for (int y = 1; y < h - 1; y++) {
+    for (int x = 1; x < w - 1; x++) {
+      int idx = y * w + x;
+      uint32_t cE = src[idx];
+      uint32_t cB = src[idx - w];
+      uint32_t cD = src[idx - 1];
+      uint32_t cF = src[idx + 1];
+      uint32_t cH = src[idx + w];
+
+      float eR = (cE & 0xFF) / 255.0f;
+      float eG = ((cE >> 8) & 0xFF) / 255.0f;
+      float eB = ((cE >> 16) & 0xFF) / 255.0f;
+      float eA = ((cE >> 24) & 0xFF) / 255.0f;
+
+      float bR = (cB & 0xFF) / 255.0f;
+      float bG = ((cB >> 8) & 0xFF) / 255.0f;
+      float bB = ((cB >> 16) & 0xFF) / 255.0f;
+
+      float dR = (cD & 0xFF) / 255.0f;
+      float dG = ((cD >> 8) & 0xFF) / 255.0f;
+      float dB = ((cD >> 16) & 0xFF) / 255.0f;
+
+      float fR = (cF & 0xFF) / 255.0f;
+      float fG = ((cF >> 8) & 0xFF) / 255.0f;
+      float fB = ((cF >> 16) & 0xFF) / 255.0f;
+
+      float hR = (cH & 0xFF) / 255.0f;
+      float hG = ((cH >> 8) & 0xFF) / 255.0f;
+      float hB = ((cH >> 16) & 0xFF) / 255.0f;
+
+      float lobeR = computeRcasLobe(eR, bR, dR, fR, hR, sharpness);
+      float rR = (lobeR * (bR + dR + fR + hR) + eR) / (4.0f * lobeR + 1.0f);
+
+      float lobeG = computeRcasLobe(eG, bG, dG, fG, hG, sharpness);
+      float rG = (lobeG * (bG + dG + fG + hG) + eG) / (4.0f * lobeG + 1.0f);
+
+      float lobeB = computeRcasLobe(eB, bB, dB, fB, hB, sharpness);
+      float rB = (lobeB * (bB + dB + fB + hB) + eB) / (4.0f * lobeB + 1.0f);
+
+      pixels[idx] = ((uint32_t)clamp(eA * 255.0f, 0.0f, 255.0f) << 24) |
+                    ((uint32_t)clamp(rB * 255.0f, 0.0f, 255.0f) << 16) |
+                    ((uint32_t)clamp(rG * 255.0f, 0.0f, 255.0f) << 8) |
+                    (uint32_t)clamp(rR * 255.0f, 0.0f, 255.0f);
     }
   }
 }
@@ -143,7 +415,6 @@ void sharpen(uint32_t *pixels, int w, int h) {
   for (int y = 1; y < h - 1; y++) {
     for (int x = 1; x < w - 1; x++) {
       int idx = y * w + x;
-
       auto getR = [&](uint32_t p) { return p & 0xFF; };
       auto getG = [&](uint32_t p) { return (p >> 8) & 0xFF; };
       auto getB = [&](uint32_t p) { return (p >> 16) & 0xFF; };
@@ -233,10 +504,8 @@ Java_tachiyomi_core_common_util_system_NativeImageDecoder_nativeDecode(
     const AImageDecoderHeaderInfo *header = gDecoder.getHeaderInfo(decoder);
     int sw = gDecoder.getWidth(header);
     int sh = gDecoder.getHeight(header);
-
     std::vector<uint32_t> temp(sw * sh);
     gDecoder.decodeImage(decoder, temp.data(), sw * 4, sw * sh * 4);
-
     hikari::easu(temp.data(), (uint32_t *)pixels, sw, sh, info.width,
                  info.height);
   } else {
@@ -250,7 +519,11 @@ Java_tachiyomi_core_common_util_system_NativeImageDecoder_nativeDecode(
   }
 
   if (filters & 1) {
-    hikari::sharpen((uint32_t *)pixels, info.width, info.height);
+    if (filters & 4) {
+      hikari::rcas((uint32_t *)pixels, info.width, info.height, 0.2f);
+    } else {
+      hikari::sharpen((uint32_t *)pixels, info.width, info.height);
+    }
   }
 
   AndroidBitmap_unlockPixels(env, bitmap);
@@ -314,7 +587,11 @@ Java_tachiyomi_core_common_util_system_NativeImageDecoder_nativeDecodeRegion(
   }
 
   if (filters & 1) {
-    hikari::sharpen((uint32_t *)pixels, info.width, info.height);
+    if (filters & 4) {
+      hikari::rcas((uint32_t *)pixels, info.width, info.height, 0.2f);
+    } else {
+      hikari::sharpen((uint32_t *)pixels, info.width, info.height);
+    }
   }
 
   AndroidBitmap_unlockPixels(env, bitmap);
@@ -350,7 +627,11 @@ Java_tachiyomi_core_common_util_system_NativeImageDecoder_nativeProcess(
   }
 
   if (filters & 1) {
-    hikari::sharpen((uint32_t *)pixels, info.width, info.height);
+    if (filters & 4) {
+      hikari::rcas((uint32_t *)pixels, info.width, info.height, 0.2f);
+    } else {
+      hikari::sharpen((uint32_t *)pixels, info.width, info.height);
+    }
   }
 
   AndroidBitmap_unlockPixels(env, bitmap);
