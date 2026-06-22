@@ -17,6 +17,9 @@ import eu.kanade.tachiyomi.data.saver.Location
 import eu.kanade.tachiyomi.util.editCover
 import eu.kanade.tachiyomi.util.system.getBitmapOrNull
 import eu.kanade.tachiyomi.util.system.toShareIntent
+import okio.buffer
+import okio.source
+import tachiyomi.core.common.util.system.ImageUtil
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.LogPriority
@@ -84,7 +87,8 @@ class MangaCoverScreenModel(
     }
 
     /**
-     * Save manga cover Bitmap to picture or temporary share directory.
+     * Save manga cover to picture or temporary share directory.
+     * Animated covers (GIF/WebP/HEIF) are saved with their original bytes; static covers are saved as JPEG.
      *
      * @param context The context for building and executing the ImageRequest
      * @return the uri to saved file
@@ -97,9 +101,23 @@ class MangaCoverScreenModel(
             .build()
 
         return withIOContext {
-            val result = context.imageLoader.execute(req).image?.asDrawable(context.resources)
+            // Prefer raw cached bytes for animated covers (GIF/WebP/HEIF) to preserve animation.
+            val animatedFile = coverCache.getCustomCoverFile(manga.id).takeIf { it.exists() }
+                ?: coverCache.getCoverFile(manga.thumbnailUrl)?.takeIf { it.exists() }
+            if (animatedFile != null) {
+                val isAnimated = animatedFile.source().buffer().use { ImageUtil.isAnimatedAndSupported(it) }
+                if (isAnimated) {
+                    return@withIOContext imageSaver.save(
+                        Image.Page(
+                            inputStream = animatedFile::inputStream,
+                            name = manga.title,
+                            location = if (temp) Location.Cache else Location.Pictures.create(),
+                        ),
+                    )
+                }
+            }
 
-            // TODO: Handle animated cover
+            val result = context.imageLoader.execute(req).image?.asDrawable(context.resources)
             val bitmap = result?.getBitmapOrNull() ?: return@withIOContext null
             imageSaver.save(
                 Image.Cover(

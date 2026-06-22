@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -27,6 +28,7 @@ import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
+import eu.kanade.domain.base.BasePreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
@@ -45,6 +47,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class HistoryScreenModel(
+    private val basePreferences: BasePreferences = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
     private val getHistory: GetHistory = Injekt.get(),
@@ -66,13 +69,20 @@ class HistoryScreenModel(
             state.map { it.searchQuery }
                 .distinctUntilChanged()
                 .flatMapLatest { query ->
-                    getHistory.subscribe(query ?: "")
-                        .distinctUntilChanged()
-                        .catch { error ->
-                            logcat(LogPriority.ERROR, error)
-                            _events.send(Event.InternalError)
+                    basePreferences.incognitoMode.changes()
+                        .flatMapLatest { incognito ->
+                            if (incognito) {
+                                flowOf(emptyList())
+                            } else {
+                                getHistory.subscribe(query ?: "")
+                                    .distinctUntilChanged()
+                                    .catch { error ->
+                                        logcat(LogPriority.ERROR, error)
+                                        _events.send(Event.InternalError)
+                                    }
+                                    .map { it.toHistoryUiModels() }
+                            }
                         }
-                        .map { it.toHistoryUiModels() }
                         .flowOn(Dispatchers.IO)
                 }
                 .collect { newList -> mutableState.update { it.copy(list = newList) } }

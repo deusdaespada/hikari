@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.browse.extension
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +32,8 @@ import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.isPackageInstalled
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.flow.collectLatest
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 
@@ -58,7 +61,18 @@ fun extensionsTab(
                 onClick = { navigator.push(ExtensionReposScreen()) },
             ),
         ),
-        content = { contentPadding, _ ->
+        content = { contentPadding, snackbarHostState ->
+            LaunchedEffect(Unit) {
+                extensionsScreenModel.events.collectLatest { event ->
+                    when (event) {
+                        is ExtensionsScreenModel.Event.InstallSuccess ->
+                            snackbarHostState.showSnackbar(context.stringResource(MR.strings.ext_install_success))
+                        is ExtensionsScreenModel.Event.InstallError ->
+                            snackbarHostState.showSnackbar(context.stringResource(MR.strings.ext_install_error))
+                    }
+                }
+            }
+
             BackHandler(enabled = state.searchQuery != null) {
                 extensionsScreenModel.search(null)
             }

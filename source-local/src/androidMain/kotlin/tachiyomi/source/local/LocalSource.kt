@@ -15,8 +15,6 @@ import hikari.core.archive.archiveReader
 import hikari.core.archive.epubReader
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
 import logcat.LogPriority
 import nl.adaptivity.xmlutil.core.AndroidXmlReader
 import nl.adaptivity.xmlutil.serialization.XML
@@ -30,7 +28,6 @@ import tachiyomi.core.metadata.comicinfo.COMIC_INFO_FILE
 import tachiyomi.core.metadata.comicinfo.ComicInfo
 import tachiyomi.core.metadata.comicinfo.copyFromComicInfo
 import tachiyomi.core.metadata.comicinfo.getComicInfo
-import tachiyomi.core.metadata.tachiyomi.MangaDetails
 import tachiyomi.domain.chapter.service.ChapterRecognition
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
@@ -52,7 +49,6 @@ actual class LocalSource(
     private val coverManager: LocalCoverManager,
 ) : CatalogueSource, UnmeteredSource {
 
-    private val json: Json by injectLazy()
     private val xml: XML by injectLazy()
 
     @Suppress("PrivatePropertyName")
@@ -153,37 +149,12 @@ actual class LocalSource(
                 .firstOrNull { it.name == COMIC_INFO_FILE }
             val noXmlFile = mangaDirFiles
                 .firstOrNull { it.name == ".noxml" }
-            val legacyJsonDetailsFile = mangaDirFiles
-                .firstOrNull { it.extension == "json" }
 
             when {
                 // Top level ComicInfo.xml
                 comicInfoFile != null -> {
                     noXmlFile?.delete()
                     setMangaDetailsFromComicInfoFile(comicInfoFile.openInputStream(), manga)
-                }
-
-                // Old custom JSON format
-                // TODO: remove support for this entirely after a while
-                legacyJsonDetailsFile != null -> {
-                    json.decodeFromStream<MangaDetails>(legacyJsonDetailsFile.openInputStream()).run {
-                        title?.let { manga.title = it }
-                        author?.let { manga.author = it }
-                        artist?.let { manga.artist = it }
-                        description?.let { manga.description = it }
-                        genre?.let { manga.genre = it.joinToString() }
-                        status?.let { manga.status = it }
-                    }
-                    // Replace with ComicInfo.xml file
-                    val comicInfo = manga.getComicInfo()
-                    mangaDir
-                        .createFile(COMIC_INFO_FILE)
-                        ?.openOutputStream()
-                        ?.use {
-                            val comicInfoString = xml.encodeToString(ComicInfo.serializer(), comicInfo)
-                            it.write(comicInfoString.toByteArray())
-                            legacyJsonDetailsFile.delete()
-                        }
                 }
 
                 // Copy ComicInfo.xml from chapter archive to top level if found

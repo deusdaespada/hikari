@@ -1,6 +1,36 @@
 # Changelog
 
 
+## [Unreleased]
+
+### Added
+
+- Animated cover support: saving or sharing a cover now preserves GIF/WebP/HEIF animation instead of re-encoding as a static JPEG
+- Download queue priority setting to control chapter ordering within the queue
+- Additional library update settings for controlling per-manga chapter limits during background updates
+
+### Changed
+
+- Redesigned manga details screen: MangaInfoHeader, ChapterHeader, and chapter list items with refined layout and visual hierarchy
+- Redesigned Browse screens (Extensions and Sources) with updated card layouts
+- Redesigned manga dialogs: ChapterSettings, DuplicateManga, ScanlatorFilter, and MangaBottomActionMenu
+- Redesigned category, history, library, and updates dialogs for visual consistency
+- Migrated all remaining alert dialogs and settings preference widgets (list, multi-select, tri-state, edit text) to AdaptiveSheet
+- Migrated tracking dialogs, tracking settings, extension repository dialogs, migration dialogs, and reader page action dialogs to AdaptiveSheet
+- Removed the legacy AlertDialog component from presentation-core; AdaptiveSheet is now the single dialog primitive
+- Expanded NDK image pipeline capabilities in the native decoder
+- Redesigned Backup and Restore screens
+
+### Fixed
+
+- Data URI loading in the HTTP page loader
+- Tracking redirect handling after adding a tracker
+
+### Removed
+
+- Self-hosted tracker integrations: Kavita, Komga, and Suwayomi
+
+
 ## [0.5.0] - 2026-05-28
 
 ### Changed

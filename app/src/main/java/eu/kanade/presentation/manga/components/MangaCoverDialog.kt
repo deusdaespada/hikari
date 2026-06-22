@@ -1,6 +1,7 @@
 package eu.kanade.presentation.manga.components
 
 import android.graphics.Bitmap
+import android.graphics.drawable.Animatable
 import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -175,14 +176,18 @@ fun MangaCoverDialog(
                             .memoryCachePolicy(CachePolicy.DISABLED)
                             .target { image ->
                                 val drawable = image.asDrawable(view.context.resources)
-                                // Copy bitmap in case it came from memory cache
-                                // Because SSIV needs to thoroughly read the image
-                                val copy = (drawable as? BitmapDrawable)
-                                    ?.bitmap
-                                    ?.copy(Bitmap.Config.HARDWARE, false)
-                                    ?.toDrawable(view.context.resources)
-                                    ?: drawable
-                                view.setImage(copy, ReaderPageImageView.Config(zoomDuration = 500))
+                                if (drawable is Animatable) {
+                                    // Animated covers — pass directly so ReaderPageImageView starts playback
+                                    view.setImage(drawable, ReaderPageImageView.Config(zoomDuration = 500))
+                                } else {
+                                    // Static covers — copy bitmap so SSIV can do its own I/O-based pan/zoom
+                                    val copy = (drawable as? BitmapDrawable)
+                                        ?.bitmap
+                                        ?.copy(Bitmap.Config.HARDWARE, false)
+                                        ?.toDrawable(view.context.resources)
+                                        ?: drawable
+                                    view.setImage(copy, ReaderPageImageView.Config(zoomDuration = 500))
+                                }
                             }
                             .build()
                         view.context.imageLoader.enqueue(request)

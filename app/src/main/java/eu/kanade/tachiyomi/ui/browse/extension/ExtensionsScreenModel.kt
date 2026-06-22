@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.system.LocaleHelper
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -42,6 +44,9 @@ class ExtensionsScreenModel(
 ) : StateScreenModel<ExtensionsScreenModel.State>(State()) {
 
     private val currentDownloads = MutableStateFlow<Map<String, InstallStep>>(hashMapOf())
+
+    private val _events: Channel<Event> = Channel(Channel.UNLIMITED)
+    val events: Flow<Event> = _events.receiveAsFlow()
 
     init {
         val context = Injekt.get<Application>()
@@ -189,8 +194,13 @@ class ExtensionsScreenModel(
 
     private suspend fun Flow<InstallStep>.collectToInstallUpdate(extension: Extension) {
         try {
-            onEach { installStep -> addDownloadState(extension, installStep) }
+            val completedStep = onEach { installStep -> addDownloadState(extension, installStep) }
                 .first { it.isCompleted() }
+            if (completedStep == InstallStep.Error) {
+                _events.send(Event.InstallError(extension))
+            } else {
+                _events.send(Event.InstallSuccess(extension))
+            }
         } finally {
             removeDownloadState(extension)
         }
@@ -222,6 +232,11 @@ class ExtensionsScreenModel(
         val searchQuery: String? = null,
     ) {
         val isEmpty = items.isEmpty()
+    }
+
+    sealed interface Event {
+        data class InstallSuccess(val extension: Extension) : Event
+        data class InstallError(val extension: Extension) : Event
     }
 }
 

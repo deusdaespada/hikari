@@ -200,8 +200,12 @@ class LibraryScreenModel(
             .launchIn(screenModelScope)
 
         screenModelScope.launchIO {
-            getHistory.subscribe("")
-                .map { it.firstOrNull() }
+            combine(
+                getHistory.subscribe("").map { it.firstOrNull() },
+                preferences.incognitoMode.changes(),
+            ) { history, incognito ->
+                if (incognito) null else history
+            }
                 .distinctUntilChanged()
                 .collectLatest { history ->
                     mutableState.update { it.copy(continueReadingManga = history) }
