@@ -87,7 +87,9 @@ class ReaderPreferences(
 
     val readerUpscaling: Preference<Boolean> = preferenceStore.getBoolean("reader_upscaling", false)
     val readerSharpening: Preference<Boolean> = preferenceStore.getBoolean("reader_sharpening", false)
+    val readerSharpeningStrength: Preference<Int> = preferenceStore.getInt("reader_sharpening_strength", 10)
     val readerDenoising: Preference<Boolean> = preferenceStore.getBoolean("reader_denoising", false)
+    val readerDenoisingStrength: Preference<Int> = preferenceStore.getInt("reader_denoising_strength", 10)
 
     // endregion
 

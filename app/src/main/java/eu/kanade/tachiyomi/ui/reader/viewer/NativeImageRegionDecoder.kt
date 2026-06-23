@@ -67,7 +67,12 @@ class NativeImageRegionDecoder : ImageRegionDecoder {
         }
 
         if (filters != 0) {
-            NativeImageDecoder.process(bitmap, filters)
+            NativeImageDecoder.process(
+                bitmap,
+                filters,
+                preferences.readerSharpeningStrength.get() / 10.0f,
+                preferences.readerDenoisingStrength.get() / 10.0f,
+            )
         }
 
         return bitmap
